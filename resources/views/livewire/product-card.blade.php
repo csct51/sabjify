@@ -1,0 +1,49 @@
+<div class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-lg transition overflow-hidden flex flex-col" wire:key="product-{{ $product->id }}">
+    <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="relative block aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-50 to-lime-100">
+        <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full object-cover">
+
+        @if ($product->discountPercent() > 0)
+            <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">{{ $product->discountPercent() }}% OFF</span>
+        @endif
+
+        @if (! $product->inStock())
+            <span class="absolute inset-0 bg-white/70 flex items-center justify-center">
+                <span class="bg-stone-900 text-white text-[10px] font-semibold px-2 py-1 rounded-md">Out of Stock</span>
+            </span>
+        @endif
+    </a>
+
+    <div class="p-3 flex flex-col flex-1">
+        <p class="text-[10px] uppercase tracking-wide text-stone-400 font-medium">{{ $product->category?->name }}</p>
+        <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="mt-0.5 text-sm font-medium text-stone-900 leading-snug hover:text-brand-700">{{ $product->name }}</a>
+        <p class="text-[11px] text-stone-400 mt-0.5">per {{ $product->unit }}</p>
+
+        <div class="mt-auto pt-2 flex items-end justify-between gap-2">
+            <div>
+                <p class="text-base font-bold text-stone-900">{{ \Illuminate\Support\Number::currency($product->price, 'INR') }}</p>
+                @if ($product->mrp && $product->mrp > $product->price)
+                    <p class="text-[11px] text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($product->mrp, 'INR') }}</p>
+                @endif
+            </div>
+
+            @if ($product->inStock())
+                @if ($this->inCart)
+                    <div class="flex items-center gap-0.5 bg-brand-600 text-white rounded-lg p-0.5">
+                        <button type="button" wire:click="decrement" class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-3 h-3"></i></button>
+                        <span class="w-5 text-center text-xs font-semibold">{{ $quantity }}</span>
+                        <button type="button" wire:click="increment" class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-brand-700" aria-label="Increase quantity"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                    </div>
+                @else
+                    <button type="button" wire:click="addToCart" class="inline-flex items-center gap-0.5 px-2.5 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        Add
+                    </button>
+                @endif
+            @endif
+        </div>
+
+        @error('stock')
+            <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+</div>
