@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -12,15 +12,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
+        Admin::factory()->create([
             'name' => 'Store Admin',
-            'email' => 'admin@mart.test',
-            'phone' => '9876543210',
-            'role' => 'admin',
+            'username' => 'admin',
             'password' => 'password',
         ]);
 
         $this->call([
+            SettingSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
         ]);

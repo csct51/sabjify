@@ -79,12 +79,11 @@ class PhoneLogin extends Component
                 'name' => $this->name,
                 'email' => null,
                 'phone' => $this->phone,
-                'role' => User::ROLE_CUSTOMER,
                 'password' => Str::random(32),
             ]);
         }
 
-        auth()->login($user, true);
+        auth('web')->login($user, true);
 
         session()->regenerate();
 

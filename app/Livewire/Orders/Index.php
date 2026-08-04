@@ -23,7 +23,7 @@ class Index extends Component
 
     public function render(): View
     {
-        $orders = auth()->user()
+        $orders = auth('web')->user()
             ->orders()
             ->with(['items', 'items.product'])
             ->when($this->status, fn ($query) => $query->where('status', $this->status))

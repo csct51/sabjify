@@ -44,7 +44,7 @@ class Checkout extends Component
 
     public function mount(): void
     {
-        $this->receiverPhone = auth()->user()->phone;
+        $this->receiverPhone = auth('web')->user()->phone;
 
         $default = $this->addresses()->firstWhere('is_default', true) ?? $this->addresses()->first();
 
@@ -60,7 +60,7 @@ class Checkout extends Component
             $this->pincode = $default->pincode;
         } else {
             $this->addressMode = 'new';
-            $this->receiverName = auth()->user()->name;
+            $this->receiverName = auth('web')->user()->name;
         }
     }
 
@@ -70,7 +70,7 @@ class Checkout extends Component
     #[Computed]
     public function cartItems(): Collection
     {
-        return auth()->user()->cartItems()->with('product.category')->get();
+        return auth('web')->user()->cartItems()->with('product.category')->get();
     }
 
     /**
@@ -79,7 +79,7 @@ class Checkout extends Component
     #[Computed]
     public function addresses(): Collection
     {
-        return auth()->user()->addresses()->latest()->get();
+        return auth('web')->user()->addresses()->latest()->get();
     }
 
     #[Computed]
@@ -138,7 +138,7 @@ class Checkout extends Component
             ]);
 
             if ($this->saveAddress) {
-                auth()->user()->addresses()->create([
+                auth('web')->user()->addresses()->create([
                     'label' => $this->label,
                     'receiver_name' => $this->receiverName,
                     'receiver_phone' => $this->receiverPhone,
@@ -178,7 +178,7 @@ class Checkout extends Component
 
         $data['payment_method'] = $this->paymentMethod;
 
-        $order = app(OrderService::class)->createFromCart(auth()->user(), $data);
+        $order = app(OrderService::class)->createFromCart(auth('web')->user(), $data);
 
         $this->dispatch('cart-updated');
 

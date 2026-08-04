@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
+use Database\Factories\AdminFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -16,45 +14,19 @@ use Illuminate\Support\Str;
 /**
  * @property int $id
  * @property string $name
- * @property string $email
- * @property string|null $phone
+ * @property string $username
  * @property bool $is_active
- * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'phone', 'is_active', 'password'])]
+#[Fillable(['name', 'username', 'password', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class Admin extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
+    /** @use HasFactory<AdminFactory> */
     use HasFactory, Notifiable;
-
-    /**
-     * @return HasMany<Address, $this>
-     */
-    public function addresses(): HasMany
-    {
-        return $this->hasMany(Address::class);
-    }
-
-    /**
-     * @return HasMany<CartItem, $this>
-     */
-    public function cartItems(): HasMany
-    {
-        return $this->hasMany(CartItem::class);
-    }
-
-    /**
-     * @return HasMany<Order, $this>
-     */
-    public function orders(): HasMany
-    {
-        return $this->hasMany(Order::class);
-    }
 
     /**
      * Get the attributes that should be cast.
@@ -64,14 +36,13 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
     }
 
     /**
-     * Get the user's initials
+     * Get the admin's initials
      */
     public function initials(): string
     {

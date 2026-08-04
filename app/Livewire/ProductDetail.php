@@ -24,8 +24,8 @@ class ProductDetail extends Component
     {
         abort_if(! $this->product->is_active, 404);
 
-        if (auth()->check()) {
-            $cartItem = auth()->user()->cartItems()->where('product_id', $this->product->id)->first();
+        if (auth('web')->check()) {
+            $cartItem = auth('web')->user()->cartItems()->where('product_id', $this->product->id)->first();
 
             if ($cartItem) {
                 $this->inCart = true;
@@ -51,7 +51,7 @@ class ProductDetail extends Component
 
     public function addToCart(): void
     {
-        if (! auth()->check()) {
+        if (! auth('web')->check()) {
             $this->redirect(route('login'));
 
             return;
@@ -59,7 +59,7 @@ class ProductDetail extends Component
 
         $this->ensureStock();
 
-        $cartItem = auth()->user()->cartItems()->firstOrNew(['product_id' => $this->product->id]);
+        $cartItem = auth('web')->user()->cartItems()->firstOrNew(['product_id' => $this->product->id]);
         $cartItem->quantity = min($cartItem->quantity + 1, $this->product->stock);
         $cartItem->save();
 
@@ -73,7 +73,7 @@ class ProductDetail extends Component
     {
         $this->ensureStock();
 
-        $cartItem = auth()->user()->cartItems()->where('product_id', $this->product->id)->firstOrFail();
+        $cartItem = auth('web')->user()->cartItems()->where('product_id', $this->product->id)->firstOrFail();
         $cartItem->quantity = min($cartItem->quantity + 1, $this->product->stock);
         $cartItem->save();
 
@@ -84,7 +84,7 @@ class ProductDetail extends Component
 
     public function decrement(): void
     {
-        $cartItem = auth()->user()->cartItems()->where('product_id', $this->product->id)->firstOrFail();
+        $cartItem = auth('web')->user()->cartItems()->where('product_id', $this->product->id)->firstOrFail();
 
         if ($cartItem->quantity <= 1) {
             $cartItem->delete();

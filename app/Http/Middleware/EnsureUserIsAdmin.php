@@ -13,7 +13,9 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($request->user()?->isAdmin(), Response::HTTP_FORBIDDEN);
+        $admin = auth('admin')->user();
+
+        abort_unless($admin?->is_active, Response::HTTP_FORBIDDEN);
 
         return $next($request);
     }

@@ -70,8 +70,7 @@ test('valid otp registers a new user', function () {
     $user = User::where('phone', '9876501234')->first();
 
     expect($user)->not->toBeNull()
-        ->and($user->name)->toBe('Rahul Sharma')
-        ->and($user->role)->toBe('customer');
+        ->and($user->name)->toBe('Rahul Sharma');
 });
 
 test('name is required for new users', function () {

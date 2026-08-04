@@ -21,7 +21,7 @@ class OrderShow extends Component
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->isAdmin(), 403);
+        abort_unless(auth('admin')->check(), 403);
 
         $this->order->load(['items.product', 'user']);
 

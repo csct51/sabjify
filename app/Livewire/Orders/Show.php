@@ -17,7 +17,7 @@ class Show extends Component
 
     public function mount(): void
     {
-        abort_unless($this->order->user_id === auth()->id(), 403);
+        abort_unless($this->order->user_id === auth('web')->id(), 403);
 
         $this->order->load(['items.product', 'user']);
     }

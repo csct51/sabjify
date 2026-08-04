@@ -1,37 +1,67 @@
 <?php
 
+use App\Livewire\Admin\Auth\AdminLogin;
 use App\Livewire\Admin\Categories;
 use App\Livewire\Admin\CategoryForm;
 use App\Livewire\Admin\Customers;
 use App\Livewire\Admin\OrderShow;
 use App\Livewire\Admin\ProductForm;
 use App\Livewire\Admin\Products;
+use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Livewire\Livewire;
 
-test('guest is redirected to login when accessing admin', function () {
-    $this->get('/admin/dashboard')->assertRedirect(route('login'));
+test('guest is redirected to admin login when accessing admin', function () {
+    $this->get('/admin/dashboard')->assertRedirect(route('admin.login'));
 });
 
 test('customer cannot access admin panel', function () {
-    $customer = User::factory()->create(['role' => 'customer']);
+    $customer = User::factory()->create();
 
-    $this->actingAs($customer)->get('/admin/dashboard')->assertForbidden();
+    $this->actingAs($customer)->get('/admin/dashboard')->assertRedirect(route('admin.login'));
 });
 
 test('admin can access the dashboard', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = Admin::factory()->create();
 
-    $this->actingAs($admin)->get('/admin/dashboard')->assertOk()->assertSee('Total Revenue');
+    $this->actingAs($admin, 'admin')->get('/admin/dashboard')->assertOk()->assertSee('Total Revenue');
+});
+
+test('admin login page renders', function () {
+    $this->get('/admin/login')->assertOk()->assertSee('Admin Login');
+});
+
+test('admin can log in with valid credentials', function () {
+    Admin::factory()->create(['username' => 'admin', 'password' => 'password']);
+
+    Livewire::test(AdminLogin::class)
+        ->set('username', 'admin')
+        ->set('password', 'password')
+        ->call('login')
+        ->assertRedirect(route('admin.dashboard'));
+
+    expect(auth('admin')->check())->toBeTrue();
+});
+
+test('admin login rejects invalid credentials', function () {
+    Admin::factory()->create(['username' => 'admin', 'password' => 'password']);
+
+    Livewire::test(AdminLogin::class)
+        ->set('username', 'admin')
+        ->set('password', 'wrong-password')
+        ->call('login')
+        ->assertHasErrors('username');
+
+    expect(auth('admin')->check())->toBeFalse();
 });
 
 test('admin can create a category', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = Admin::factory()->create();
 
-    Livewire::actingAs($admin)
+    Livewire::actingAs($admin, 'admin')
         ->test(CategoryForm::class)
         ->set('name', 'Frozen Foods')
         ->set('slug', 'frozen-foods')
@@ -42,10 +72,10 @@ test('admin can create a category', function () {
 });
 
 test('admin can create a product', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = Admin::factory()->create();
     $category = Category::factory()->create();
 
-    Livewire::actingAs($admin)
+    Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class)
         ->set('categoryId', $category->id)
         ->set('name', 'Fresh Mango')
@@ -65,11 +95,11 @@ test('admin can create a product', function () {
 });
 
 test('admin can update product stock', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = Admin::factory()->create();
     $category = Category::factory()->create();
     $product = Product::factory()->create(['category_id' => $category->id, 'stock' => 5]);
 
-    Livewire::actingAs($admin)
+    Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class, ['product' => $product])
         ->set('stock', 50)
         ->call('save')
@@ -79,10 +109,10 @@ test('admin can update product stock', function () {
 });
 
 test('admin can update an order status', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = Admin::factory()->create();
     $order = Order::factory()->create(['status' => 'pending']);
 
-    Livewire::actingAs($admin)
+    Livewire::actingAs($admin, 'admin')
         ->test(OrderShow::class, ['order' => $order])
         ->set('status', 'out_for_delivery')
         ->call('updateStatus')
@@ -92,10 +122,10 @@ test('admin can update an order status', function () {
 });
 
 test('admin can toggle product visibility', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = Admin::factory()->create();
     $product = Product::factory()->create(['is_active' => true]);
 
-    Livewire::actingAs($admin)
+    Livewire::actingAs($admin, 'admin')
         ->test(Products::class)
         ->call('toggleActive', $product)
         ->assertOk();
@@ -104,17 +134,17 @@ test('admin can toggle product visibility', function () {
 });
 
 test('admin can block and unblock a customer', function () {
-    $admin = User::factory()->admin()->create();
-    $customer = User::factory()->create(['role' => 'customer']);
+    $admin = Admin::factory()->create();
+    $customer = User::factory()->create();
 
-    Livewire::actingAs($admin)
+    Livewire::actingAs($admin, 'admin')
         ->test(Customers::class)
         ->call('toggleActive', $customer)
         ->assertOk();
 
     expect($customer->fresh()->is_active)->toBeFalse();
 
-    Livewire::actingAs($admin)
+    Livewire::actingAs($admin, 'admin')
         ->test(Customers::class)
         ->call('toggleActive', $customer)
         ->assertOk();
@@ -123,11 +153,11 @@ test('admin can block and unblock a customer', function () {
 });
 
 test('admin cannot delete a category that has products', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = Admin::factory()->create();
     $category = Category::factory()->create();
     Product::factory()->create(['category_id' => $category->id]);
 
-    Livewire::actingAs($admin)
+    Livewire::actingAs($admin, 'admin')
         ->test(Categories::class)
         ->call('delete', $category)
         ->assertHasErrors('delete');

@@ -12,11 +12,11 @@ class StoreBottomNav extends Component
     #[Computed]
     public function cartCount(): int
     {
-        if (! auth()->check()) {
+        if (! auth('web')->check()) {
             return 0;
         }
 
-        return (int) auth()->user()->cartItems()->sum('quantity');
+        return (int) auth('web')->user()->cartItems()->sum('quantity');
     }
 
     #[On('cart-updated')]

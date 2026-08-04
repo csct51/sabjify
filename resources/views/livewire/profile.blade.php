@@ -200,12 +200,6 @@
                         <span class="inline-flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-stone-400"></i> My Orders</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 text-stone-400"></i>
                     </a>
-                    @if (auth()->user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" wire:navigate class="mt-3 flex items-center justify-between rounded-xl border border-stone-200 hover:border-brand-300 px-4 py-3 text-sm font-medium text-brand-700 transition">
-                            <span class="inline-flex items-center gap-2"><i data-lucide="layout-grid" class="w-4 h-4 text-stone-400"></i> Admin Panel</span>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-stone-400"></i>
-                        </a>
-                    @endif
                 </div>
             </aside>
         </div>

@@ -29,6 +29,8 @@ class CategoryForm extends Component
 
     public ?TemporaryUploadedFile $image = null;
 
+    public string $imageUrl = '';
+
     public string $existingImage = '';
 
     public function mount(?Category $category = null): void
@@ -42,6 +44,7 @@ class CategoryForm extends Component
             $this->is_active = $category->is_active;
             $this->sort_order = $category->sort_order;
             $this->existingImage = $category->image ?? '';
+            $this->imageUrl = $category->image && filter_var($category->image, FILTER_VALIDATE_URL) !== false ? $category->image : '';
         }
     }
 
@@ -61,6 +64,7 @@ class CategoryForm extends Component
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'imageUrl' => ['nullable', 'url', 'max:500'],
         ]);
 
         $data = [
@@ -73,6 +77,10 @@ class CategoryForm extends Component
 
         if ($this->image) {
             $data['image'] = $this->image->store('categories', 'public');
+        } elseif ($this->imageUrl !== '') {
+            $data['image'] = $this->imageUrl;
+        } elseif (! $this->category) {
+            $data['image'] = null;
         }
 
         if ($this->category) {

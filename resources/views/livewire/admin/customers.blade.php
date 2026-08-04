@@ -18,7 +18,6 @@
                     <tr>
                         <th class="px-4 py-3 font-medium">Customer</th>
                         <th class="px-4 py-3 font-medium">Contact</th>
-                        <th class="px-4 py-3 font-medium text-center">Role</th>
                         <th class="px-4 py-3 font-medium text-center">Orders</th>
                         <th class="px-4 py-3 font-medium">Joined</th>
                         <th class="px-4 py-3 font-medium text-center">Status</th>
@@ -37,11 +36,6 @@
                             <td class="px-4 py-3">
                                 <p class="text-stone-600">+91 {{ $user->phone }}</p>
                                 <p class="text-xs text-stone-400">{{ $user->email }}</p>
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium {{ $user->isAdmin() ? 'border-violet-200 bg-violet-50 text-violet-700' : 'border-stone-200 bg-stone-50 text-stone-600' }}">
-                                    {{ ucfirst($user->role) }}
-                                </span>
                             </td>
                             <td class="px-4 py-3 text-center text-stone-600">{{ $user->orders_count }}</td>
                             <td class="px-4 py-3 text-stone-500">{{ $user->created_at->format('d M Y') }}</td>

@@ -14,15 +14,11 @@ class OrderPolicy
 
     public function view(User $user, Order $order): bool
     {
-        return $user->isAdmin() || $order->user_id === $user->id;
+        return $order->user_id === $user->id;
     }
 
     public function cancel(User $user, Order $order): bool
     {
-        if ($user->isAdmin()) {
-            return in_array($order->status, [Order::STATUS_PENDING, Order::STATUS_CONFIRMED], true);
-        }
-
         return $order->user_id === $user->id
             && in_array($order->status, [Order::STATUS_PENDING, Order::STATUS_CONFIRMED], true);
     }

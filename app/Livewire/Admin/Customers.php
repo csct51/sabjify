@@ -18,8 +18,6 @@ class Customers extends Component
 
     public string $search = '';
 
-    public string $role = 'customer';
-
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -27,19 +25,13 @@ class Customers extends Component
 
     public function toggleActive(User $user): void
     {
-        if ($user->isAdmin()) {
-            $this->addError('toggle', 'Admin accounts cannot be deactivated.');
-
-            return;
-        }
-
         $user->update(['is_active' => ! $user->is_active]);
     }
 
     #[Computed]
     public function totalCustomers(): int
     {
-        return User::where('role', 'customer')->count();
+        return User::count();
     }
 
     public function render(): View
@@ -52,7 +44,6 @@ class Customers extends Component
                         ->orWhere('email', 'like', '%'.$this->search.'%');
                 });
             })
-            ->when($this->role, fn ($query) => $query->where('role', $this->role))
             ->latest()
             ->paginate(15);
 

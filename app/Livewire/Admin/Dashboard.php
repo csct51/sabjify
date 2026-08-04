@@ -25,7 +25,7 @@ class Dashboard extends Component
         return [
             'revenue' => (int) Order::where('status', '!=', 'cancelled')->sum('total'),
             'orders' => Order::count(),
-            'customers' => User::where('role', 'customer')->count(),
+            'customers' => User::count(),
             'products' => Product::count(),
         ];
     }

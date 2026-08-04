@@ -1,4 +1,4 @@
-import { createIcons, Apple, ArrowRight, BadgeCheck, Banknote, Carrot, Check, ChevronDown, ChevronRight, CircleCheck, Citrus, CreditCard, Folder, Headset, Home, IndianRupee, LayoutDashboard, LayoutGrid, Leaf, Link, Lock, MapPin, Minus, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Search, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, Users } from 'lucide';
+import { createIcons, Apple, ArrowRight, BadgeCheck, Banknote, Carrot, Check, ChevronDown, ChevronRight, CircleCheck, Citrus, CreditCard, Folder, Headset, Home, IndianRupee, LayoutDashboard, LayoutGrid, Leaf, Link, Lock, MapPin, Minus, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Search, Settings, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, Users } from 'lucide';
 
 const icons = {
     Apple,
@@ -30,6 +30,7 @@ const icons = {
     RefreshCcw,
     Salad,
     Search,
+    Settings,
     ShieldCheck,
     ShoppingBasket,
     ShoppingCart,

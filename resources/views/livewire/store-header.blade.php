@@ -53,9 +53,6 @@
                             </div>
                             <a href="{{ route('profile') }}" wire:navigate class="block px-4 py-2 hover:bg-stone-50 text-stone-600">My Profile</a>
                             <a href="{{ route('orders.index') }}" wire:navigate class="block px-4 py-2 hover:bg-stone-50 text-stone-600">My Orders</a>
-                            @if (auth()->user()->isAdmin())
-                                <a href="{{ route('admin.dashboard') }}" wire:navigate class="block px-4 py-2 hover:bg-stone-50 text-brand-700 font-medium">Admin Panel</a>
-                            @endif
                             <button type="button" wire:click="logout" class="block w-full text-left px-4 py-2 hover:bg-stone-50 text-red-600">Logout</button>
                         </div>
                     </div>

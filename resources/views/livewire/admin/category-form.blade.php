@@ -42,14 +42,20 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-stone-700 mb-1">Image</label>
+                    <label class="block text-sm font-medium text-stone-700 mb-1">Image Upload</label>
                     <div class="flex items-center gap-4">
                         @if ($existingImage)
-                            <img src="{{ \Illuminate\Support\Facades\Storage::url($existingImage) }}" alt="Current category image" class="w-16 h-16 rounded-xl object-cover border border-stone-200">
+                            <img src="{{ filter_var($existingImage, FILTER_VALIDATE_URL) !== false ? $existingImage : \Illuminate\Support\Facades\Storage::url($existingImage) }}" alt="Current category image" class="w-16 h-16 rounded-xl object-cover border border-stone-200">
                         @endif
                         <input wire:model="image" type="file" accept="image/*" class="block w-full text-sm text-stone-500 file:mr-4 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100">
                     </div>
                     @error('image')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-stone-700 mb-1">Or Image URL</label>
+                    <input wire:model="imageUrl" type="url" placeholder="https://images.unsplash.com/..." class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                    @error('imageUrl')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-2">

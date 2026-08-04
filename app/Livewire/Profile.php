@@ -43,7 +43,7 @@ class Profile extends Component
 
     public function mount(): void
     {
-        $user = auth()->user();
+        $user = auth('web')->user();
 
         $this->name = $user->name;
         $this->email = $user->email ?? '';
@@ -56,17 +56,17 @@ class Profile extends Component
     #[Computed]
     public function addresses(): Collection
     {
-        return auth()->user()->addresses()->latest()->get();
+        return auth('web')->user()->addresses()->latest()->get();
     }
 
     public function saveProfile(): void
     {
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:100'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore(auth()->id())],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore(auth('web')->id())],
         ]);
 
-        auth()->user()->update([
+        auth('web')->user()->update([
             'name' => $validated['name'],
             'email' => $validated['email'] ?: null,
         ]);
@@ -79,7 +79,7 @@ class Profile extends Component
         $this->addressMode = 'form';
         $this->editingAddressId = null;
 
-        $user = auth()->user();
+        $user = auth('web')->user();
 
         $this->label = 'Home';
         $this->receiverName = $user->name;
@@ -94,7 +94,7 @@ class Profile extends Component
 
     public function editAddress(Address $address): void
     {
-        abort_unless($address->user_id === auth()->id(), 403);
+        abort_unless($address->user_id === auth('web')->id(), 403);
 
         $this->addressMode = 'form';
         $this->editingAddressId = $address->id;
@@ -141,7 +141,7 @@ class Profile extends Component
         ];
 
         if ($this->editingAddressId) {
-            $address = auth()->user()->addresses()->findOrFail($this->editingAddressId);
+            $address = auth('web')->user()->addresses()->findOrFail($this->editingAddressId);
 
             $address->update([...$data, 'is_default' => $this->isDefault]);
 
@@ -149,7 +149,7 @@ class Profile extends Component
                 $this->makeDefault($address);
             }
         } else {
-            $address = auth()->user()->addresses()->create([...$data, 'is_default' => $this->isDefault]);
+            $address = auth('web')->user()->addresses()->create([...$data, 'is_default' => $this->isDefault]);
 
             if ($this->isDefault) {
                 $this->makeDefault($address);
@@ -163,7 +163,7 @@ class Profile extends Component
 
     public function setDefaultAddress(Address $address): void
     {
-        abort_unless($address->user_id === auth()->id(), 403);
+        abort_unless($address->user_id === auth('web')->id(), 403);
 
         $this->makeDefault($address);
 
@@ -172,12 +172,12 @@ class Profile extends Component
 
     public function deleteAddress(Address $address): void
     {
-        abort_unless($address->user_id === auth()->id(), 403);
+        abort_unless($address->user_id === auth('web')->id(), 403);
 
         $address->delete();
 
-        if (auth()->user()->addresses()->where('is_default', true)->doesntExist()) {
-            auth()->user()->addresses()->latest()->first()?->update(['is_default' => true]);
+        if (auth('web')->user()->addresses()->where('is_default', true)->doesntExist()) {
+            auth('web')->user()->addresses()->latest()->first()?->update(['is_default' => true]);
         }
 
         $this->dispatch('toast', message: 'Address deleted.');
@@ -190,7 +190,7 @@ class Profile extends Component
 
     private function makeDefault(Address $address): void
     {
-        auth()->user()->addresses()
+        auth('web')->user()->addresses()
             ->whereKeyNot($address->id)
             ->update(['is_default' => false]);
 
