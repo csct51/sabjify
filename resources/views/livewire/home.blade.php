@@ -8,11 +8,11 @@
                 <h1 class="mt-4 text-4xl lg:text-5xl font-bold leading-tight">Fresh fruits & vegetables delivered to your doorstep</h1>
                 <p class="mt-4 text-white/85 text-lg">Handpicked daily from trusted local growers. Order before 10 PM for next-morning delivery.</p>
                 <div class="mt-8 flex flex-wrap gap-3">
-                    <a href="{{ route('shop') }}" wire:navigate class="inline-flex items-center gap-2 rounded-xl bg-white text-brand-700 px-6 py-3 font-semibold hover:bg-brand-50 transition">
+                    <a href="{{ route('shop') }}" wire:navigate class="inline-flex items-center gap-2 rounded-xl bg-white text-brand-700 px-6 py-3 font-semibold hover:bg-brand-50 transition hover:scale-[1.03] active:scale-95">
                         Shop Now
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-0.5"></i>
                     </a>
-                    <a href="{{ route('shop') }}" wire:navigate class="inline-flex items-center gap-2 rounded-xl border-2 border-white/60 px-6 py-3 font-semibold hover:bg-white/10 transition">
+                    <a href="{{ route('shop') }}" wire:navigate class="inline-flex items-center gap-2 rounded-xl border-2 border-white/60 px-6 py-3 font-semibold hover:bg-white/10 transition hover:scale-[1.03] active:scale-95">
                         <i data-lucide="layout-grid" class="w-4 h-4"></i>
                         Browse Categories
                     </a>
@@ -26,7 +26,7 @@
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12" data-reveal>
         <div class="flex items-end justify-between mb-6">
             <div>
                 <h2 class="text-2xl font-bold text-stone-900">Shop by Category</h2>
@@ -35,9 +35,9 @@
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             @foreach ($this->categories as $category)
-                <a href="{{ route('shop', ['category' => $category->slug]) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-md transition p-3 text-center">
+                <a href="{{ route('shop', ['category' => $category->slug]) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-3 text-center">
                     <div class="relative block w-20 h-20 mx-auto rounded-full overflow-hidden bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
-                        <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="absolute inset-0 w-full h-full object-cover">
+                        <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
                     </div>
                     <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 truncate">{{ $category->name }}</p>
                     <p class="text-xs text-stone-400">{{ $category->products_count }} items</p>
@@ -46,7 +46,7 @@
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
         <div class="flex items-end justify-between mb-6">
             <div>
                 <h2 class="text-2xl font-bold text-stone-900">Featured Products</h2>
@@ -61,7 +61,7 @@
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
         <div class="flex items-end justify-between mb-6">
             <div>
                 <h2 class="text-2xl font-bold text-stone-900">New Arrivals</h2>
@@ -76,34 +76,34 @@
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-4">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-4" data-reveal>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center">
+            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="truck" class="w-5 h-5"></i></span>
                 <p class="mt-2 text-sm font-semibold text-stone-800">Fast Delivery</p>
                 <p class="text-xs text-stone-400">Same-day slots</p>
             </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center">
+            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="badge-check" class="w-5 h-5"></i></span>
                 <p class="mt-2 text-sm font-semibold text-stone-800">Quality Checked</p>
                 <p class="text-xs text-stone-400">Handpicked daily</p>
             </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center">
+            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="indian-rupee" class="w-5 h-5"></i></span>
                 <p class="mt-2 text-sm font-semibold text-stone-800">Best Prices</p>
                 <p class="text-xs text-stone-400">Direct from farms</p>
             </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center">
+            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="refresh-ccw" class="w-5 h-5"></i></span>
                 <p class="mt-2 text-sm font-semibold text-stone-800">Easy Returns</p>
                 <p class="text-xs text-stone-400">No questions asked</p>
             </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center">
+            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="lock" class="w-5 h-5"></i></span>
                 <p class="mt-2 text-sm font-semibold text-stone-800">Secure Payments</p>
                 <p class="text-xs text-stone-400">COD & Online</p>
             </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center">
+            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="headset" class="w-5 h-5"></i></span>
                 <p class="mt-2 text-sm font-semibold text-stone-800">24x7 Support</p>
                 <p class="text-xs text-stone-400">We're here to help</p>

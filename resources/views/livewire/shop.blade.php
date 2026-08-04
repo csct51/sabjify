@@ -7,7 +7,7 @@
     </section>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
-        <aside>
+        <aside data-reveal>
             <div class="bg-white rounded-2xl border border-stone-200 p-4 space-y-4">
                 <div>
                     <h2 class="text-sm font-semibold text-stone-900 uppercase tracking-wide mb-3">Search</h2>
@@ -46,7 +46,7 @@
             </div>
         </aside>
 
-        <div>
+        <div data-reveal>
             @if ($products->isEmpty())
                 <div class="text-center py-20">
                     <span class="inline-flex items-center justify-center w-16 h-16 mx-auto rounded-2xl bg-brand-50 text-brand-600"><i data-lucide="shopping-basket" class="w-8 h-8"></i></span>

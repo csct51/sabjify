@@ -49,16 +49,6 @@ class ProductDetail extends Component
             ->get();
     }
 
-    public function incrementQty(): void
-    {
-        $this->quantity = min($this->quantity + 1, $this->product->stock);
-    }
-
-    public function decrementQty(): void
-    {
-        $this->quantity = max($this->quantity - 1, 1);
-    }
-
     public function addToCart(): void
     {
         if (! auth()->check()) {
@@ -67,16 +57,58 @@ class ProductDetail extends Component
             return;
         }
 
-        $this->validate(['quantity' => ['required', 'integer', 'min:1', 'max:'.$this->product->stock]]);
+        $this->ensureStock();
 
         $cartItem = auth()->user()->cartItems()->firstOrNew(['product_id' => $this->product->id]);
-        $cartItem->quantity = min($cartItem->quantity + $this->quantity, $this->product->stock);
+        $cartItem->quantity = min($cartItem->quantity + 1, $this->product->stock);
         $cartItem->save();
 
         $this->inCart = true;
         $this->quantity = $cartItem->quantity;
 
         $this->dispatch('cart-updated');
+    }
+
+    public function increment(): void
+    {
+        $this->ensureStock();
+
+        $cartItem = auth()->user()->cartItems()->where('product_id', $this->product->id)->firstOrFail();
+        $cartItem->quantity = min($cartItem->quantity + 1, $this->product->stock);
+        $cartItem->save();
+
+        $this->quantity = $cartItem->quantity;
+
+        $this->dispatch('cart-updated');
+    }
+
+    public function decrement(): void
+    {
+        $cartItem = auth()->user()->cartItems()->where('product_id', $this->product->id)->firstOrFail();
+
+        if ($cartItem->quantity <= 1) {
+            $cartItem->delete();
+            $this->inCart = false;
+            $this->quantity = 1;
+
+            $this->dispatch('cart-updated');
+
+            return;
+        }
+
+        $cartItem->decrement('quantity');
+        $this->quantity = $cartItem->quantity;
+
+        $this->dispatch('cart-updated');
+    }
+
+    private function ensureStock(): void
+    {
+        if (! $this->product->inStock()) {
+            $this->addError('stock', 'This product is out of stock.');
+
+            return;
+        }
     }
 
     public function render(): View

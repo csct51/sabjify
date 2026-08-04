@@ -53,13 +53,6 @@ class Cart extends Component
         $this->dispatch('cart-updated');
     }
 
-    public function clearCart(): void
-    {
-        auth()->user()->cartItems()->delete();
-
-        $this->dispatch('cart-updated');
-    }
-
     /**
      * @return Collection<int, CartItem>
      */

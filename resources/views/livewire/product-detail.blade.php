@@ -1,6 +1,6 @@
 <div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <nav class="text-sm text-stone-400 mb-6 flex items-center gap-1.5">
+        <nav class="text-sm text-stone-400 mb-6 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
             <a href="{{ route('home') }}" wire:navigate class="hover:text-brand-600">Home</a>
             <span>/</span>
             <a href="{{ route('shop') }}" wire:navigate class="hover:text-brand-600">Shop</a>
@@ -10,9 +10,9 @@
             <span class="text-stone-600 font-medium">{{ $product->name }}</span>
         </nav>
 
-        <div class="grid lg:grid-cols-2 gap-10">
+        <div class="grid lg:grid-cols-2 gap-10" data-reveal>
             <div class="relative bg-gradient-to-br from-brand-50 to-lime-100 rounded-3xl border border-stone-200 aspect-square overflow-hidden">
-                <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full object-cover">
+                <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105">
             </div>
 
             <div>
@@ -44,27 +44,29 @@
                 <p class="mt-6 text-stone-600 leading-relaxed">{{ $product->description }}</p>
 
                 @if ($product->inStock())
-                    <div class="mt-8 flex flex-wrap items-center gap-4">
-                        <div class="flex items-center gap-3 bg-stone-100 rounded-xl p-1.5">
-                            <button type="button" wire:click="decrementQty" class="w-9 h-9 rounded-lg bg-white shadow-sm flex items-center justify-center font-semibold hover:bg-stone-50" aria-label="Decrease quantity"><i data-lucide="minus" class="w-4 h-4"></i></button>
-                            <span class="w-8 text-center font-semibold">{{ $quantity }}</span>
-                            <button type="button" wire:click="incrementQty" class="w-9 h-9 rounded-lg bg-white shadow-sm flex items-center justify-center font-semibold hover:bg-stone-50" aria-label="Increase quantity"><i data-lucide="plus" class="w-4 h-4"></i></button>
-                        </div>
-                        @error('quantity')
-                            <p class="text-sm text-red-600">{{ $message }}</p>
+                    <div class="mt-8">
+                        @if ($this->inCart)
+                            <div class="flex flex-wrap items-center gap-4">
+                                <div class="flex items-center gap-1 bg-brand-600 text-white rounded-xl p-1">
+                                    <button type="button" wire:click="decrement" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                                    <span class="w-8 text-center text-lg font-semibold">{{ $quantity }}</span>
+                                    <button type="button" wire:click="increment" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Increase quantity"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                                </div>
+                                <a href="{{ route('cart') }}" wire:navigate class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
+                                    View Cart →
+                                </a>
+                            </div>
+                        @else
+                            <button type="button" wire:click="addToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-8 py-3 transition">
+                                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                                Add to Cart
+                            </button>
+                        @endif
+
+                        @error('stock')
+                            <p class="mt-3 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-
-                        <button type="button" wire:click="addToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-8 py-3 transition">
-                            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-                            {{ $this->inCart ? 'Update Cart' : 'Add to Cart' }}
-                        </button>
                     </div>
-
-                    @if ($this->inCart)
-                        <a href="{{ route('cart') }}" wire:navigate class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
-                            View Cart →
-                        </a>
-                    @endif
                 @endif
 
                 <div class="mt-10 border-t border-stone-200 pt-6 grid grid-cols-3 gap-4 text-center">

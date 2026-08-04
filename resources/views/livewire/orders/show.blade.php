@@ -9,13 +9,8 @@
                 <h1 class="text-2xl font-bold text-stone-900">{{ $order->order_number }}</h1>
                 <p class="text-sm text-stone-500 mt-1">Placed on {{ $order->created_at->format('d M Y, h:i A') }}</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div>
                 <x-status-badge :status="$order->status" />
-                @if (in_array($order->status, [\App\Models\Order::STATUS_PENDING, \App\Models\Order::STATUS_CONFIRMED], true))
-                    <button type="button" wire:click="cancelOrder" wire:confirm="Are you sure you want to cancel this order?" class="text-sm font-medium text-red-600 hover:text-red-700">
-                        Cancel Order
-                    </button>
-                @endif
             </div>
         </div>
 
@@ -97,5 +92,14 @@
                 </div>
             </div>
         </div>
+
+        @if (in_array($order->status, [\App\Models\Order::STATUS_PENDING, \App\Models\Order::STATUS_CONFIRMED], true))
+            <div class="mt-8">
+                <button type="button" wire:click="cancelOrder" wire:confirm="Are you sure you want to cancel this order?" class="inline-flex items-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 px-6 py-2.5 text-sm font-semibold transition">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Cancel Order
+                </button>
+            </div>
+        @endif
     </div>
 </div>

@@ -1,6 +1,6 @@
-<div class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-lg transition overflow-hidden flex flex-col" wire:key="product-{{ $product->id }}">
+<div class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 overflow-hidden flex flex-col" wire:key="product-{{ $product->id }}">
     <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="relative block aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-50 to-lime-100">
-        <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full object-cover">
+        <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
 
         @if ($product->discountPercent() > 0)
             <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">{{ $product->discountPercent() }}% OFF</span>
@@ -34,7 +34,7 @@
                         <button type="button" wire:click="increment" class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-brand-700" aria-label="Increase quantity"><i data-lucide="plus" class="w-3 h-3"></i></button>
                     </div>
                 @else
-                    <button type="button" wire:click="addToCart" class="inline-flex items-center gap-0.5 px-2.5 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700">
+                    <button type="button" wire:click="addToCart" class="inline-flex items-center gap-0.5 px-2.5 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 active:scale-95 transition">
                         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                         Add
                     </button>

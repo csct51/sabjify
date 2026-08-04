@@ -47,8 +47,29 @@ function renderIcons() {
     createIcons({ icons });
 }
 
+let revealObserver;
+
+function initReveals() {
+    if (! revealObserver) {
+        revealObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            },
+            { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+        );
+    }
+
+    document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach((el) => revealObserver.observe(el));
+}
+
 document.addEventListener('livewire:init', () => {
     renderIcons();
+    initReveals();
 
     Livewire.hook('morph.added', () => renderIcons());
     Livewire.hook('morph.updated', () => renderIcons());
@@ -56,4 +77,5 @@ document.addEventListener('livewire:init', () => {
 
 document.addEventListener('livewire:navigated', () => {
     renderIcons();
+    initReveals();
 });

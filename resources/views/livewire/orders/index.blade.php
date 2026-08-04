@@ -1,16 +1,15 @@
 <div>
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div class="mb-6">
             <h1 class="text-2xl font-bold text-stone-900">My Orders</h1>
-            <a href="{{ route('shop') }}" wire:navigate class="text-sm font-semibold text-brand-600 hover:text-brand-700">+ Order more</a>
         </div>
 
-        <div class="flex gap-2 flex-wrap mb-6">
+        <div class="flex gap-2 mb-6 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
             @foreach ([null, 'pending', 'confirmed', 'out_for_delivery', 'delivered', 'cancelled'] as $value)
                 <button
                     type="button"
                     wire:click="$set('status', '{{ $value }}')"
-                    class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ $this->status === $value ? 'bg-stone-900 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300' }}"
+                    class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition {{ $this->status === $value ? 'bg-stone-900 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300' }}"
                 >
                     {{ $value ? \App\Models\Order::STATUSES[$value] : 'All' }}
                 </button>
