@@ -97,3 +97,53 @@
 .no-scrollbar::-webkit-scrollbar {
     display: none;
 }
+
+.dt-container {
+    --dt-input_border: 1px solid #d6d3d1;
+    --dt-input_border-radius: 0.75rem;
+    --dt-input_padding: 0.5rem 0.75rem;
+    --dt-input_color: #44403c;
+    --dt-paging-button_border: 1px solid #e7e5e4;
+    --dt-paging-button_border-radius: 0.5rem;
+    --dt-paging-button_background: transparent;
+    --dt-paging-button_color: #57534e;
+    --dt-paging-button_background-hover: #f5f5f4;
+    --dt-paging-button_border-hover: 1px solid #d6d3d1;
+    --dt-paging-button_color-hover: #44403c;
+    --dt-paging-button_background-current: #16a34a;
+    --dt-paging-button_border-current: 1px solid #16a34a;
+    --dt-paging-button_color-current: #fff;
+    --dt-paging-button_background-current-hover: #15803d;
+    --dt-paging-button_border-current-hover: 1px solid #15803d;
+    --dt-paging-button_color-current-hover: #fff;
+    --dt-paging-button_background-disabled: transparent;
+    --dt-paging-button_border-disabled: 1px solid #e7e5e4;
+    --dt-paging-button_color-disabled: #d6d3d1;
+    --dt-paging-button_margin-left: 0.25rem;
+    width: 100%;
+}
+
+.dt-container .dt-layout-row {
+    margin: 0;
+    padding: 0.75rem 1rem;
+}
+
+.dt-container .dt-layout-row:first-child {
+    border-bottom: 1px solid #e7e5e4;
+}
+
+.dt-container .dt-layout-row:last-child {
+    border-top: 1px solid #e7e5e4;
+}
+
+.dt-container .dt-search input:focus,
+.dt-container .dt-length select.dt-input:focus {
+    border-color: #16a34a;
+    outline: none;
+    box-shadow: 0 0 0 3px #dcfce7;
+}
+
+.dt-container .dt-info {
+    color: #a8a29e;
+    font-size: 0.875rem;
+}

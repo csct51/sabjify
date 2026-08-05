@@ -11,30 +11,15 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 #[Layout('layouts.admin')]
 #[Title('Products')]
 class Products extends Component
 {
-    use WithPagination;
-
-    public string $search = '';
-
     public ?string $category = null;
 
     #[Url]
     public bool $lowStock = false;
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatedCategory(): void
-    {
-        $this->resetPage();
-    }
 
     public function toggleActive(Product $product): void
     {
@@ -63,11 +48,10 @@ class Products extends Component
     public function render(): View
     {
         $products = Product::with('category')
-            ->when($this->search, fn ($query) => $query->where('name', 'like', '%'.$this->search.'%'))
             ->when($this->category, fn ($query) => $query->where('category_id', $this->category))
             ->when($this->lowStock, fn ($query) => $query->where('stock', '<=', 10))
             ->orderByDesc('id')
-            ->paginate(12);
+            ->get();
 
         return view('livewire.admin.products', ['products' => $products]);
     }

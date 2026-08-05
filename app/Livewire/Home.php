@@ -34,7 +34,7 @@ class Home extends Component
     #[Computed]
     public function featuredProducts(): Collection
     {
-        return Product::available()
+        return Product::active()
             ->with('category')
             ->featured()
             ->orderBy('sort_order')
@@ -48,7 +48,7 @@ class Home extends Component
     #[Computed]
     public function newArrivals(): Collection
     {
-        return Product::available()
+        return Product::active()
             ->with('category')
             ->latest()
             ->limit(8)

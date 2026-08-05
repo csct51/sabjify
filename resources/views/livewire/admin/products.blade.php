@@ -1,7 +1,7 @@
 <div>
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-            <p class="text-sm text-stone-400 mb-1">{{ $products->total() }} products</p>
+            <p class="text-sm text-stone-400 mb-1">{{ $products->count() }} products</p>
             <h2 class="text-lg font-semibold text-stone-900">Manage Products</h2>
         </div>
         <a href="{{ route('admin.products.create') }}" wire:navigate class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2.5 transition">
@@ -12,7 +12,6 @@
 
     <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
         <div class="p-4 border-b border-stone-100 flex flex-wrap gap-3">
-            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Search products..." class="w-full sm:w-72 rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
             <select wire:model.live="category" class="rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
                 <option value="">All Categories</option>
                 @foreach ($this->categories as $cat)
@@ -26,9 +25,10 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table id="products-table" data-datatable class="w-full text-sm">
                 <thead class="bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-400">
                     <tr>
+                        <th class="w-10 px-4 py-3 font-medium">#</th>
                         <th class="px-4 py-3 font-medium">Product</th>
                         <th class="px-4 py-3 font-medium">Category</th>
                         <th class="px-4 py-3 font-medium text-right">Price</th>
@@ -39,8 +39,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-stone-100">
-                    @forelse ($products as $product)
+                    @foreach ($products as $product)
                         <tr class="hover:bg-stone-50" wire:key="prod-{{ $product->id }}">
+                            <td class="px-4 py-3"></td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <span class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
@@ -80,17 +81,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="px-4 py-16 text-center text-stone-400">No products found.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
-        </div>
-
-        <div class="p-4 border-t border-stone-100">
-            {{ $products->links() }}
         </div>
     </div>
 </div>

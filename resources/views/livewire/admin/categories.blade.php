@@ -1,7 +1,7 @@
 <div>
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-            <p class="text-sm text-stone-400 mb-1">{{ $categories->total() }} categories</p>
+            <p class="text-sm text-stone-400 mb-1">{{ $categories->count() }} categories</p>
             <h2 class="text-lg font-semibold text-stone-900">Manage Categories</h2>
         </div>
         <a href="{{ route('admin.categories.create') }}" wire:navigate class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2.5 transition">
@@ -10,19 +10,16 @@
         </a>
     </div>
 
+    @error('delete')
+        <div class="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ $message }}</div>
+    @enderror
+
     <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-        <div class="p-4 border-b border-stone-100">
-            <input wire:model.live.debounce.300ms="search" type="search" placeholder="Search categories..." class="w-full sm:w-80 rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-        </div>
-
-        @error('delete')
-            <div class="px-4 py-3 bg-red-50 border-b border-red-200 text-sm text-red-700">{{ $message }}</div>
-        @enderror
-
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table id="categories-table" data-datatable class="w-full text-sm">
                 <thead class="bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-400">
                     <tr>
+                        <th class="w-10 px-4 py-3 font-medium">#</th>
                         <th class="px-4 py-3 font-medium">Category</th>
                         <th class="px-4 py-3 font-medium">Slug</th>
                         <th class="px-4 py-3 font-medium text-center">Products</th>
@@ -31,8 +28,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-stone-100">
-                    @forelse ($categories as $category)
+                    @foreach ($categories as $category)
                         <tr class="hover:bg-stone-50" wire:key="cat-{{ $category->id }}">
+                            <td class="px-4 py-3"></td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <span class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-brand-50 to-lime-100 text-stone-400">
@@ -59,17 +57,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-4 py-16 text-center text-stone-400">No categories found.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
-        </div>
-
-        <div class="p-4 border-t border-stone-100">
-            {{ $categories->links() }}
         </div>
     </div>
 </div>

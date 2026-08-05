@@ -10,6 +10,7 @@ use App\Livewire\Admin\OrderShow as AdminOrderShow;
 use App\Livewire\Admin\ProductForm as AdminProductForm;
 use App\Livewire\Admin\Products as AdminProducts;
 use App\Livewire\Admin\Settings as AdminSettings;
+use App\Livewire\Admin\Units as AdminUnits;
 use App\Livewire\Auth\PhoneLogin;
 use App\Livewire\Cart;
 use App\Livewire\Checkout;
@@ -60,5 +61,6 @@ Route::middleware(['auth:admin', 'admin'])->prefix('admin')->name('admin.')->gro
     Route::livewire('/orders', AdminOrders::class)->name('orders.index');
     Route::livewire('/orders/{order}', AdminOrderShow::class)->name('orders.show');
     Route::livewire('/customers', AdminCustomers::class)->name('customers.index');
+    Route::livewire('/units', AdminUnits::class)->name('units');
     Route::livewire('/settings', AdminSettings::class)->name('settings');
 });

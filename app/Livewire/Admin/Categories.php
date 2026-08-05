@@ -7,21 +7,11 @@ use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 #[Layout('layouts.admin')]
 #[Title('Categories')]
 class Categories extends Component
 {
-    use WithPagination;
-
-    public string $search = '';
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
-
     public function toggleActive(Category $category): void
     {
         $category->update(['is_active' => ! $category->is_active]);
@@ -41,10 +31,9 @@ class Categories extends Component
     public function render(): View
     {
         $categories = Category::withCount('products')
-            ->when($this->search, fn ($query) => $query->where('name', 'like', '%'.$this->search.'%'))
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->paginate(12);
+            ->get();
 
         return view('livewire.admin.categories', ['categories' => $categories]);
     }

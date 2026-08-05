@@ -16,6 +16,7 @@
                     ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => 'layout-dashboard'],
                     ['route' => 'admin.orders.index', 'label' => 'Orders', 'icon' => 'package'],
                     ['route' => 'admin.categories.index', 'label' => 'Categories', 'icon' => 'folder'],
+                    ['route' => 'admin.units', 'label' => 'Units', 'icon' => 'scale'],
                     ['route' => 'admin.products.index', 'label' => 'Products', 'icon' => 'shopping-basket'],
                     ['route' => 'admin.customers.index', 'label' => 'Customers', 'icon' => 'users'],
                 ];

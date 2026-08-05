@@ -43,8 +43,8 @@
                     <div>
                         <label class="block text-sm font-medium text-stone-700 mb-1">Unit <span class="text-red-500">*</span></label>
                         <select wire:model="unit" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
-                            @foreach (['kg', '500 g', '250 g', '1 pc', '2 pcs', 'dozen', 'bunch', '125 g'] as $unit)
-                                <option value="{{ $unit }}">{{ $unit }}</option>
+                            @foreach ($this->units as $unit)
+                                <option value="{{ $unit->name }}">{{ $unit->name }}</option>
                             @endforeach
                         </select>
                         @error('unit')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror

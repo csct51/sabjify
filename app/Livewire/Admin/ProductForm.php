@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Unit;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
@@ -87,6 +88,15 @@ class ProductForm extends Component
     public function categories(): Collection
     {
         return Category::active()->orderBy('sort_order')->get();
+    }
+
+    /**
+     * @return Collection<int, Unit>
+     */
+    #[Computed]
+    public function units(): Collection
+    {
+        return Unit::ordered()->get();
     }
 
     public function save(): void

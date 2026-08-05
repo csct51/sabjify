@@ -1,4 +1,6 @@
-import { createIcons, Apple, ArrowRight, BadgeCheck, Banknote, Bell, Carrot, Check, ChevronDown, ChevronRight, CircleCheck, Citrus, CreditCard, Eye, EyeOff, Folder, Headset, Home, IndianRupee, LayoutDashboard, LayoutGrid, Leaf, Link, Lock, LogOut, MapPin, Menu, Minus, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Search, Settings, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, Users, X } from 'lucide';
+import { createIcons, Apple, ArrowRight, BadgeCheck, Banknote, Bell, Carrot, Check, ChevronDown, ChevronRight, CircleCheck, Citrus, CreditCard, Eye, EyeOff, Folder, Headset, Home, IndianRupee, LayoutDashboard, LayoutGrid, Leaf, Link, Lock, LogOut, MapPin, Menu, Minus, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Scale, Search, Settings, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, Users, X } from 'lucide';
+import DataTable from 'datatables.net-dt';
+import 'datatables.net-dt/css/dataTables.dataTables.css';
 
 const icons = {
     Apple,
@@ -34,6 +36,7 @@ const icons = {
     Plus,
     RefreshCcw,
     Salad,
+    Scale,
     Search,
     Settings,
     ShieldCheck,
@@ -90,6 +93,47 @@ function findFieldForError(key) {
     return null;
 }
 
+const activeDataTables = new WeakMap();
+
+function initDataTables() {
+    document.querySelectorAll('table[data-datatable]').forEach((table) => {
+        if (DataTable.isDataTable(table) || activeDataTables.has(table)) {
+            return;
+        }
+
+        const dt = new DataTable(table, {
+            pageLength: 10,
+            lengthChange: true,
+            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
+            searching: true,
+            ordering: true,
+            info: true,
+            stateSave: true,
+            columnDefs: [
+                {
+                    targets: 0,
+                    searchable: false,
+                    className: 'px-4 py-3 text-stone-400',
+                    render: (data, type, row, meta) => (type === 'sort' || type === 'display' ? meta.row + 1 : data),
+                },
+            ],
+        });
+
+        activeDataTables.set(table, dt);
+    });
+}
+
+function destroyDataTables() {
+    document.querySelectorAll('table[data-datatable]').forEach((table) => {
+        const dt = activeDataTables.get(table);
+
+        if (dt) {
+            dt.destroy();
+            activeDataTables.delete(table);
+        }
+    });
+}
+
 function focusFirstInvalidField(component) {
     const errors = component?.snapshot?.memo?.errors ?? {};
 
@@ -108,6 +152,15 @@ function focusFirstInvalidField(component) {
 document.addEventListener('livewire:init', () => {
     renderIcons();
     initReveals();
+    initDataTables();
+
+    Livewire.hook('morph', () => {
+        destroyDataTables();
+    });
+
+    Livewire.hook('morphed', () => {
+        initDataTables();
+    });
 
     Livewire.interceptMessage(({ message, onFinish }) => {
         const hasUserAction = Array.from(message.actions).some((action) => ! action.name.startsWith('$'));
@@ -133,7 +186,12 @@ document.addEventListener('livewire:init', () => {
     });
 });
 
+document.addEventListener('livewire:navigate', () => {
+    destroyDataTables();
+});
+
 document.addEventListener('livewire:navigated', () => {
     renderIcons();
     initReveals();
+    initDataTables();
 });

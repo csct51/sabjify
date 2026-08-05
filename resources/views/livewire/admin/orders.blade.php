@@ -1,10 +1,9 @@
 <div>
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-            <p class="text-sm text-stone-400 mb-1">{{ $orders->total() }} orders</p>
+            <p class="text-sm text-stone-400 mb-1">{{ $orders->count() }} orders</p>
             <h2 class="text-lg font-semibold text-stone-900">Manage Orders</h2>
         </div>
-        <input wire:model.live.debounce.300ms="search" type="search" placeholder="Search order # or customer..." class="w-full sm:w-80 rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
     </div>
 
     <div class="flex gap-2 mb-6 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
@@ -22,9 +21,10 @@
 
     <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table id="orders-table" data-datatable class="w-full text-sm">
                 <thead class="bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-400">
                     <tr>
+                        <th class="w-10 px-4 py-3 font-medium">#</th>
                         <th class="px-4 py-3 font-medium">Order</th>
                         <th class="px-4 py-3 font-medium">Customer</th>
                         <th class="px-4 py-3 font-medium">Date</th>
@@ -36,8 +36,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-stone-100">
-                    @forelse ($orders as $order)
+                    @foreach ($orders as $order)
                         <tr class="hover:bg-stone-50" wire:key="order-{{ $order->id }}">
+                            <td class="px-4 py-3"></td>
                             <td class="px-4 py-3">
                                 <a href="{{ route('admin.orders.show', $order) }}" wire:navigate class="font-semibold text-brand-600 hover:text-brand-700">{{ $order->order_number }}</a>
                             </td>
@@ -58,17 +59,9 @@
                                 <a href="{{ route('admin.orders.show', $order) }}" wire:navigate class="rounded-lg border border-stone-200 hover:bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-600">View</a>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="px-4 py-16 text-center text-stone-400">No orders found.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
-        </div>
-
-        <div class="p-4 border-t border-stone-100">
-            {{ $orders->links() }}
         </div>
     </div>
 </div>

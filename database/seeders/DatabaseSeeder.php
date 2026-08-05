@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             SettingSeeder::class,
+            UnitSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
         ]);

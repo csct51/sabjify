@@ -26,7 +26,7 @@ class Search extends Component
 
     public function render(): View
     {
-        $products = Product::available()
+        $products = Product::active()
             ->with('category')
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%'.$this->search.'%');

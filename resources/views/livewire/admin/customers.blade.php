@@ -4,7 +4,6 @@
             <p class="text-sm text-stone-400 mb-1">{{ $this->totalCustomers }} customers</p>
             <h2 class="text-lg font-semibold text-stone-900">Customers</h2>
         </div>
-        <input wire:model.live.debounce.300ms="search" type="search" placeholder="Search name, phone or email..." class="w-full sm:w-80 rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
     </div>
 
     @error('toggle')
@@ -13,9 +12,10 @@
 
     <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table id="customers-table" data-datatable class="w-full text-sm">
                 <thead class="bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-400">
                     <tr>
+                        <th class="w-10 px-4 py-3 font-medium">#</th>
                         <th class="px-4 py-3 font-medium">Customer</th>
                         <th class="px-4 py-3 font-medium">Contact</th>
                         <th class="px-4 py-3 font-medium text-center">Orders</th>
@@ -25,8 +25,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-stone-100">
-                    @forelse ($users as $user)
+                    @foreach ($users as $user)
                         <tr class="hover:bg-stone-50" wire:key="user-{{ $user->id }}">
+                            <td class="px-4 py-3"></td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <span class="flex items-center justify-center w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-semibold text-sm">{{ $user->initials() }}</span>
@@ -49,21 +50,13 @@
                                 @if ($user->is_active)
                                     <button type="button" data-confirm-message="Block {{ $user->name }}? They won't be able to log in." @click="$dispatch('confirm-modal', { message: $el.dataset.confirmMessage, action: () => $wire.toggleActive({{ $user->id }}) })" class="rounded-lg border border-red-200 hover:bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600">Block</button>
                                 @else
-                                    <button type="button" wire:click="toggleActive({{ $user->id }})" class="rounded-lg border border-green-200 hover:bg-green-50 px-3 py-1.5 text-xs font-medium text-green-600">Unblock</button>
+                                    <button type="button" data-confirm-message="Unblock {{ $user->name }}? They'll be able to log in again." @click="$dispatch('confirm-modal', { message: $el.dataset.confirmMessage, action: () => $wire.toggleActive({{ $user->id }}) })" class="rounded-lg border border-green-200 hover:bg-green-50 px-3 py-1.5 text-xs font-medium text-green-600">Unblock</button>
                                 @endif
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="px-4 py-16 text-center text-stone-400">No customers found.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
-        </div>
-
-        <div class="p-4 border-t border-stone-100">
-            {{ $users->links() }}
         </div>
     </div>
 </div>

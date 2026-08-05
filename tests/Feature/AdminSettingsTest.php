@@ -1,8 +1,11 @@
 <?php
 
 use App\Livewire\Admin\Settings;
+use App\Livewire\Admin\Units;
 use App\Models\Admin;
+use App\Models\Product;
 use App\Models\Setting;
+use App\Models\Unit;
 use Livewire\Livewire;
 
 test('guest is redirected to admin login when accessing settings', function () {
@@ -13,6 +16,52 @@ test('admin can view the settings page', function () {
     $admin = Admin::factory()->create();
 
     $this->actingAs($admin, 'admin')->get('/admin/settings')->assertOk()->assertSee('Platform Settings');
+});
+
+test('admin can add and remove a unit', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Units::class)
+        ->set('newUnit', '750 ml')
+        ->call('addUnit')
+        ->assertSee('750 ml');
+
+    expect(Unit::query()->where('name', '750 ml')->exists())->toBeTrue();
+
+    $unit = Unit::query()->where('name', '750 ml')->firstOrFail();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Units::class)
+        ->call('removeUnit', $unit->id);
+
+    expect(Unit::query()->where('name', '750 ml')->exists())->toBeFalse();
+});
+
+test('admin cannot add a duplicate unit', function () {
+    $admin = Admin::factory()->create();
+    Unit::factory()->create(['name' => 'kg']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Units::class)
+        ->set('newUnit', 'kg')
+        ->call('addUnit')
+        ->assertHasErrors('newUnit');
+
+    expect(Unit::query()->where('name', 'kg')->count())->toBe(1);
+});
+
+test('admin cannot remove a unit used by products', function () {
+    $admin = Admin::factory()->create();
+    $unit = Unit::factory()->create(['name' => 'dozen']);
+    Product::factory()->create(['unit' => 'dozen']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Units::class)
+        ->call('removeUnit', $unit->id)
+        ->assertHasErrors('remove');
+
+    expect(Unit::query()->where('name', 'dozen')->exists())->toBeTrue();
 });
 
 test('admin can update platform settings', function () {
