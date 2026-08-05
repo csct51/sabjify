@@ -1,6 +1,9 @@
 <?php
 
+use App\Livewire\Admin\OrderShow;
 use App\Livewire\Checkout;
+use App\Livewire\Orders\Show;
+use App\Models\Admin;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\Product;
@@ -14,6 +17,41 @@ test('checkout redirects to cart when cart is empty', function () {
     Livewire::actingAs($user)
         ->test(Checkout::class)
         ->assertRedirect(route('cart'));
+});
+
+test('checkout defaults to a disabled payment method fallback', function () {
+    config(['mart.enabled_payment_methods' => ['online']]);
+
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->assertSet('paymentMethod', 'online');
+});
+
+test('checkout rejects payment methods that are disabled', function () {
+    config(['mart.enabled_payment_methods' => ['online']]);
+
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertHasErrors('paymentMethod');
 });
 
 test('checkout renders with items in cart', function () {
@@ -94,9 +132,69 @@ test('order can be cancelled and restocks items', function () {
 
     $order = Order::first();
 
-    expect(app(OrderService::class)->cancel($order))->toBeTrue()
+    expect(app(OrderService::class)->cancel($order, 'Found a better price elsewhere', 'customer'))->toBeTrue()
         ->and($order->fresh()->status)->toBe('cancelled')
+        ->and($order->fresh()->cancelled_reason)->toBe('Found a better price elsewhere')
+        ->and($order->fresh()->cancelled_by)->toBe('customer')
         ->and($product->fresh()->stock)->toBe(5);
+});
+
+test('customer can cancel order with a reason', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['price' => 100, 'stock' => 5]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    $order = Order::first();
+
+    Livewire::actingAs($user)
+        ->test(Show::class, ['order' => $order])
+        ->set('cancelReason', 'Wrong address entered')
+        ->call('cancelOrder');
+
+    expect($order->fresh()->status)->toBe('cancelled')
+        ->and($order->fresh()->cancelled_reason)->toBe('Wrong address entered')
+        ->and($order->fresh()->cancelled_by)->toBe('customer');
+});
+
+test('admin can cancel order on behalf of the platform', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'pending']);
+
+    Livewire::actingAs(Admin::factory()->create(), 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->set('cancelReason', 'Stock unavailable')
+        ->call('cancelOrder');
+
+    expect($order->fresh()->status)->toBe('cancelled')
+        ->and($order->fresh()->cancelled_reason)->toBe('Stock unavailable')
+        ->and($order->fresh()->cancelled_by)->toBe('platform');
+});
+
+test('customer must provide a reason to cancel', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'pending']);
+
+    Livewire::actingAs($user)
+        ->test(Show::class, ['order' => $order])
+        ->set('showCancelForm', true)
+        ->call('cancelOrder')
+        ->assertHasErrors(['cancelReason' => 'required'])
+        ->assertSee('Please tell us why you are cancelling this order.')
+        ->assertNotSet('order.status', 'cancelled');
 });
 
 test('delivered orders cannot be cancelled', function () {

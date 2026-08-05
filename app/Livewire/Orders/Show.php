@@ -15,6 +15,10 @@ class Show extends Component
     #[Locked]
     public Order $order;
 
+    public bool $showCancelForm = false;
+
+    public string $cancelReason = '';
+
     public function mount(): void
     {
         abort_unless($this->order->user_id === auth('web')->id(), 403);
@@ -26,9 +30,21 @@ class Show extends Component
     {
         $this->authorize('cancel', $this->order);
 
-        app(OrderService::class)->cancel($this->order);
+        $this->validate(['cancelReason' => ['required', 'string', 'max:200']]);
+
+        app(OrderService::class)->cancel($this->order, $this->cancelReason, 'customer');
 
         $this->order->refresh();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return [
+            'cancelReason.required' => 'Please tell us why you are cancelling this order.',
+        ];
     }
 
     public function render(): View

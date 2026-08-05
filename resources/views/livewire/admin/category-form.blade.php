@@ -9,13 +9,13 @@
 
             <form wire:submit="save" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-medium text-stone-700 mb-1">Category Name</label>
+                    <label class="block text-sm font-medium text-stone-700 mb-1">Category Name <span class="text-red-500">*</span></label>
                     <input wire:model="name" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                     @error('name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-stone-700 mb-1">Slug</label>
+                    <label class="block text-sm font-medium text-stone-700 mb-1">Slug <span class="text-red-500">*</span></label>
                     <input wire:model="slug" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                     @error('slug')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
@@ -26,9 +26,9 @@
                     @error('description')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-stone-700 mb-1">Sort Order</label>
+                        <label class="block text-sm font-medium text-stone-700 mb-1">Sort Order <span class="text-red-500">*</span></label>
                         <input wire:model="sort_order" type="number" min="0" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                         @error('sort_order')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>

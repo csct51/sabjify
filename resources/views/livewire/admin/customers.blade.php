@@ -40,16 +40,16 @@
                             <td class="px-4 py-3 text-center text-stone-600">{{ $user->orders_count }}</td>
                             <td class="px-4 py-3 text-stone-500">{{ $user->created_at->format('d M Y') }}</td>
                             <td class="px-4 py-3 text-center">
-                                <button type="button" wire:click="toggleActive({{ $user->id }})" class="inline-flex items-center gap-1.5 text-xs font-medium {{ $user->is_active ? 'text-green-600' : 'text-red-600' }}">
+                                <span class="inline-flex items-center gap-1.5 text-xs font-medium {{ $user->is_active ? 'text-green-600' : 'text-red-600' }}">
                                     <span class="w-2 h-2 rounded-full {{ $user->is_active ? 'bg-green-500' : 'bg-red-500' }}"></span>
                                     {{ $user->is_active ? 'Active' : 'Blocked' }}
-                                </button>
+                                </span>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if ($user->is_active)
-                                    <button type="button" wire:click="toggleActive({{ $user->id }})" wire:confirm="Block {{ $user->name }}? They won't be able to log in." class="text-red-600 hover:text-red-700 font-medium text-xs">Block</button>
+                                    <button type="button" data-confirm-message="Block {{ $user->name }}? They won't be able to log in." @click="$dispatch('confirm-modal', { message: $el.dataset.confirmMessage, action: () => $wire.toggleActive({{ $user->id }}) })" class="rounded-lg border border-red-200 hover:bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600">Block</button>
                                 @else
-                                    <button type="button" wire:click="toggleActive({{ $user->id }})" class="text-green-600 hover:text-green-700 font-medium text-xs">Unblock</button>
+                                    <button type="button" wire:click="toggleActive({{ $user->id }})" class="rounded-lg border border-green-200 hover:bg-green-50 px-3 py-1.5 text-xs font-medium text-green-600">Unblock</button>
                                 @endif
                             </td>
                         </tr>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Auth\PhoneLogin;
+use App\Livewire\Profile;
 use App\Models\OtpCode;
 use App\Models\User;
 use Livewire\Livewire;
@@ -133,4 +134,19 @@ test('deactivated account cannot log in', function () {
         ->call('sendOtp')
         ->assertSet('isInactive', true)
         ->assertHasErrors('phone');
+});
+
+test('user can log out from profile', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/profile')
+        ->assertOk();
+
+    Livewire::test(Profile::class)
+        ->call('logout')
+        ->assertRedirect(route('login'));
+
+    expect(auth()->check())->toBeFalse()
+        ->and(auth('web')->check())->toBeFalse();
 });

@@ -18,13 +18,13 @@ use App\Livewire\Orders\Index as OrdersIndex;
 use App\Livewire\Orders\Show as OrdersShow;
 use App\Livewire\ProductDetail;
 use App\Livewire\Profile;
+use App\Livewire\Search;
 use App\Livewire\Shop;
 use Illuminate\Support\Facades\Route;
 
-Route::livewire('/', Home::class)->name('home');
-Route::livewire('/shop', Shop::class)->name('shop');
-Route::livewire('/product/{product:slug}', ProductDetail::class)->name('product.show');
 Route::livewire('/login', PhoneLogin::class)->name('login')->middleware('guest');
+
+Route::redirect('/admin', '/admin/login')->name('admin.index');
 
 Route::livewire('/admin/login', AdminLogin::class)->name('admin.login')->middleware('guest:admin');
 
@@ -38,6 +38,10 @@ Route::post('/admin/logout', function () {
 })->name('admin.logout')->middleware('auth:admin');
 
 Route::middleware(['auth', 'user.active'])->group(function () {
+    Route::livewire('/', Home::class)->name('home');
+    Route::livewire('/shop', Shop::class)->name('shop');
+    Route::livewire('/search', Search::class)->name('search');
+    Route::livewire('/product/{product:slug}', ProductDetail::class)->name('product.show');
     Route::livewire('/cart', Cart::class)->name('cart');
     Route::livewire('/checkout', Checkout::class)->name('checkout');
     Route::livewire('/profile', Profile::class)->name('profile');

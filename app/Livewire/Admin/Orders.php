@@ -33,16 +33,20 @@ class Orders extends Component
     }
 
     /**
-     * @return array{all: int, pending: int, delivered: int, cancelled: int}
+     * @return array<string, int>
      */
     #[Computed]
     public function counts(): array
     {
+        $counts = Order::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->all();
+
         return [
             'all' => Order::count(),
-            'pending' => Order::where('status', 'pending')->count(),
-            'delivered' => Order::where('status', 'delivered')->count(),
-            'cancelled' => Order::where('status', 'cancelled')->count(),
+            ...$counts,
         ];
     }
 

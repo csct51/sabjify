@@ -23,12 +23,36 @@ test('admin can update platform settings', function () {
         ->set('storeName', 'GreenMart')
         ->set('deliveryFee', 50)
         ->set('freeDeliveryThreshold', 600)
+        ->set('enabledPaymentMethods', ['cod'])
         ->call('save')
         ->assertHasNoErrors();
 
     expect(Setting::get('store_name'))->toBe('GreenMart')
         ->and(Setting::get('delivery_fee'))->toBe('50')
-        ->and(Setting::get('free_delivery_threshold'))->toBe('600');
+        ->and(Setting::get('free_delivery_threshold'))->toBe('600')
+        ->and(Setting::get('enabled_payment_methods'))->toBe('cod');
+});
+
+test('settings require at least one payment method', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Settings::class)
+        ->set('enabledPaymentMethods', [])
+        ->call('save')
+        ->assertHasErrors(['enabledPaymentMethods' => 'required'])
+        ->assertSee('At least one payment method is required.');
+});
+
+test('last remaining payment method checkbox is disabled', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Settings::class)
+        ->set('enabledPaymentMethods', ['cod'])
+        ->call('save')
+        ->assertSee('disabled')
+        ->assertSee('At least one payment method is required');
 });
 
 test('settings validate delivery fee as a positive integer', function () {

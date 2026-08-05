@@ -46,6 +46,8 @@ class ProductForm extends Component
 
     public string $imageUrl = '';
 
+    public bool $slugManuallyEdited = false;
+
     public function mount(?Product $product = null): void
     {
         $this->product = $product;
@@ -68,9 +70,14 @@ class ProductForm extends Component
 
     public function updatedName(): void
     {
-        if (! $this->product) {
+        if (! $this->slugManuallyEdited) {
             $this->slug = Str::slug($this->name);
         }
+    }
+
+    public function updatedSlug(): void
+    {
+        $this->slugManuallyEdited = true;
     }
 
     /**
@@ -84,6 +91,10 @@ class ProductForm extends Component
 
     public function save(): void
     {
+        if ($this->slug === '') {
+            $this->slug = Str::slug($this->name);
+        }
+
         $this->validate([
             'categoryId' => ['required', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:100'],

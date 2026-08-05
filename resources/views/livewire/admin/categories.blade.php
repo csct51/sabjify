@@ -54,8 +54,8 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="inline-flex gap-2">
-                                    <a href="{{ route('admin.categories.edit', $category) }}" wire:navigate class="text-brand-600 hover:text-brand-700 font-medium text-xs">Edit</a>
-                                    <button type="button" wire:click="delete({{ $category->id }})" wire:confirm="Delete {{ $category->name }}?" class="text-red-600 hover:text-red-700 font-medium text-xs">Delete</button>
+                                    <a href="{{ route('admin.categories.edit', $category) }}" wire:navigate class="rounded-lg border border-stone-200 hover:bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-600">Edit</a>
+                                    <button type="button" data-confirm-message="Delete {{ $category->name }}?" @click="$dispatch('confirm-modal', { message: $el.dataset.confirmMessage, action: () => $wire.delete({{ $category->id }}) })" class="rounded-lg border border-red-200 hover:bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600">Delete</button>
                                 </div>
                             </td>
                         </tr>

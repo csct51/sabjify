@@ -11,7 +11,7 @@
             </div>
 
             <div>
-                <label for="phone" class="block text-sm font-medium text-stone-700 mb-1">Mobile Number</label>
+                <label for="phone" class="block text-sm font-medium text-stone-700 mb-1">Mobile Number <span class="text-red-500">*</span></label>
                 <div class="flex rounded-xl border border-stone-300 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100 overflow-hidden">
                     <span class="flex items-center px-3 bg-stone-50 border-r border-stone-200 text-sm text-stone-500">+91</span>
                     <input
@@ -51,7 +51,7 @@
 
             @if ($this->isNewUser)
                 <div>
-                    <label for="name" class="block text-sm font-medium text-stone-700 mb-1">Your Name</label>
+                    <label for="name" class="block text-sm font-medium text-stone-700 mb-1">Your Name <span class="text-red-500">*</span></label>
                     <input
                         wire:model="name"
                         id="name"
@@ -67,7 +67,7 @@
             @endif
 
             <div>
-                <label for="otp" class="block text-sm font-medium text-stone-700 mb-1">Enter OTP</label>
+                <label for="otp" class="block text-sm font-medium text-stone-700 mb-1">Enter OTP <span class="text-red-500">*</span></label>
                 <input
                     wire:model="otp"
                     id="otp"

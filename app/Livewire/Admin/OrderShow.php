@@ -19,6 +19,8 @@ class OrderShow extends Component
 
     public string $paymentStatus = '';
 
+    public string $cancelReason = '';
+
     public function mount(): void
     {
         abort_unless(auth('admin')->check(), 403);
@@ -39,11 +41,6 @@ class OrderShow extends Component
             $data['delivered_at'] = now();
         }
 
-        if ($this->status === Order::STATUS_CANCELLED) {
-            $data['cancelled_at'] = now();
-            $this->restockItems();
-        }
-
         $this->order->update($data);
         $this->order->refresh();
 
@@ -62,23 +59,26 @@ class OrderShow extends Component
 
     public function cancelOrder(): void
     {
-        app(OrderService::class)->cancel($this->order);
+        $this->validate(['cancelReason' => ['required', 'string', 'max:200']]);
+
+        app(OrderService::class)->cancel($this->order, $this->cancelReason, 'platform');
 
         $this->status = $this->order->status;
         $this->order->refresh();
     }
 
+    /**
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return [
+            'cancelReason.required' => 'Please provide a reason for cancelling this order.',
+        ];
+    }
+
     public function render(): View
     {
         return view('livewire.admin.order-show');
-    }
-
-    private function restockItems(): void
-    {
-        foreach ($this->order->items as $item) {
-            if ($item->product) {
-                $item->product->increment('stock', $item->quantity);
-            }
-        }
     }
 }

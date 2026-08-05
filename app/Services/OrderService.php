@@ -66,7 +66,7 @@ class OrderService
         });
     }
 
-    public function cancel(Order $order): bool
+    public function cancel(Order $order, ?string $reason = null, ?string $cancelledBy = null): bool
     {
         if (! in_array($order->status, [Order::STATUS_PENDING, Order::STATUS_CONFIRMED], true)) {
             return false;
@@ -75,6 +75,8 @@ class OrderService
         $order->update([
             'status' => Order::STATUS_CANCELLED,
             'cancelled_at' => now(),
+            'cancelled_reason' => $reason,
+            'cancelled_by' => $cancelledBy,
         ]);
 
         foreach ($order->items as $item) {

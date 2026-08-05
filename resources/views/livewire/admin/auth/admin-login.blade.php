@@ -10,7 +10,7 @@
         </div>
 
         <div>
-            <label for="username" class="block text-sm font-medium text-stone-700 mb-1">Username</label>
+            <label for="username" class="block text-sm font-medium text-stone-700 mb-1">Username <span class="text-red-500">*</span></label>
             <input
                 wire:model="username"
                 id="username"
@@ -25,15 +25,26 @@
         </div>
 
         <div>
-            <label for="password" class="block text-sm font-medium text-stone-700 mb-1">Password</label>
-            <input
-                wire:model="password"
-                id="password"
-                type="password"
-                autocomplete="current-password"
-                placeholder="••••••••"
-                class="w-full rounded-xl border border-stone-300 px-3 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-            >
+            <label for="password" class="block text-sm font-medium text-stone-700 mb-1">Password <span class="text-red-500">*</span></label>
+            <div class="relative" x-data="{ showPassword: false }">
+                <input
+                    wire:model="password"
+                    id="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    autocomplete="current-password"
+                    placeholder="••••••••"
+                    class="w-full rounded-xl border border-stone-300 px-3 py-3 pr-12 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                >
+                <button
+                    type="button"
+                    @click="showPassword = !showPassword"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+                    :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                >
+                    <i x-show="!showPassword" data-lucide="eye" class="w-5 h-5"></i>
+                    <i x-show="showPassword" data-lucide="eye-off" class="w-5 h-5"></i>
+                </button>
+            </div>
             @error('password')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror

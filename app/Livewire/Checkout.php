@@ -44,6 +44,10 @@ class Checkout extends Component
 
     public function mount(): void
     {
+        if (! in_array($this->paymentMethod, $this->enabledPaymentMethods(), true)) {
+            $this->paymentMethod = $this->enabledPaymentMethods()[0];
+        }
+
         $this->receiverPhone = auth('web')->user()->phone;
 
         $default = $this->addresses()->firstWhere('is_default', true) ?? $this->addresses()->first();
@@ -112,6 +116,15 @@ class Checkout extends Component
         $this->addressMode = 'existing';
     }
 
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function enabledPaymentMethods(): array
+    {
+        return config('mart.enabled_payment_methods', ['cod', 'online']);
+    }
+
     public function placeOrder(): void
     {
         if ($this->cartItems()->isEmpty()) {
@@ -121,7 +134,7 @@ class Checkout extends Component
         }
 
         $this->validate([
-            'paymentMethod' => ['required', 'in:cod,online'],
+            'paymentMethod' => ['required', 'in:'.implode(',', $this->enabledPaymentMethods())],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 

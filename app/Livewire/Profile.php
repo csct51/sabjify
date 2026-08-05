@@ -183,6 +183,16 @@ class Profile extends Component
         $this->dispatch('toast', message: 'Address deleted.');
     }
 
+    public function logout(): void
+    {
+        auth('web')->logout();
+
+        session()->invalidate();
+        session()->regenerateToken();
+
+        $this->redirectRoute('login', navigate: true);
+    }
+
     public function render(): View
     {
         return view('livewire.profile');

@@ -34,5 +34,10 @@ class SettingsServiceProvider extends ServiceProvider
         if (isset($settings['placeholder_image'])) {
             config(['mart.placeholder_image' => $settings['placeholder_image']]);
         }
+
+        if (isset($settings['enabled_payment_methods'])) {
+            $enabled = array_filter(array_map('trim', explode(',', $settings['enabled_payment_methods'])));
+            config(['mart.enabled_payment_methods' => array_values($enabled)]);
+        }
     }
 }

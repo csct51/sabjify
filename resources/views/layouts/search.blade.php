@@ -10,8 +10,6 @@
         @livewireStyles
     </head>
     <body class="bg-[#F7F8F5] text-stone-900 antialiased flex flex-col min-h-screen pb-16">
-        <livewire:store-header />
-
         <main class="flex-1">
             {{ $slot }}
         </main>
@@ -19,8 +17,6 @@
         @include('partials.footer')
 
         <livewire:store-bottom-nav />
-
-        <x-confirm-modal />
 
         @livewireScripts
     </body>

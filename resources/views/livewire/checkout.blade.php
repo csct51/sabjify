@@ -45,7 +45,7 @@
                         @if ($this->addressMode === 'new')
                             <div class="grid grid-cols-2 gap-4 mt-4">
                                 <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Label</label>
+                                    <label class="block text-sm font-medium text-stone-700 mb-1">Label <span class="text-red-500">*</span></label>
                                     <select wire:model="label" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
                                         <option value="Home">Home</option>
                                         <option value="Work">Work</option>
@@ -53,17 +53,17 @@
                                     </select>
                                 </div>
                                 <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Receiver Name</label>
+                                    <label class="block text-sm font-medium text-stone-700 mb-1">Receiver Name <span class="text-red-500">*</span></label>
                                     <input wire:model="receiverName" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                     @error('receiverName')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
                                 <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Phone</label>
+                                    <label class="block text-sm font-medium text-stone-700 mb-1">Phone <span class="text-red-500">*</span></label>
                                     <input wire:model="receiverPhone" type="tel" maxlength="10" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                     @error('receiverPhone')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
                                 <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Address</label>
+                                    <label class="block text-sm font-medium text-stone-700 mb-1">Address <span class="text-red-500">*</span></label>
                                     <textarea wire:model="addressLine" rows="2" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></textarea>
                                     @error('addressLine')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
@@ -72,17 +72,17 @@
                                     <input wire:model="landmark" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">City</label>
+                                    <label class="block text-sm font-medium text-stone-700 mb-1">City <span class="text-red-500">*</span></label>
                                     <input wire:model="city" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                     @error('city')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">State</label>
+                                    <label class="block text-sm font-medium text-stone-700 mb-1">State <span class="text-red-500">*</span></label>
                                     <input wire:model="state" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                     @error('state')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
                                 <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Pincode</label>
+                                    <label class="block text-sm font-medium text-stone-700 mb-1">Pincode <span class="text-red-500">*</span></label>
                                     <input wire:model="pincode" type="text" maxlength="6" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                     @error('pincode')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
@@ -95,24 +95,20 @@
                     </div>
 
                     <div class="bg-white rounded-2xl border border-stone-200 p-6">
-                        <h2 class="font-semibold text-stone-900 mb-4">Payment Method</h2>
+                        <h2 class="font-semibold text-stone-900 mb-4">Payment Method <span class="text-red-500">*</span></h2>
                         <div class="space-y-2">
-                            <label class="flex items-center gap-3 rounded-xl border border-stone-200 p-4 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
-                                <input type="radio" wire:model="paymentMethod" value="cod" class="rounded-full border-stone-300 text-brand-600 focus:ring-brand-500">
-                                <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="banknote" class="w-5 h-5"></i></span>
-                                <span>
-                                    <span class="block text-sm font-medium text-stone-900">Cash on Delivery</span>
-                                    <span class="block text-xs text-stone-500">Pay in cash when your order arrives</span>
-                                </span>
-                            </label>
-                            <label class="flex items-center gap-3 rounded-xl border border-stone-200 p-4 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
-                                <input type="radio" wire:model="paymentMethod" value="online" class="rounded-full border-stone-300 text-brand-600 focus:ring-brand-500">
-                                <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="credit-card" class="w-5 h-5"></i></span>
-                                <span>
-                                    <span class="block text-sm font-medium text-stone-900">Pay Online</span>
-                                    <span class="block text-xs text-stone-500">UPI, Cards, Net Banking</span>
-                                </span>
-                            </label>
+                            @foreach (config('mart.payment_methods') as $key => $method)
+                                @if (in_array($key, $this->enabledPaymentMethods, true))
+                                    <label class="flex items-center gap-3 rounded-xl border border-stone-200 p-4 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                                        <input type="radio" wire:model="paymentMethod" value="{{ $key }}" class="rounded-full border-stone-300 text-brand-600 focus:ring-brand-500">
+                                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="{{ $method['icon'] }}" class="w-5 h-5"></i></span>
+                                        <span>
+                                            <span class="block text-sm font-medium text-stone-900">{{ $method['label'] }}</span>
+                                            <span class="block text-xs text-stone-500">{{ $method['description'] }}</span>
+                                        </span>
+                                    </label>
+                                @endif
+                            @endforeach
                         </div>
                         @error('paymentMethod')<p class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>

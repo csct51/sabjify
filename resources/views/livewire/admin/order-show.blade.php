@@ -11,6 +11,15 @@
         <x-status-badge :status="$order->status" />
     </div>
 
+    @if ($order->status === 'cancelled' && $order->cancelled_by)
+        <div class="mb-6 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <span class="font-medium">Cancelled by:</span> {{ $order->cancelled_by === 'customer' ? 'Customer' : 'Platform' }}
+            @if ($order->cancelled_reason)
+                <span class="font-medium">Reason:</span> {{ $order->cancelled_reason }}
+            @endif
+        </div>
+    @endif
+
     @if (session('success'))
         <div class="mb-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">{{ session('success') }}</div>
     @endif
@@ -70,7 +79,7 @@
                 <h3 class="font-semibold text-stone-900 mb-4">Update Status</h3>
                 <form wire:submit="updateStatus" class="space-y-3">
                     <select wire:model="status" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
-                        @foreach (\App\Models\Order::STATUSES as $value => $label)
+                        @foreach (\Illuminate\Support\Arr::except(\App\Models\Order::STATUSES, \App\Models\Order::STATUS_CANCELLED) as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
                     </select>
@@ -101,7 +110,11 @@
                 <div class="bg-white rounded-2xl border border-red-200 p-6">
                     <h3 class="font-semibold text-red-700 mb-2">Cancel Order</h3>
                     <p class="text-xs text-stone-500 mb-4">Cancelling restocks all items in this order.</p>
-                    <button type="button" wire:click="cancelOrder" wire:confirm="Cancel this order and restock items?" class="w-full rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 transition">Cancel Order</button>
+                    <form wire:submit="cancelOrder" class="space-y-3">
+                        <input type="text" wire:model="cancelReason" maxlength="200" placeholder="Enter reason for cancellation…" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                        @error('cancelReason')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                        <button type="submit" class="w-full rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 transition">Cancel Order</button>
+                    </form>
                 </div>
             @endif
         </div>

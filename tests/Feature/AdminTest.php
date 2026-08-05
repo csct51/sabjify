@@ -4,6 +4,7 @@ use App\Livewire\Admin\Auth\AdminLogin;
 use App\Livewire\Admin\Categories;
 use App\Livewire\Admin\CategoryForm;
 use App\Livewire\Admin\Customers;
+use App\Livewire\Admin\NotificationBell;
 use App\Livewire\Admin\OrderShow;
 use App\Livewire\Admin\ProductForm;
 use App\Livewire\Admin\Products;
@@ -94,6 +95,23 @@ test('admin can create a product', function () {
     ]);
 });
 
+test('product slug is auto-generated from the name', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(ProductForm::class)
+        ->set('categoryId', $category->id)
+        ->set('name', 'Fresh Mango')
+        ->set('price', 120)
+        ->set('unit', '1 kg')
+        ->set('stock', 20)
+        ->call('save')
+        ->assertRedirect(route('admin.products.index'));
+
+    $this->assertDatabaseHas('products', ['name' => 'Fresh Mango', 'slug' => 'fresh-mango']);
+});
+
 test('admin can update product stock', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();
@@ -163,4 +181,26 @@ test('admin cannot delete a category that has products', function () {
         ->assertHasErrors('delete');
 
     $this->assertDatabaseHas('categories', ['id' => $category->id]);
+});
+
+test('notification bell shows pending order count', function () {
+    $admin = Admin::factory()->create();
+    Order::factory()->create(['status' => 'pending']);
+    Order::factory()->create(['status' => 'pending']);
+    Order::factory()->create(['status' => 'delivered']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(NotificationBell::class)
+        ->assertSet('pendingOrdersCount', 2);
+});
+
+test('notification bell lists pending orders in the modal', function () {
+    $admin = Admin::factory()->create();
+    $order = Order::factory()->create(['status' => 'pending']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(NotificationBell::class)
+        ->call('toggle')
+        ->assertSet('show', true)
+        ->assertSee($order->order_number);
 });

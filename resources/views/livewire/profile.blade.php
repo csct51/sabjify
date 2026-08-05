@@ -18,7 +18,7 @@
 
                     <form wire:submit="saveProfile" class="space-y-4">
                         <div>
-                            <label for="name" class="block text-sm font-medium text-stone-700 mb-1">Full name</label>
+                            <label for="name" class="block text-sm font-medium text-stone-700 mb-1">Full name <span class="text-red-500">*</span></label>
                             <input
                                 id="name"
                                 type="text"
@@ -97,8 +97,7 @@
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    wire:click="deleteAddress({{ $address->id }})"
-                                                    wire:confirm="Delete this address?"
+                                                    @click="$dispatch('confirm-modal', { message: 'Delete this address?', action: () => $wire.deleteAddress({{ $address->id }}) })"
                                                     class="p-2 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50"
                                                     aria-label="Delete address"
                                                 >
@@ -119,7 +118,7 @@
                         <form wire:submit="saveAddress" class="space-y-4">
                             <div class="grid sm:grid-cols-3 gap-4">
                                 <div>
-                                    <label for="label" class="block text-sm font-medium text-stone-700 mb-1">Label</label>
+                                    <label for="label" class="block text-sm font-medium text-stone-700 mb-1">Label <span class="text-red-500">*</span></label>
                                     <select id="label" wire:model="label" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500">
                                         <option value="Home">Home</option>
                                         <option value="Work">Work</option>
@@ -128,19 +127,19 @@
                                     @error('label') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
-                                    <label for="receiverName" class="block text-sm font-medium text-stone-700 mb-1">Receiver name</label>
+                                    <label for="receiverName" class="block text-sm font-medium text-stone-700 mb-1">Receiver name <span class="text-red-500">*</span></label>
                                     <input id="receiverName" type="text" wire:model="receiverName" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
                                     @error('receiverName') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
-                                    <label for="receiverPhone" class="block text-sm font-medium text-stone-700 mb-1">Receiver phone</label>
+                                    <label for="receiverPhone" class="block text-sm font-medium text-stone-700 mb-1">Receiver phone <span class="text-red-500">*</span></label>
                                     <input id="receiverPhone" type="tel" wire:model="receiverPhone" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
                                     @error('receiverPhone') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                 </div>
                             </div>
 
                             <div>
-                                <label for="addressLine" class="block text-sm font-medium text-stone-700 mb-1">Address</label>
+                                <label for="addressLine" class="block text-sm font-medium text-stone-700 mb-1">Address <span class="text-red-500">*</span></label>
                                 <input id="addressLine" type="text" wire:model="addressLine" placeholder="Flat / house no, street, area" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
                                 @error('addressLine') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             </div>
@@ -152,7 +151,7 @@
                                     @error('landmark') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
-                                    <label for="city" class="block text-sm font-medium text-stone-700 mb-1">City</label>
+                                    <label for="city" class="block text-sm font-medium text-stone-700 mb-1">City <span class="text-red-500">*</span></label>
                                     <input id="city" type="text" wire:model="city" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
                                     @error('city') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                 </div>
@@ -160,12 +159,12 @@
 
                             <div class="grid sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="state" class="block text-sm font-medium text-stone-700 mb-1">State</label>
+                                    <label for="state" class="block text-sm font-medium text-stone-700 mb-1">State <span class="text-red-500">*</span></label>
                                     <input id="state" type="text" wire:model="state" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
                                     @error('state') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
-                                    <label for="pincode" class="block text-sm font-medium text-stone-700 mb-1">PIN code</label>
+                                    <label for="pincode" class="block text-sm font-medium text-stone-700 mb-1">PIN code <span class="text-red-500">*</span></label>
                                     <input id="pincode" type="text" wire:model="pincode" inputmode="numeric" maxlength="6" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
                                     @error('pincode') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                 </div>
@@ -200,6 +199,10 @@
                         <span class="inline-flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-stone-400"></i> My Orders</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 text-stone-400"></i>
                     </a>
+                    <button type="button" @click="$dispatch('confirm-modal', { message: 'Are you sure you want to log out?', action: () => $wire.logout() })" class="mt-3 w-full flex items-center justify-between rounded-xl border border-red-200 hover:border-red-300 hover:bg-red-50 px-4 py-3 text-sm font-medium text-red-600 transition">
+                        <span class="inline-flex items-center gap-2"><i data-lucide="log-out" class="w-4 h-4 text-red-400"></i> Logout</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-red-400"></i>
+                    </button>
                 </div>
             </aside>
         </div>

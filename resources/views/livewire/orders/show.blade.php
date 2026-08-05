@@ -17,7 +17,12 @@
         @if ($order->status === 'delivered')
             <div class="rounded-2xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 mb-6 inline-flex items-center gap-2"><i data-lucide="circle-check" class="w-5 h-5"></i> Order delivered successfully. Enjoy your fresh produce!</div>
         @elseif ($order->status === 'cancelled')
-            <div class="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-6">This order was cancelled.</div>
+            <div class="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-6">
+                This order was cancelled by {{ $order->cancelled_by === 'platform' ? 'the store' : 'you' }}.
+                @if ($order->cancelled_reason)
+                    <span class="font-medium">Reason: {{ $order->cancelled_reason }}</span>
+                @endif
+            </div>
         @endif
 
         <div class="grid lg:grid-cols-[1fr_340px] gap-8 items-start">
@@ -95,10 +100,33 @@
 
         @if (in_array($order->status, [\App\Models\Order::STATUS_PENDING, \App\Models\Order::STATUS_CONFIRMED], true))
             <div class="mt-8">
-                <button type="button" wire:click="cancelOrder" wire:confirm="Are you sure you want to cancel this order?" class="inline-flex items-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 px-6 py-2.5 text-sm font-semibold transition">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    Cancel Order
-                </button>
+                @if (! $this->showCancelForm)
+                    <button type="button" wire:click="$set('showCancelForm', true)" class="inline-flex items-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 px-6 py-2.5 text-sm font-semibold transition">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        Cancel Order
+                    </button>
+                @else
+                    <div class="max-w-md bg-white rounded-2xl border-2 border-red-200 p-6">
+                        <h3 class="font-semibold text-stone-900 mb-1">Cancel this order?</h3>
+                        <p class="text-sm text-stone-500 mb-4">Please let us know why you're cancelling.</p>
+                        <form wire:submit="cancelOrder" class="space-y-4">
+                            <div>
+                                <label for="cancelReason" class="block text-sm font-medium text-stone-700 mb-1">Reason <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model="cancelReason" id="cancelReason" maxlength="200" placeholder="Tell us why you're cancelling…" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                                @error('cancelReason')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 text-sm font-semibold transition">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    Confirm Cancellation
+                                </button>
+                                <button type="button" wire:click="$set('showCancelForm', false)" class="rounded-xl border border-stone-200 hover:bg-stone-50 px-6 py-2.5 text-sm font-semibold text-stone-600 transition">
+                                    Keep Order
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                @endif
             </div>
         @endif
     </div>

@@ -22,4 +22,21 @@ class Setting extends Model
 
         return $setting->value ?? $default;
     }
+
+    /**
+     * Get the value of a setting as an array, falling back to a default.
+     *
+     * @param  array<int, string>  $default
+     * @return array<int, string>
+     */
+    public static function getArray(string $key, array $default = []): array
+    {
+        $value = static::get($key);
+
+        if (is_string($value) && $value !== '') {
+            return array_values(array_filter(array_map('trim', explode(',', $value))));
+        }
+
+        return $default;
+    }
 }

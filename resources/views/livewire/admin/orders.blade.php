@@ -7,12 +7,12 @@
         <input wire:model.live.debounce.300ms="search" type="search" placeholder="Search order # or customer..." class="w-full sm:w-80 rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
     </div>
 
-    <div class="flex gap-2 flex-wrap mb-6">
+    <div class="flex gap-2 mb-6 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
         @foreach (['all', 'pending', 'confirmed', 'packing', 'out_for_delivery', 'delivered', 'cancelled'] as $value)
             <button
                 type="button"
                 wire:click="$set('status', '{{ $value === 'all' ? null : $value }}')"
-                class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ ($this->status ?? 'all') === $value ? 'bg-stone-900 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300' }}"
+                class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition {{ ($this->status ?? 'all') === $value ? 'bg-stone-900 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300' }}"
             >
                 {{ $value === 'all' ? 'All' : \App\Models\Order::STATUSES[$value] }}
                 <span class="opacity-60">({{ $value === 'all' ? $this->counts['all'] : ($this->counts[$value] ?? 0) }})</span>
@@ -55,7 +55,7 @@
                             </td>
                             <td class="px-4 py-3 text-center"><x-status-badge :status="$order->status" /></td>
                             <td class="px-4 py-3 text-right">
-                                <a href="{{ route('admin.orders.show', $order) }}" wire:navigate class="text-brand-600 hover:text-brand-700 font-medium text-xs">View</a>
+                                <a href="{{ route('admin.orders.show', $order) }}" wire:navigate class="rounded-lg border border-stone-200 hover:bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-600">View</a>
                             </td>
                         </tr>
                     @empty
