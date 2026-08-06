@@ -31,6 +31,10 @@ class SettingsServiceProvider extends ServiceProvider
             config(['mart.free_delivery_threshold' => (int) $settings['free_delivery_threshold']]);
         }
 
+        if (isset($settings['minimum_order_amount'])) {
+            config(['mart.minimum_order_amount' => (int) $settings['minimum_order_amount']]);
+        }
+
         if (isset($settings['placeholder_image'])) {
             config(['mart.placeholder_image' => $settings['placeholder_image']]);
         }

@@ -89,6 +89,14 @@ class Cart extends Component
         return $this->subtotal() + $this->deliveryFee();
     }
 
+    #[Computed]
+    public function belowMinimum(): bool
+    {
+        $minimum = (int) config('mart.minimum_order_amount');
+
+        return $minimum > 0 && $this->subtotal() < $minimum;
+    }
+
     public function render(): View
     {
         return view('livewire.cart');

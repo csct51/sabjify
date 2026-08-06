@@ -16,6 +16,7 @@ class SettingSeeder extends Seeder
             'store_name' => config('app.name'),
             'delivery_fee' => (string) config('mart.delivery_fee'),
             'free_delivery_threshold' => (string) config('mart.free_delivery_threshold'),
+            'minimum_order_amount' => (string) config('mart.minimum_order_amount'),
             'placeholder_image' => config('mart.placeholder_image'),
             'enabled_payment_methods' => implode(',', config('mart.enabled_payment_methods')),
         ];

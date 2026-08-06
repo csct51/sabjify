@@ -9,7 +9,11 @@
                 <h1 class="text-2xl font-bold text-stone-900">{{ $order->order_number }}</h1>
                 <p class="text-sm text-stone-500 mt-1">Placed on {{ $order->created_at->format('d M Y, h:i A') }}</p>
             </div>
-            <div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('orders.invoice', $order) }}" target="_blank" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 hover:bg-stone-50 px-4 py-2 text-sm font-semibold text-stone-700 transition">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Download Invoice
+                </a>
                 <x-status-badge :status="$order->status" />
             </div>
         </div>
@@ -114,6 +118,32 @@
                     </div>
                 </div>
             </div>
+
+            @if ($order->payment_method === 'online' && $order->payment_status === 'paid')
+                <div class="bg-white rounded-2xl border border-stone-200 p-6">
+                    <h2 class="font-semibold text-stone-900 mb-4">Payment Details</h2>
+                    <dl class="space-y-2 text-sm">
+                        @foreach (['method' => 'Method', 'status' => 'Status', 'amount' => 'Amount', 'vpa' => 'UPI', 'bank' => 'Bank', 'wallet' => 'Wallet', 'card' => 'Card', 'fee' => 'Fee', 'tax' => 'Tax'] as $key => $label)
+                            <div class="flex justify-between gap-4">
+                                <dt class="text-stone-500 capitalize">{{ $label }}</dt>
+                                @if (($value = data_get($order->payment_details, $key)) !== null)
+                                    <dd class="text-stone-800 text-right">{{ is_numeric($value) ? \Illuminate\Support\Number::currency($value / 100, 'INR') : $value }}</dd>
+                                @else
+                                    <dd class="text-stone-400 text-right">—</dd>
+                                @endif
+                            </div>
+                        @endforeach
+                        <div class="flex justify-between gap-4">
+                            <dt class="text-stone-500">Payment ID</dt>
+                            @if ($order->payment_id)
+                                <dd class="text-stone-800 text-right break-all">{{ $order->payment_id }}</dd>
+                            @else
+                                <dd class="text-stone-400 text-right">—</dd>
+                            @endif
+                        </div>
+                    </dl>
+                </div>
+            @endif
         </div>
 
         @if (in_array($order->status, [\App\Models\Order::STATUS_PENDING, \App\Models\Order::STATUS_CONFIRMED], true))

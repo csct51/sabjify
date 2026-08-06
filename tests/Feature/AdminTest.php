@@ -4,10 +4,12 @@ use App\Livewire\Admin\Auth\AdminLogin;
 use App\Livewire\Admin\Categories;
 use App\Livewire\Admin\CategoryForm;
 use App\Livewire\Admin\Customers;
+use App\Livewire\Admin\CustomerShow;
 use App\Livewire\Admin\NotificationBell;
 use App\Livewire\Admin\OrderShow;
 use App\Livewire\Admin\ProductForm;
 use App\Livewire\Admin\Products;
+use App\Models\Address;
 use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Order;
@@ -168,6 +170,48 @@ test('admin can block and unblock a customer', function () {
         ->assertOk();
 
     expect($customer->fresh()->is_active)->toBeTrue();
+});
+
+test('customers table shows order count and total order amount', function () {
+    $admin = Admin::factory()->create();
+    $customer = User::factory()->create();
+
+    Order::factory()->create(['user_id' => $customer->id, 'total' => 240]);
+    Order::factory()->create(['user_id' => $customer->id, 'total' => 360]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Customers::class)
+        ->assertSee('Number of Orders')
+        ->assertSee('Total Order Amount')
+        ->assertSee('2')
+        ->assertSee('600');
+});
+
+test('admin can view customer details', function () {
+    $admin = Admin::factory()->create();
+    $customer = User::factory()->create();
+    Address::factory()->create([
+        'user_id' => $customer->id,
+        'label' => 'Home',
+        'city' => 'Mumbai',
+    ]);
+    $order = Order::factory()->create(['user_id' => $customer->id, 'total' => 240]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(CustomerShow::class, ['user' => $customer])
+        ->assertOk()
+        ->assertSee($customer->name)
+        ->assertSee($customer->email)
+        ->assertSee('+91 '.$customer->phone)
+        ->assertSee('Mumbai')
+        ->assertSee($order->order_number)
+        ->assertSee('240');
+});
+
+test('guest is redirected to admin login when accessing customer details', function () {
+    $customer = User::factory()->create();
+
+    $this->get(route('admin.customers.show', $customer))->assertRedirect(route('admin.login'));
 });
 
 test('admin cannot delete a category that has products', function () {

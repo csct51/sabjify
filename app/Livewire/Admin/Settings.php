@@ -23,6 +23,8 @@ class Settings extends Component
 
     public string $freeDeliveryThreshold = '';
 
+    public string $minimumOrderAmount = '';
+
     public string $logoType = 'icon';
 
     public string $logoUrl = '';
@@ -37,6 +39,7 @@ class Settings extends Component
         $this->storeName = (string) Setting::get('store_name', config('app.name'));
         $this->deliveryFee = (string) Setting::get('delivery_fee', config('mart.delivery_fee'));
         $this->freeDeliveryThreshold = (string) Setting::get('free_delivery_threshold', config('mart.free_delivery_threshold'));
+        $this->minimumOrderAmount = (string) Setting::get('minimum_order_amount', config('mart.minimum_order_amount'));
         $this->logoType = (string) Setting::get('logo_type', 'icon');
         $this->logoUrl = $this->logoType === 'url' ? (string) Setting::get('logo_value', '') : '';
         $this->enabledPaymentMethods = Setting::getArray('enabled_payment_methods', config('mart.enabled_payment_methods'));
@@ -48,6 +51,7 @@ class Settings extends Component
             'storeName' => ['required', 'string', 'max:100'],
             'deliveryFee' => ['required', 'integer', 'min:0'],
             'freeDeliveryThreshold' => ['required', 'integer', 'min:0'],
+            'minimumOrderAmount' => ['required', 'integer', 'min:0'],
             'logoType' => ['required', 'in:icon,image,url'],
             'logoUrl' => ['required_if:logoType,url', 'nullable', 'url', 'max:500'],
             'logoImage' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -58,6 +62,7 @@ class Settings extends Component
         Setting::updateOrCreate(['key' => 'store_name'], ['value' => $this->storeName]);
         Setting::updateOrCreate(['key' => 'delivery_fee'], ['value' => $this->deliveryFee]);
         Setting::updateOrCreate(['key' => 'free_delivery_threshold'], ['value' => $this->freeDeliveryThreshold]);
+        Setting::updateOrCreate(['key' => 'minimum_order_amount'], ['value' => $this->minimumOrderAmount]);
         Setting::updateOrCreate(['key' => 'enabled_payment_methods'], ['value' => implode(',', $this->enabledPaymentMethods)]);
 
         $this->saveLogo();

@@ -7,6 +7,8 @@ return [
 
     'free_delivery_threshold' => env('MART_FREE_DELIVERY_THRESHOLD', 499),
 
+    'minimum_order_amount' => env('MART_MINIMUM_ORDER_AMOUNT', 0),
+
     'placeholder_image' => env('MART_PLACEHOLDER_IMAGE', 'https://placehold.co/600x600/F0FDF4/166534'),
 
     'payment_methods' => [

@@ -8,6 +8,7 @@ use App\Services\RazorpayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PaymentController extends Controller
 {
@@ -51,6 +52,7 @@ class PaymentController extends Controller
         $order->update([
             'payment_status' => 'paid',
             'payment_id' => $validated['razorpay_payment_id'],
+            'payment_details' => $this->paymentDetails($validated['razorpay_payment_id']),
         ]);
 
         return response()->json(['success' => true]);
@@ -108,6 +110,7 @@ class PaymentController extends Controller
             'payment_status' => 'paid',
             'payment_reference' => $validated['razorpay_order_id'],
             'payment_id' => $validated['razorpay_payment_id'],
+            'payment_details' => $this->paymentDetails($validated['razorpay_payment_id']),
         ]);
 
         session(['pending_payment_'.$validated['razorpay_order_id'] => array_merge($payload, ['order_id' => $order->id])]);
@@ -117,5 +120,19 @@ class PaymentController extends Controller
             'order_id' => $order->id,
             'redirect' => route('orders.show', $order),
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function paymentDetails(string $paymentId): ?array
+    {
+        try {
+            return app(RazorpayService::class)->fetchPayment($paymentId);
+        } catch (Throwable $e) {
+            Log::warning('Could not fetch Razorpay payment details.', ['payment_id' => $paymentId]);
+
+            return null;
+        }
     }
 }

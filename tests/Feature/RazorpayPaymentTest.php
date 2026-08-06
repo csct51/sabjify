@@ -111,6 +111,17 @@ test('payOnline creates a razorpay order and dispatches checkout', function () {
 test('verify route marks order paid when the signature is valid', function () {
     config(['razorpay.key_secret' => 'secret']);
 
+    Http::fake([
+        'api.razorpay.com/v1/payments/pay_rzp_456' => Http::response([
+            'id' => 'pay_rzp_456',
+            'status' => 'captured',
+            'method' => 'upi',
+            'vpa' => 'test@upi',
+            'amount' => 14000,
+            'fee' => 140,
+        ]),
+    ]);
+
     $user = User::factory()->create();
     $order = Order::factory()->create([
         'user_id' => $user->id,
@@ -133,7 +144,47 @@ test('verify route marks order paid when the signature is valid', function () {
         ->assertJson(['success' => true]);
 
     expect($order->fresh()->payment_status)->toBe('paid')
-        ->and($order->fresh()->payment_id)->toBe($paymentId);
+        ->and($order->fresh()->payment_id)->toBe($paymentId)
+        ->and($order->fresh()->payment_details)->toBe([
+            'id' => 'pay_rzp_456',
+            'status' => 'captured',
+            'method' => 'upi',
+            'vpa' => 'test@upi',
+            'amount' => 14000,
+            'fee' => 140,
+        ]);
+});
+
+test('order is still marked paid when payment details cannot be fetched', function () {
+    config(['razorpay.key_secret' => 'secret']);
+
+    Http::fake([
+        'api.razorpay.com/v1/payments/*' => Http::response([], 500),
+    ]);
+
+    $user = User::factory()->create();
+    $order = Order::factory()->create([
+        'user_id' => $user->id,
+        'status' => 'pending',
+        'payment_method' => 'online',
+        'payment_status' => 'pending',
+        'payment_reference' => 'order_rzp_123',
+    ]);
+
+    $paymentId = 'pay_rzp_456';
+    $signature = hash_hmac('sha256', 'order_rzp_123|'.$paymentId, 'secret');
+
+    $this->actingAs($user)
+        ->postJson(route('orders.payment.verify', $order), [
+            'razorpay_order_id' => 'order_rzp_123',
+            'razorpay_payment_id' => $paymentId,
+            'razorpay_signature' => $signature,
+        ])
+        ->assertOk()
+        ->assertJson(['success' => true]);
+
+    expect($order->fresh()->payment_status)->toBe('paid')
+        ->and($order->fresh()->payment_details)->toBeNull();
 });
 
 test('verify route rejects an invalid signature', function () {
@@ -214,6 +265,16 @@ test('user cannot verify another users payment', function () {
 test('verified checkout creates a paid order and clears the cart', function () {
     config(['razorpay.key_secret' => 'secret']);
 
+    Http::fake([
+        'api.razorpay.com/v1/payments/pay_rzp_456' => Http::response([
+            'id' => 'pay_rzp_456',
+            'status' => 'captured',
+            'method' => 'upi',
+            'vpa' => 'test@upi',
+            'amount' => 24000,
+        ]),
+    ]);
+
     $user = User::factory()->create();
     $product = Product::factory()->available()->create(['price' => 100, 'stock' => 10]);
 
@@ -252,6 +313,13 @@ test('verified checkout creates a paid order and clears the cart', function () {
         ->and($order->payment_status)->toBe('paid')
         ->and($order->payment_reference)->toBe('order_rzp_123')
         ->and($order->payment_id)->toBe($paymentId)
+        ->and($order->payment_details)->toBe([
+            'id' => 'pay_rzp_456',
+            'status' => 'captured',
+            'method' => 'upi',
+            'vpa' => 'test@upi',
+            'amount' => 24000,
+        ])
         ->and($order->total)->toBe(240)
         ->and($product->fresh()->stock)->toBe(8)
         ->and($user->cartItems()->count())->toBe(0);
@@ -291,6 +359,15 @@ test('verified checkout with an invalid signature creates no order', function ()
 
 test('verified checkout is idempotent', function () {
     config(['razorpay.key_secret' => 'secret']);
+
+    Http::fake([
+        'api.razorpay.com/v1/payments/pay_rzp_456' => Http::response([
+            'id' => 'pay_rzp_456',
+            'status' => 'captured',
+            'method' => 'card',
+            'amount' => 10000,
+        ]),
+    ]);
 
     $user = User::factory()->create();
     $product = Product::factory()->available()->create(['price' => 100]);

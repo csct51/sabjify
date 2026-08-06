@@ -18,7 +18,8 @@
                         <th class="w-10 px-4 py-3 font-medium">#</th>
                         <th class="px-4 py-3 font-medium">Customer</th>
                         <th class="px-4 py-3 font-medium">Contact</th>
-                        <th class="px-4 py-3 font-medium text-center">Orders</th>
+                        <th class="px-4 py-3 font-medium text-center">Number of Orders</th>
+                        <th class="px-4 py-3 font-medium text-center">Total Order Amount</th>
                         <th class="px-4 py-3 font-medium">Joined</th>
                         <th class="px-4 py-3 font-medium text-center">Status</th>
                         <th class="px-4 py-3 font-medium text-center">Action</th>
@@ -29,16 +30,17 @@
                         <tr class="hover:bg-stone-50" wire:key="user-{{ $user->id }}">
                             <td class="px-4 py-3"></td>
                             <td class="px-4 py-3">
-                                <div class="flex items-center gap-3">
+                                <a href="{{ route('admin.customers.show', $user) }}" wire:navigate class="flex items-center gap-3 group">
                                     <span class="flex items-center justify-center w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-semibold text-sm">{{ $user->initials() }}</span>
-                                    <p class="font-medium text-stone-900">{{ $user->name }}</p>
-                                </div>
+                                    <p class="font-medium text-stone-900 group-hover:text-brand-600">{{ $user->name }}</p>
+                                </a>
                             </td>
                             <td class="px-4 py-3">
                                 <p class="text-stone-600">+91 {{ $user->phone }}</p>
                                 <p class="text-xs text-stone-400">{{ $user->email }}</p>
                             </td>
                             <td class="px-4 py-3 text-center text-stone-600">{{ $user->orders_count }}</td>
+                            <td class="px-4 py-3 text-center text-stone-600">{{ \Illuminate\Support\Number::currency($user->orders_sum_total ?? 0, 'INR') }}</td>
                             <td class="px-4 py-3 text-stone-500">{{ $user->created_at->format('d M Y') }}</td>
                             <td class="px-4 py-3 text-center">
                                 <span class="inline-flex items-center gap-1.5 text-xs font-medium {{ $user->is_active ? 'text-green-600' : 'text-red-600' }}">

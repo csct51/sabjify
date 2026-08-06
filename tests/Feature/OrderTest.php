@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\OrderShow;
+use App\Livewire\Cart;
 use App\Livewire\Checkout;
 use App\Livewire\Orders\Show;
 use App\Models\Admin;
@@ -111,6 +112,70 @@ test('free delivery above threshold', function () {
         ->assertSet('deliveryFee', 0);
 });
 
+test('checkout is blocked when cart is below the minimum order amount', function () {
+    config(['mart.minimum_order_amount' => 200]);
+
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertHasErrors('minimum');
+
+    expect(Order::count())->toBe(0)
+        ->and($user->cartItems()->count())->toBe(1);
+});
+
+test('checkout proceeds when cart meets the minimum order amount', function () {
+    config(['mart.minimum_order_amount' => 200]);
+
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    expect(Order::count())->toBe(1);
+});
+
+test('cart disables checkout when below the minimum order amount', function () {
+    config(['mart.minimum_order_amount' => 200]);
+
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Cart::class)
+        ->assertSet('belowMinimum', true)
+        ->assertSee('Minimum order')
+        ->assertSeeHtml('disabled');
+});
+
 test('order can be cancelled and restocks items', function () {
     $user = User::factory()->create();
     $product = Product::factory()->create(['price' => 100, 'stock' => 5]);
@@ -182,6 +247,131 @@ test('admin can cancel order on behalf of the platform', function () {
     expect($order->fresh()->status)->toBe('cancelled')
         ->and($order->fresh()->cancelled_reason)->toBe('Stock unavailable')
         ->and($order->fresh()->cancelled_by)->toBe('platform');
+});
+
+test('customer sees payment details for a paid online order', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create([
+        'user_id' => $user->id,
+        'payment_method' => 'online',
+        'payment_status' => 'paid',
+        'payment_id' => 'pay_rzp_456',
+        'payment_details' => [
+            'method' => 'upi',
+            'status' => 'captured',
+            'amount' => 14000,
+            'vpa' => 'test@upi',
+        ],
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Show::class, ['order' => $order])
+        ->assertSee('Payment Details')
+        ->assertSee('UPI')
+        ->assertSee('test@upi')
+        ->assertSee('pay_rzp_456');
+});
+
+test('customer sees empty payment details for a legacy online order', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create([
+        'user_id' => $user->id,
+        'payment_method' => 'online',
+        'payment_status' => 'paid',
+        'payment_reference' => 'legacy_order_ref',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Show::class, ['order' => $order])
+        ->assertSee('Payment Details')
+        ->assertSee('Method')
+        ->assertSee('UPI')
+        ->assertSee('—');
+});
+
+test('admin sees empty payment details for a legacy online order', function () {
+    $order = Order::factory()->create([
+        'payment_method' => 'online',
+        'payment_status' => 'paid',
+        'payment_reference' => 'legacy_order_ref',
+    ]);
+
+    Livewire::actingAs(Admin::factory()->create(), 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->assertSee('Payment')
+        ->assertSee('Method')
+        ->assertSee('UPI')
+        ->assertSee('—');
+});
+
+test('customer can download the invoice for their order', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create([
+        'user_id' => $user->id,
+        'subtotal' => 200,
+        'delivery_fee' => 40,
+        'total' => 240,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('orders.invoice', $order))
+        ->assertOk()
+        ->assertDownload('invoice-'.$order->order_number.'.pdf');
+});
+
+test('customer cannot download another users invoice', function () {
+    $owner = User::factory()->create();
+    $other = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $owner->id]);
+
+    $this->actingAs($other)
+        ->get(route('orders.invoice', $order))
+        ->assertForbidden();
+});
+
+test('guest cannot download an invoice', function () {
+    $order = Order::factory()->create();
+
+    $this->get(route('orders.invoice', $order))
+        ->assertRedirect(route('login'));
+});
+
+test('admin can download an invoice for any order', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id]);
+
+    $this->actingAs(Admin::factory()->create(), 'admin')
+        ->get(route('admin.orders.invoice', $order))
+        ->assertOk()
+        ->assertDownload('invoice-'.$order->order_number.'.pdf');
+});
+
+test('admin cannot access customer invoice route without admin session', function () {
+    $order = Order::factory()->create();
+
+    $this->get(route('orders.invoice', $order))
+        ->assertRedirect(route('login'));
+});
+
+test('admin sees payment details for a paid online order', function () {
+    $order = Order::factory()->create([
+        'payment_method' => 'online',
+        'payment_status' => 'paid',
+        'payment_id' => 'pay_rzp_456',
+        'payment_details' => [
+            'method' => 'upi',
+            'status' => 'captured',
+            'amount' => 14000,
+            'vpa' => 'test@upi',
+        ],
+    ]);
+
+    Livewire::actingAs(Admin::factory()->create(), 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->assertSee('Payment')
+        ->assertSee('UPI')
+        ->assertSee('test@upi')
+        ->assertSee('pay_rzp_456');
 });
 
 test('customer must provide a reason to cancel', function () {

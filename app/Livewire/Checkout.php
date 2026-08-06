@@ -135,6 +135,14 @@ class Checkout extends Component
             return;
         }
 
+        $minimum = (int) config('mart.minimum_order_amount');
+
+        if ($minimum > 0 && $this->subtotal() < $minimum) {
+            $this->addError('minimum', 'Your order is below the minimum order amount of '.config('mart.currency').$minimum.' required to checkout.');
+
+            return;
+        }
+
         $this->validate([
             'paymentMethod' => ['required', 'in:'.implode(',', $this->enabledPaymentMethods())],
             'notes' => ['nullable', 'string', 'max:500'],

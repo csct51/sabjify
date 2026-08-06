@@ -74,6 +74,7 @@ test('admin can update platform settings', function () {
         ->set('storeName', 'GreenMart')
         ->set('deliveryFee', 50)
         ->set('freeDeliveryThreshold', 600)
+        ->set('minimumOrderAmount', 100)
         ->set('enabledPaymentMethods', ['cod'])
         ->call('save')
         ->assertHasNoErrors();
@@ -81,6 +82,7 @@ test('admin can update platform settings', function () {
     expect(Setting::get('store_name'))->toBe('GreenMart')
         ->and(Setting::get('delivery_fee'))->toBe('50')
         ->and(Setting::get('free_delivery_threshold'))->toBe('600')
+        ->and(Setting::get('minimum_order_amount'))->toBe('100')
         ->and(Setting::get('enabled_payment_methods'))->toBe('cod');
 });
 
@@ -145,6 +147,8 @@ test('admin can upload a logo image', function () {
     expect(Setting::get('logo_type'))->toBe('image');
 
     Storage::disk('public')->assertExists(Setting::get('logo_value'));
+
+    expect(Setting::logoUrl())->toBe('/storage/'.Setting::get('logo_value'));
 });
 
 test('logo url must be a valid url', function () {

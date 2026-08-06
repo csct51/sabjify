@@ -58,7 +58,7 @@ class Setting extends Model
         }
 
         if ($type === 'image' && Storage::disk('public')->exists($value)) {
-            return Storage::disk('public')->url($value);
+            return '/storage/'.$value;
         }
 
         return null;

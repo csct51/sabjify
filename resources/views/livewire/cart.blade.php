@@ -75,9 +75,16 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('checkout') }}" wire:navigate class="mt-5 block w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-center font-semibold py-3 transition">
-                        Proceed to Checkout
-                    </a>
+                    @if ($this->belowMinimum)
+                        <button type="button" disabled class="mt-5 block w-full rounded-xl bg-stone-200 text-stone-500 text-center font-semibold py-3 cursor-not-allowed">
+                            Proceed to Checkout
+                        </button>
+                        <p class="mt-2 text-xs text-red-600 text-center">Minimum order of {{ \Illuminate\Support\Number::currency(config('mart.minimum_order_amount'), 'INR') }} required to checkout.</p>
+                    @else
+                        <a href="{{ route('checkout') }}" wire:navigate class="mt-5 block w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-center font-semibold py-3 transition">
+                            Proceed to Checkout
+                        </a>
+                    @endif
                     <a href="{{ route('shop') }}" wire:navigate class="mt-2 block w-full rounded-xl border border-stone-200 hover:bg-stone-50 text-center font-medium py-3 text-sm transition">Continue Shopping</a>
                 </div>
             </div>

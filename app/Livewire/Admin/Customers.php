@@ -27,6 +27,7 @@ class Customers extends Component
     public function render(): View
     {
         $users = User::withCount('orders')
+            ->withSum('orders', 'total')
             ->latest()
             ->get();
 

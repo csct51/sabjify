@@ -38,6 +38,22 @@ class RazorpayService
         return hash_equals($expected, $razorpaySignature);
     }
 
+    /**
+     * Fetch a payment by its Razorpay payment id.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws RequestException
+     * @throws ConnectionException
+     */
+    public function fetchPayment(string $paymentId): array
+    {
+        return $this->client()
+            ->get(self::API_BASE_URL.'/payments/'.$paymentId)
+            ->throw()
+            ->json();
+    }
+
     private function client(): PendingRequest
     {
         return Http::withBasicAuth(config('razorpay.key_id'), config('razorpay.key_secret'))

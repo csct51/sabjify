@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Livewire\Admin\Auth\AdminLogin;
 use App\Livewire\Admin\Categories as AdminCategories;
 use App\Livewire\Admin\CategoryForm as AdminCategoryForm;
 use App\Livewire\Admin\Customers as AdminCustomers;
+use App\Livewire\Admin\CustomerShow as AdminCustomerShow;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\Orders as AdminOrders;
 use App\Livewire\Admin\OrderShow as AdminOrderShow;
@@ -51,6 +53,7 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::livewire('/orders', OrdersIndex::class)->name('orders.index');
     Route::livewire('/orders/{order}', OrdersShow::class)->name('orders.show');
     Route::post('/orders/{order}/payment/verify', [PaymentController::class, 'verify'])->name('orders.payment.verify');
+    Route::get('/orders/{order}/invoice', [InvoiceController::class, 'download'])->name('orders.invoice');
 });
 
 Route::middleware(['auth:admin', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -63,7 +66,9 @@ Route::middleware(['auth:admin', 'admin'])->prefix('admin')->name('admin.')->gro
     Route::livewire('/products/{product}/edit', AdminProductForm::class)->name('products.edit');
     Route::livewire('/orders', AdminOrders::class)->name('orders.index');
     Route::livewire('/orders/{order}', AdminOrderShow::class)->name('orders.show');
+    Route::get('/orders/{order}/invoice', [InvoiceController::class, 'download'])->name('orders.invoice');
     Route::livewire('/customers', AdminCustomers::class)->name('customers.index');
+    Route::livewire('/customers/{user}', AdminCustomerShow::class)->name('customers.show');
     Route::livewire('/units', AdminUnits::class)->name('units');
     Route::livewire('/settings', AdminSettings::class)->name('settings');
 });
