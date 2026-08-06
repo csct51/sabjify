@@ -24,7 +24,7 @@
 
             <aside class="hidden lg:flex flex-col w-64 bg-stone-900 text-stone-300 shrink-0 fixed top-0 bottom-0 left-0">
                 <a href="{{ route('admin.dashboard') }}" wire:navigate class="flex items-center gap-2 px-5 h-16 border-b border-stone-800">
-                    <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-600 text-white"><i data-lucide="leaf" class="w-5 h-5"></i></span>
+                                <x-logo class="w-9 h-9 rounded-xl" />
                     <div>
                         <p class="font-bold text-white leading-tight">{{ config('app.name') }}</p>
                         <p class="text-[11px] text-stone-400">Admin Panel</p>
@@ -64,7 +64,7 @@
                     <div class="absolute inset-y-0 left-0 w-64 bg-stone-900 text-stone-300 flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full">
                         <div class="flex items-center justify-between px-5 h-16 border-b border-stone-800">
                             <span class="flex items-center gap-2">
-                                <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-600 text-white"><i data-lucide="leaf" class="w-5 h-5"></i></span>
+                    <x-logo class="w-9 h-9 rounded-xl" />
                                 <div>
                                     <p class="font-bold text-white leading-tight">{{ config('app.name') }}</p>
                                     <p class="text-[11px] text-stone-400">Admin Panel</p>

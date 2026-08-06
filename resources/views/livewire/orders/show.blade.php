@@ -25,6 +25,18 @@
             </div>
         @endif
 
+        @if ($order->payment_method === 'online' && $order->payment_status === 'pending' && in_array($order->status, [\App\Models\Order::STATUS_PENDING, \App\Models\Order::STATUS_CONFIRMED], true))
+            <div class="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 mb-6 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2 text-sm text-amber-700">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i>
+                    <span>Your order is placed, but the payment is pending.</span>
+                </div>
+                <button type="button" wire:click="payOnline" class="rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 text-sm font-semibold transition">
+                    Pay Now · {{ \Illuminate\Support\Number::currency($order->total, 'INR') }}
+                </button>
+            </div>
+        @endif
+
         <div class="grid lg:grid-cols-[1fr_340px] gap-8 items-start">
             <div class="space-y-6">
                 <div class="bg-white rounded-2xl border border-stone-200 p-6">
@@ -92,7 +104,13 @@
                     </div>
                     <div class="flex justify-between text-stone-600">
                         <span>Payment</span>
-                        <span class="font-medium text-stone-900">{{ $order->payment_method === 'cod' ? 'Cash on Delivery' : 'Paid Online' }}</span>
+                        @if ($order->payment_method === 'cod')
+                            <span class="font-medium text-stone-900">Cash on Delivery</span>
+                        @elseif ($order->payment_status === 'paid')
+                            <span class="font-medium text-green-600">Paid Online</span>
+                        @else
+                            <span class="font-medium text-amber-600">Payment Pending</span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -130,4 +148,93 @@
             </div>
         @endif
     </div>
+
+    @assets
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    @endassets
+
+    @script
+        <script>
+            Livewire.on('razorpay-open', (payload) => {
+                openRazorpay(payload);
+            });
+
+            async function openRazorpay(payload) {
+                if (typeof window.Razorpay !== 'function') {
+                    await loadRazorpayScript();
+                }
+
+                if (typeof window.Razorpay !== 'function') {
+                    alert('Razorpay failed to load. Please refresh and try again.');
+                    return;
+                }
+
+                const options = {
+                    key: payload.key_id,
+                    amount: payload.amount,
+                    currency: 'INR',
+                    name: payload.name,
+                    description: payload.description,
+                    order_id: payload.order_id,
+                    prefill: {
+                        name: '{{ $order->receiver_name }}',
+                        contact: '{{ $order->receiver_phone }}',
+                    },
+                    notes: {
+                        order_id: '{{ $order->id }}',
+                    },
+                    theme: { color: payload.theme_color },
+                    handler: (response) => {
+                        fetch('{{ route('orders.payment.verify', $order) }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                            },
+                            body: JSON.stringify(response),
+                        })
+                            .then((res) => res.json())
+                            .then((data) => {
+                                if (data.success) {
+                                    window.location.reload();
+                                } else {
+                                    alert(data.message || 'Payment could not be verified. Please try again.');
+                                    window.location.reload();
+                                }
+                            })
+                            .catch(() => {
+                                alert('Something went wrong while verifying your payment. Please try again.');
+                                window.location.reload();
+                            });
+                    },
+                };
+
+                try {
+                    const razorpay = new window.Razorpay(options);
+                    razorpay.open();
+                } catch (error) {
+                    console.error('Razorpay checkout failed', error);
+                    alert('The payment window could not be opened. Make sure you are using HTTPS and try again.');
+                }
+            }
+
+            function loadRazorpayScript() {
+                return new Promise((resolve) => {
+                    const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+
+                    if (existing) {
+                        resolve();
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                    script.onload = () => resolve();
+                    script.onerror = () => resolve();
+                    document.head.appendChild(script);
+                });
+            }
+        </script>
+    @endscript
 </div>

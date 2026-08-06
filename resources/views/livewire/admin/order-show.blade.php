@@ -96,14 +96,16 @@
                         {{ ucfirst($order->payment_status) }}
                     </span>
                 </div>
-                <form wire:submit="updatePaymentStatus" class="space-y-3">
-                    <select wire:model="paymentStatus" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
-                        <option value="pending">Pending</option>
-                        <option value="paid">Paid</option>
-                        <option value="refunded">Refunded</option>
-                    </select>
-                    <button type="submit" class="w-full rounded-xl border border-stone-200 hover:bg-stone-50 text-sm font-semibold py-2.5 transition">Save Payment</button>
-                </form>
+                @if ($order->payment_method === 'cod')
+                    <form wire:submit="updatePaymentStatus" class="space-y-3">
+                        <select wire:model="paymentStatus" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="refunded">Refunded</option>
+                        </select>
+                        <button type="submit" class="w-full rounded-xl border border-stone-200 hover:bg-stone-50 text-sm font-semibold py-2.5 transition">Save Payment</button>
+                    </form>
+                @endif
             </div>
 
             @if (in_array($order->status, ['pending', 'confirmed'], true))

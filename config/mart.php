@@ -17,7 +17,7 @@ return [
         ],
         'online' => [
             'label' => 'Pay Online',
-            'description' => 'UPI, Cards, Net Banking',
+            'description' => 'Pay securely via Razorpay (UPI, Cards, Net Banking)',
             'icon' => 'credit-card',
         ],
     ],

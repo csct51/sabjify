@@ -29,9 +29,43 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-stone-700 mb-1">Placeholder Image URL</label>
-                    <input wire:model="placeholderImage" type="url" placeholder="https://placehold.co/600x600/F0FDF4/166534" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                    @error('placeholderImage')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    <label class="block text-sm font-medium text-stone-700 mb-1">Store Logo</label>
+                    <p class="text-xs text-stone-500 mb-3">Shown in the store header, admin panel, and auth pages. Leave on "Default icon" to use the built-in icon.</p>
+
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <label class="flex items-center gap-2 rounded-xl border border-stone-200 px-4 py-2.5 text-sm cursor-pointer transition has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                            <input type="radio" wire:model.live="logoType" value="icon" class="text-brand-600 focus:ring-brand-500">
+                            Default icon
+                        </label>
+                        <label class="flex items-center gap-2 rounded-xl border border-stone-200 px-4 py-2.5 text-sm cursor-pointer transition has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                            <input type="radio" wire:model.live="logoType" value="image" class="text-brand-600 focus:ring-brand-500">
+                            Upload image
+                        </label>
+                        <label class="flex items-center gap-2 rounded-xl border border-stone-200 px-4 py-2.5 text-sm cursor-pointer transition has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                            <input type="radio" wire:model.live="logoType" value="url" class="text-brand-600 focus:ring-brand-500">
+                            Use URL
+                        </label>
+                    </div>
+
+                    @if ($logoType === 'image')
+                        <div>
+                            <input wire:model="logoImage" type="file" accept="image/jpeg,image/png,image/webp" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm">
+                            <p class="text-xs text-stone-500 mt-1">JPG, PNG or WebP up to 2MB. Uploading a new file replaces the current logo.</p>
+                            @error('logoImage')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                    @endif
+
+                    @if ($logoType === 'url')
+                        <div>
+                            <input wire:model="logoUrl" type="url" placeholder="https://example.com/logo.png" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                            @error('logoUrl')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                    @endif
+
+                    <div class="flex items-center gap-3 mt-4">
+                        <x-logo :src="$logoImage?->temporaryUrl()" class="w-12 h-12 rounded-xl shadow-sm" icon="w-6 h-6" />
+                        <span class="text-xs text-stone-400">Logo preview</span>
+                    </div>
                 </div>
 
                 <div>

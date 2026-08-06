@@ -2,7 +2,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-4 h-16">
             <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
-                <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-600 text-white shadow-sm"><i data-lucide="leaf" class="w-5 h-5"></i></span>
+                <x-logo class="w-9 h-9 rounded-xl shadow-sm" />
                 <span class="font-bold text-lg text-stone-900">{{ config('app.name') }}</span>
             </a>
 

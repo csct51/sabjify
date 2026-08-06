@@ -5,8 +5,10 @@ namespace App\Livewire;
 use App\Models\Address;
 use App\Models\CartItem;
 use App\Services\OrderService;
+use App\Services\RazorpayService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -189,13 +191,50 @@ class Checkout extends Component
             ];
         }
 
-        $data['payment_method'] = $this->paymentMethod;
+        if ($this->paymentMethod === 'online') {
+            $this->initiateOnlinePayment($data);
+
+            return;
+        }
+
+        $data['payment_method'] = 'cod';
 
         $order = app(OrderService::class)->createFromCart(auth('web')->user(), $data);
 
         $this->dispatch('cart-updated');
 
         $this->redirect(route('orders.show', $order), navigate: true);
+    }
+
+    /**
+     * Create a Razorpay order and open the payment modal. The order is only
+     * created in the database once the payment has been verified.
+     *
+     * @param  array<string, mixed>  $addressData
+     */
+    private function initiateOnlinePayment(array $addressData): void
+    {
+        $user = auth('web')->user();
+
+        $razorpayOrderId = app(RazorpayService::class)->createOrder(
+            $this->total() * 100,
+            'CHECKOUT-'.strtoupper(Str::random(8)),
+            ['user_id' => (string) $user->id],
+        );
+
+        session()->put('pending_payment_'.$razorpayOrderId, [
+            'user_id' => $user->id,
+            'address' => $addressData,
+        ]);
+
+        $this->dispatch('razorpay-open',
+            key_id: config('razorpay.key_id'),
+            order_id: $razorpayOrderId,
+            amount: $this->total() * 100,
+            name: config('razorpay.name'),
+            description: config('razorpay.description'),
+            theme_color: config('razorpay.theme_color'),
+        );
     }
 
     public function render(): View

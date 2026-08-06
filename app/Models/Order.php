@@ -22,6 +22,8 @@ use Illuminate\Support\Carbon;
  * @property int $total
  * @property string $payment_method
  * @property string $payment_status
+ * @property string|null $payment_reference
+ * @property string|null $payment_id
  * @property string $receiver_name
  * @property string $receiver_phone
  * @property string $address_line
@@ -37,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'order_number', 'status', 'subtotal', 'delivery_fee', 'discount', 'total', 'payment_method', 'payment_status', 'receiver_name', 'receiver_phone', 'address_line', 'city', 'state', 'pincode', 'label', 'notes', 'cancelled_at', 'cancelled_reason', 'cancelled_by', 'delivered_at'])]
+#[Fillable(['user_id', 'order_number', 'status', 'subtotal', 'delivery_fee', 'discount', 'total', 'payment_method', 'payment_status', 'payment_reference', 'payment_id', 'receiver_name', 'receiver_phone', 'address_line', 'city', 'state', 'pincode', 'label', 'notes', 'cancelled_at', 'cancelled_reason', 'cancelled_by', 'delivered_at'])]
 class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */

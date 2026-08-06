@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property int $id
@@ -38,5 +39,28 @@ class Setting extends Model
         }
 
         return $default;
+    }
+
+    /**
+     * Resolve the store logo URL, or null when the default icon is used.
+     */
+    public static function logoUrl(): ?string
+    {
+        $type = static::get('logo_type');
+        $value = static::get('logo_value');
+
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        if ($type === 'url') {
+            return $value;
+        }
+
+        if ($type === 'image' && Storage::disk('public')->exists($value)) {
+            return Storage::disk('public')->url($value);
+        }
+
+        return null;
     }
 }

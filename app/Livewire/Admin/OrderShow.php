@@ -49,6 +49,8 @@ class OrderShow extends Component
 
     public function updatePaymentStatus(): void
     {
+        abort_unless($this->order->payment_method === 'cod', 403);
+
         $this->validate(['paymentStatus' => ['required', 'in:pending,paid,refunded']]);
 
         $this->order->update(['payment_status' => $this->paymentStatus]);

@@ -4,6 +4,7 @@ namespace App\Livewire\Orders;
 
 use App\Models\Order;
 use App\Services\OrderService;
+use App\Services\RazorpayService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -35,6 +36,33 @@ class Show extends Component
         app(OrderService::class)->cancel($this->order, $this->cancelReason, 'customer');
 
         $this->order->refresh();
+    }
+
+    public function payOnline(): void
+    {
+        if ($this->order->payment_method !== 'online' || $this->order->payment_status === 'paid') {
+            return;
+        }
+
+        $razorpayOrderId = $this->order->payment_reference;
+
+        if (! is_string($razorpayOrderId) || $razorpayOrderId === '') {
+            $razorpayOrderId = app(RazorpayService::class)->createOrder(
+                $this->order->total * 100,
+                $this->order->order_number,
+                ['order_id' => (string) $this->order->id],
+            );
+            $this->order->update(['payment_reference' => $razorpayOrderId]);
+        }
+
+        $this->dispatch('razorpay-open',
+            key_id: config('razorpay.key_id'),
+            order_id: $razorpayOrderId,
+            amount: $this->order->total * 100,
+            name: config('razorpay.name'),
+            description: config('razorpay.description').' '.$this->order->order_number,
+            theme_color: config('razorpay.theme_color'),
+        );
     }
 
     /**

@@ -6,6 +6,8 @@ use App\Models\Admin;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Unit;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('guest is redirected to admin login when accessing settings', function () {
@@ -112,4 +114,46 @@ test('settings validate delivery fee as a positive integer', function () {
         ->set('deliveryFee', -5)
         ->call('save')
         ->assertHasErrors(['deliveryFee' => 'min']);
+});
+
+test('admin can set a logo url', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Settings::class)
+        ->set('logoType', 'url')
+        ->set('logoUrl', 'https://example.com/logo.png')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::get('logo_type'))->toBe('url')
+        ->and(Setting::get('logo_value'))->toBe('https://example.com/logo.png')
+        ->and(Setting::logoUrl())->toBe('https://example.com/logo.png');
+});
+
+test('admin can upload a logo image', function () {
+    Storage::fake('public');
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Settings::class)
+        ->set('logoType', 'image')
+        ->set('logoImage', UploadedFile::fake()->image('logo.png'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::get('logo_type'))->toBe('image');
+
+    Storage::disk('public')->assertExists(Setting::get('logo_value'));
+});
+
+test('logo url must be a valid url', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Settings::class)
+        ->set('logoType', 'url')
+        ->set('logoUrl', 'not-a-url')
+        ->call('save')
+        ->assertHasErrors(['logoUrl' => 'url']);
 });

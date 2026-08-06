@@ -33,7 +33,7 @@ class OrderService
                 'discount' => 0,
                 'total' => $subtotal + $deliveryFee,
                 'payment_method' => $data['payment_method'],
-                'payment_status' => $data['payment_method'] === 'cod' ? 'pending' : 'paid',
+                'payment_status' => 'pending',
                 'receiver_name' => $data['receiver_name'],
                 'receiver_phone' => $data['receiver_phone'],
                 'address_line' => $data['address_line'],

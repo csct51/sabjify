@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
 use App\Livewire\Admin\Auth\AdminLogin;
 use App\Livewire\Admin\Categories as AdminCategories;
 use App\Livewire\Admin\CategoryForm as AdminCategoryForm;
@@ -45,9 +46,11 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::livewire('/product/{product:slug}', ProductDetail::class)->name('product.show');
     Route::livewire('/cart', Cart::class)->name('cart');
     Route::livewire('/checkout', Checkout::class)->name('checkout');
+    Route::post('/checkout/payment/verify', [PaymentController::class, 'verifyCheckout'])->name('checkout.payment.verify');
     Route::livewire('/profile', Profile::class)->name('profile');
     Route::livewire('/orders', OrdersIndex::class)->name('orders.index');
     Route::livewire('/orders/{order}', OrdersShow::class)->name('orders.show');
+    Route::post('/orders/{order}/payment/verify', [PaymentController::class, 'verify'])->name('orders.payment.verify');
 });
 
 Route::middleware(['auth:admin', 'admin'])->prefix('admin')->name('admin.')->group(function () {

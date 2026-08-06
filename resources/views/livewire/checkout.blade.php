@@ -100,7 +100,7 @@
                             @foreach (config('mart.payment_methods') as $key => $method)
                                 @if (in_array($key, $this->enabledPaymentMethods, true))
                                     <label class="flex items-center gap-3 rounded-xl border border-stone-200 p-4 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
-                                        <input type="radio" wire:model="paymentMethod" value="{{ $key }}" class="rounded-full border-stone-300 text-brand-600 focus:ring-brand-500">
+                                        <input type="radio" wire:model.live="paymentMethod" value="{{ $key }}" class="rounded-full border-stone-300 text-brand-600 focus:ring-brand-500">
                                         <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="{{ $method['icon'] }}" class="w-5 h-5"></i></span>
                                         <span>
                                             <span class="block text-sm font-medium text-stone-900">{{ $method['label'] }}</span>
@@ -152,10 +152,98 @@
                     </div>
 
                     <button type="button" wire:click="placeOrder" class="mt-5 w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition">
-                        Place Order · {{ \Illuminate\Support\Number::currency($this->total, 'INR') }}
+                        {{ $this->paymentMethod === 'online' ? 'Pay Securely' : 'Place Order' }} · {{ \Illuminate\Support\Number::currency($this->total, 'INR') }}
                     </button>
+
+                    @if ($this->paymentMethod === 'online')
+                        <p class="mt-2 text-xs text-stone-400 text-center">You will be redirected to Razorpay to complete the payment. Your order is placed only after payment succeeds.</p>
+                    @endif
                 </div>
             </div>
         @endif
     </div>
+
+    @assets
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    @endassets
+
+    @script
+        <script>
+            Livewire.on('razorpay-open', (payload) => {
+                openRazorpay(payload);
+            });
+
+            async function openRazorpay(payload) {
+                if (typeof window.Razorpay !== 'function') {
+                    await loadRazorpayScript();
+                }
+
+                if (typeof window.Razorpay !== 'function') {
+                    alert('Razorpay failed to load. Please refresh and try again.');
+                    return;
+                }
+
+                const options = {
+                    key: payload.key_id,
+                    amount: payload.amount,
+                    currency: 'INR',
+                    name: payload.name,
+                    description: payload.description,
+                    order_id: payload.order_id,
+                    prefill: {
+                        name: '{{ addslashes($this->receiverName) }}',
+                        contact: '{{ $this->receiverPhone }}',
+                    },
+                    theme: { color: payload.theme_color },
+                    handler: (response) => {
+                        fetch('{{ route('checkout.payment.verify') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                            },
+                            body: JSON.stringify(response),
+                        })
+                            .then((res) => res.json())
+                            .then((data) => {
+                                if (data.success) {
+                                    window.location.href = data.redirect;
+                                } else {
+                                    alert(data.message || 'Payment could not be verified. Please try again.');
+                                }
+                            })
+                            .catch(() => {
+                                alert('Something went wrong while confirming your payment. Your cart is still saved. Please try again.');
+                            });
+                    },
+                };
+
+                try {
+                    const razorpay = new window.Razorpay(options);
+                    razorpay.open();
+                } catch (error) {
+                    console.error('Razorpay checkout failed', error);
+                    alert('The payment window could not be opened. Please try again.');
+                }
+            }
+
+            function loadRazorpayScript() {
+                return new Promise((resolve) => {
+                    const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+
+                    if (existing) {
+                        resolve();
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                    script.onload = () => resolve();
+                    script.onerror = () => resolve();
+                    document.head.appendChild(script);
+                });
+            }
+        </script>
+    @endscript
 </div>
