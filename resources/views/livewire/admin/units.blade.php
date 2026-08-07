@@ -1,5 +1,5 @@
 <div>
-    <div class="max-w-3xl">
+    <div>
         <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div>
                 <p class="text-sm text-stone-400 mb-1">{{ count($this->units) }} units</p>

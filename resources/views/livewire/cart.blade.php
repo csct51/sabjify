@@ -23,6 +23,11 @@
                                 <div class="flex items-start justify-between gap-2">
                                     <div>
                                         <a href="{{ route('product.show', $item->product->slug) }}" wire:navigate class="font-medium text-stone-900 hover:text-brand-700">{{ $item->product->name }}</a>
+                                        @if ($item->recipe)
+                                            <a href="{{ route('recipes.show', $item->recipe) }}" wire:navigate class="block text-xs text-brand-600 hover:text-brand-700 mt-0.5">
+                                                <i data-lucide="book-open" class="w-3 h-3 inline"></i> From {{ $item->recipe->title }}
+                                            </a>
+                                        @endif
                                         <p class="text-xs text-stone-400 mt-0.5">{{ $item->product->unit }} · {{ \Illuminate\Support\Number::currency($item->product->price, 'INR') }}</p>
                                     </div>
                                     <button type="button" wire:click="remove({{ $item->id }})" class="text-stone-400 hover:text-red-600" aria-label="Remove">

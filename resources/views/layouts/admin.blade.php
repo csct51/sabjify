@@ -18,6 +18,7 @@
                     ['route' => 'admin.categories.index', 'label' => 'Categories', 'icon' => 'folder'],
                     ['route' => 'admin.units', 'label' => 'Units', 'icon' => 'scale'],
                     ['route' => 'admin.products.index', 'label' => 'Products', 'icon' => 'shopping-basket'],
+                    ['route' => 'admin.recipes.index', 'label' => 'Recipes', 'icon' => 'book-open'],
                     ['route' => 'admin.customers.index', 'label' => 'Customers', 'icon' => 'users'],
                 ];
             @endphp

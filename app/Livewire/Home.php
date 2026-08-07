@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Recipe;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -52,6 +53,20 @@ class Home extends Component
             ->with('category')
             ->latest()
             ->limit(8)
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, Recipe>
+     */
+    #[Computed]
+    public function recipes(): Collection
+    {
+        return Recipe::active()
+            ->withCount('products')
+            ->orderBy('sort_order')
+            ->latest()
+            ->limit(6)
             ->get();
     }
 

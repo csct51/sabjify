@@ -81,6 +81,12 @@ class ProductForm extends Component
         $this->slugManuallyEdited = true;
     }
 
+    #[Computed]
+    public function autoSlug(): string
+    {
+        return Str::slug($this->name);
+    }
+
     /**
      * @return Collection<int, Category>
      */
@@ -117,7 +123,7 @@ class ProductForm extends Component
             'is_active' => ['boolean'],
             'is_featured' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'imageUrl' => ['nullable', 'url', 'max:500'],
         ]);
 

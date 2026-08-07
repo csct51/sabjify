@@ -4,6 +4,7 @@ use App\Livewire\Cart;
 use App\Livewire\ProductCard;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\Recipe;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -108,4 +109,21 @@ test('cart page shows subtotal and free delivery above threshold', function () {
         ->assertSet('subtotal', 600)
         ->assertSet('deliveryFee', 0)
         ->assertSet('total', 600);
+});
+
+test('cart shows the recipe a product was added from', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['name' => 'Mango']);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
+
+    CartItem::factory()->create([
+        'user_id' => $user->id,
+        'product_id' => $product->id,
+        'recipe_id' => $recipe->id,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Cart::class)
+        ->assertOk()
+        ->assertSee('From Mango Salad');
 });

@@ -1,5 +1,5 @@
 <div>
-    <div class="max-w-2xl">
+    <div>
         <div class="bg-white rounded-2xl border border-stone-200 p-6">
             <h2 class="text-lg font-semibold text-stone-900 mb-1">Platform Settings</h2>
             <p class="text-sm text-stone-500 mb-6">Manage how your store appears to customers.</p>
@@ -56,7 +56,7 @@
                     @if ($logoType === 'image')
                         <div>
                             <input wire:model="logoImage" type="file" accept="image/jpeg,image/png,image/webp" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm">
-                            <p class="text-xs text-stone-500 mt-1">JPG, PNG or WebP up to 2MB. Uploading a new file replaces the current logo.</p>
+                            <p class="text-xs text-stone-500 mt-1">JPG, PNG or WebP up to 10MB. Uploading a new file replaces the current logo.</p>
                             @error('logoImage')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
                     @endif

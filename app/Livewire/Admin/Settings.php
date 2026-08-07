@@ -54,7 +54,7 @@ class Settings extends Component
             'minimumOrderAmount' => ['required', 'integer', 'min:0'],
             'logoType' => ['required', 'in:icon,image,url'],
             'logoUrl' => ['required_if:logoType,url', 'nullable', 'url', 'max:500'],
-            'logoImage' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'logoImage' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'enabledPaymentMethods' => ['required', 'array', 'min:1'],
             'enabledPaymentMethods.*' => ['in:cod,online'],
         ]);

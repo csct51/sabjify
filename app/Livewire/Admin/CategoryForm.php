@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Category;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -33,6 +34,8 @@ class CategoryForm extends Component
 
     public string $existingImage = '';
 
+    public bool $slugManuallyEdited = false;
+
     public function mount(?Category $category = null): void
     {
         $this->category = $category;
@@ -50,20 +53,35 @@ class CategoryForm extends Component
 
     public function updatedName(): void
     {
-        if (! $this->category) {
+        if (! $this->slugManuallyEdited) {
             $this->slug = Str::slug($this->name);
         }
     }
 
+    public function updatedSlug(): void
+    {
+        $this->slugManuallyEdited = true;
+    }
+
+    #[Computed]
+    public function autoSlug(): string
+    {
+        return Str::slug($this->name);
+    }
+
     public function save(): void
     {
+        if ($this->slug === '') {
+            $this->slug = Str::slug($this->name);
+        }
+
         $this->validate([
             'name' => ['required', 'string', 'max:100'],
             'slug' => ['required', 'string', 'max:120', 'unique:categories,slug,'.($this->category->id ?? 'NULL')],
             'description' => ['nullable', 'string', 'max:500'],
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'imageUrl' => ['nullable', 'url', 'max:500'],
         ]);
 

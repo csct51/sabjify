@@ -1,5 +1,5 @@
 <div>
-    <div class="max-w-2xl">
+    <div>
         <nav class="text-sm text-stone-400 mb-4">
             <a href="{{ route('admin.products.index') }}" wire:navigate class="hover:text-brand-600">← Products</a>
         </nav>
@@ -22,8 +22,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-stone-700 mb-1">Product Name <span class="text-red-500">*</span></label>
-                        <input wire:model="name" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        <input wire:model.live="name" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                         @error('name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        @if (! $slugManuallyEdited && $this->autoSlug !== '')
+                            <p class="mt-1 text-[11px] text-stone-400">Slug: <span class="font-medium text-brand-600">{{ $this->autoSlug }}</span></p>
+                        @endif
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-stone-700 mb-1">Slug <span class="text-red-500">*</span></label>

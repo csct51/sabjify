@@ -74,6 +74,32 @@ test('admin can create a category', function () {
     $this->assertDatabaseHas('categories', ['name' => 'Frozen Foods', 'slug' => 'frozen-foods']);
 });
 
+test('category slug is auto-generated from the name', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(CategoryForm::class)
+        ->set('name', 'Frozen Foods')
+        ->call('save')
+        ->assertRedirect(route('admin.categories.index'));
+
+    $this->assertDatabaseHas('categories', ['name' => 'Frozen Foods', 'slug' => 'frozen-foods']);
+});
+
+test('category slug is auto-generated when editing the name', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create(['name' => 'Old Name', 'slug' => 'old-name']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(CategoryForm::class, ['category' => $category])
+        ->set('name', 'New Name')
+        ->set('slug', '')
+        ->call('save')
+        ->assertRedirect(route('admin.categories.index'));
+
+    $this->assertDatabaseHas('categories', ['id' => $category->id, 'slug' => 'new-name']);
+});
+
 test('admin can create a product', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();

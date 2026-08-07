@@ -28,6 +28,8 @@ class Shop extends Component
     #[Url(as: 'sort', history: false)]
     public string $sort = 'latest';
 
+    public bool $showFilters = false;
+
     public function updatedSearch(): void
     {
         $this->resetPage();

@@ -60,7 +60,7 @@ class Cart extends Component
     public function cartItems(): Collection
     {
         return auth('web')->user()->cartItems()
-            ->with('product.category')
+            ->with('product.category', 'recipe')
             ->latest()
             ->get();
     }

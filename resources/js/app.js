@@ -1,4 +1,4 @@
-import { createIcons, Apple, ArrowRight, BadgeCheck, Banknote, Bell, Carrot, Check, ChevronDown, ChevronRight, CircleCheck, Citrus, CreditCard, Eye, EyeOff, Folder, Headset, Home, IndianRupee, LayoutDashboard, LayoutGrid, Leaf, Link, Lock, LogOut, MapPin, Menu, Minus, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Scale, Search, Settings, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, Users, X } from 'lucide';
+import { createIcons, Apple, ArrowRight, BadgeCheck, Banknote, Bell, BookOpen, Carrot, Check, ChevronDown, ChevronRight, CircleCheck, Citrus, CreditCard, Eye, EyeOff, Filter, Folder, Headset, Home, IndianRupee, LayoutDashboard, LayoutGrid, Leaf, Link, Lock, LogOut, MapPin, Menu, Minus, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Scale, Search, Settings, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, Users, X } from 'lucide';
 import DataTable from 'datatables.net-dt';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
 
@@ -8,6 +8,7 @@ const icons = {
     BadgeCheck,
     Banknote,
     Bell,
+    BookOpen,
     Carrot,
     Check,
     ChevronDown,
@@ -17,6 +18,7 @@ const icons = {
     CreditCard,
     Eye,
     EyeOff,
+    Filter,
     Folder,
     Headset,
     Home,
