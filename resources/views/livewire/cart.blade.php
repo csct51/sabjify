@@ -14,40 +14,25 @@
         @else
             <div class="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
                 <div class="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
-                    @foreach ($this->cartItems as $item)
-                        <div class="flex gap-4 p-4" wire:key="cart-{{ $item->id }}">
-                            <a href="{{ route('product.show', $item->product->slug) }}" wire:navigate class="w-20 h-20 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center shrink-0 overflow-hidden">
-                                <img src="{{ $item->product->displayImageUrl() }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
-                            </a>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div>
-                                        <a href="{{ route('product.show', $item->product->slug) }}" wire:navigate class="font-medium text-stone-900 hover:text-brand-700">{{ $item->product->name }}</a>
-                                        @if ($item->recipe)
-                                            <a href="{{ route('recipes.show', $item->recipe) }}" wire:navigate class="block text-xs text-brand-600 hover:text-brand-700 mt-0.5">
-                                                <i data-lucide="book-open" class="w-3 h-3 inline"></i> From {{ $item->recipe->title }}
-                                            </a>
-                                        @endif
-                                        <p class="text-xs text-stone-400 mt-0.5">{{ $item->product->unit }} · {{ \Illuminate\Support\Number::currency($item->product->price, 'INR') }}</p>
-                                    </div>
-                                    <button type="button" wire:click="remove({{ $item->id }})" class="text-stone-400 hover:text-red-600" aria-label="Remove">
-                                        <i data-lucide="trash-2" class="w-5 h-5"></i>
-                                    </button>
+                    @foreach ($this->cartGroups as $group)
+                        @if ($group['recipe'])
+                            <div wire:key="recipe-{{ $group['recipe']->id }}">
+                                <div class="flex items-center gap-2 px-4 py-3 bg-brand-50/60 border-b border-brand-100">
+                                    <a href="{{ route('recipes.show', $group['recipe']) }}" wire:navigate class="flex items-center gap-2 text-sm font-semibold text-brand-700 hover:text-brand-800">
+                                        <i data-lucide="book-open" class="w-4 h-4"></i>
+                                        {{ $group['recipe']->title }}
+                                    </a>
+                                    <span class="text-xs text-stone-400">{{ count($group['items']) }} items</span>
                                 </div>
-
-                                <div class="mt-3 flex items-center justify-between">
-                                    <div class="flex items-center gap-3 bg-stone-100 rounded-lg p-1">
-                                        <button type="button" wire:click="decrement({{ $item->id }})" class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center hover:bg-stone-50" aria-label="Decrease quantity"><i data-lucide="minus" class="w-3.5 h-3.5"></i></button>
-                                        <span class="w-6 text-center font-medium text-sm">{{ $item->quantity }}</span>
-                                        <button type="button" wire:click="increment({{ $item->id }})" class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center hover:bg-stone-50" aria-label="Increase quantity"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
-                                    </div>
-                                    <p class="font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($item->product->price * $item->quantity, 'INR') }}</p>
-                                </div>
-                                @if (! $item->product->inStock())
-                                    <p class="mt-1 text-xs text-red-500">Only {{ $item->product->stock }} left in stock</p>
-                                @endif
+                                @foreach ($group['items'] as $item)
+                                    @include('partials.cart-item', ['item' => $item])
+                                @endforeach
                             </div>
-                        </div>
+                        @else
+                            @foreach ($group['items'] as $item)
+                                @include('partials.cart-item', ['item' => $item])
+                            @endforeach
+                        @endif
                     @endforeach
                 </div>
 

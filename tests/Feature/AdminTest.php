@@ -234,6 +234,22 @@ test('admin can view customer details', function () {
         ->assertSee('240');
 });
 
+test('customer details page filters orders by status', function () {
+    $admin = Admin::factory()->create();
+    $customer = User::factory()->create();
+    $pending = Order::factory()->create(['user_id' => $customer->id, 'status' => 'pending']);
+    $delivered = Order::factory()->create(['user_id' => $customer->id, 'status' => 'delivered']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(CustomerShow::class, ['user' => $customer])
+        ->assertSee($pending->order_number)
+        ->assertSee($delivered->order_number)
+        ->set('status', 'pending')
+        ->assertSee($pending->order_number)
+        ->assertDontSee($delivered->order_number)
+        ->assertSet('counts', fn (array $counts) => $counts['all'] === 2 && $counts['pending'] === 1 && $counts['delivered'] === 1);
+});
+
 test('guest is redirected to admin login when accessing customer details', function () {
     $customer = User::factory()->create();
 

@@ -31,7 +31,7 @@
     @endif
 
     <div class="grid lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 space-y-6">
+        <div class="min-w-0 lg:col-span-2 space-y-6">
             <div class="bg-white rounded-2xl border border-stone-200 p-6">
                 <h3 class="font-semibold text-stone-900 mb-4">Items</h3>
                 <div class="divide-y divide-stone-100">
@@ -80,7 +80,7 @@
             </div>
         </div>
 
-        <div class="space-y-6">
+        <div class="min-w-0 space-y-6">
             <div class="bg-white rounded-2xl border border-stone-200 p-6">
                 <h3 class="font-semibold text-stone-900 mb-4">Update Status</h3>
                 <form wire:submit="updateStatus" class="space-y-3">

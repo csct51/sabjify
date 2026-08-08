@@ -17,6 +17,11 @@ class Orders extends Component
     #[Url]
     public ?string $status = null;
 
+    public function filter(string $status): void
+    {
+        $this->status = $status === 'all' ? null : $status;
+    }
+
     /**
      * @return array<string, int>
      */

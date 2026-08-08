@@ -40,9 +40,21 @@
     </div>
 
     <div class="grid lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 space-y-6">
+        <div class="min-w-0 lg:col-span-2 space-y-6">
             <div class="bg-white rounded-2xl border border-stone-200 p-6">
                 <h3 class="font-semibold text-stone-900 mb-4">Order History</h3>
+                <div class="flex gap-2 mb-6 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
+                    @foreach (['all', 'pending', 'confirmed', 'packing', 'out_for_delivery', 'delivered', 'cancelled'] as $value)
+                        <button
+                            type="button"
+                            wire:click="filter('{{ $value }}')"
+                            class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition {{ ($this->status ?? 'all') === $value ? 'bg-stone-900 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300' }}"
+                        >
+                            {{ $value === 'all' ? 'All' : \App\Models\Order::STATUSES[$value] }}
+                            <span class="opacity-60">({{ $value === 'all' ? $this->counts['all'] : ($this->counts[$value] ?? 0) }})</span>
+                        </button>
+                    @endforeach
+                </div>
                 @if ($this->orders->isEmpty())
                     <p class="text-sm text-stone-400">No orders yet.</p>
                 @else
@@ -64,7 +76,7 @@
             </div>
         </div>
 
-        <div class="space-y-6">
+        <div class="min-w-0 space-y-6">
             <div class="bg-white rounded-2xl border border-stone-200 p-6">
                 <h3 class="font-semibold text-stone-900 mb-4">Profile</h3>
                 <dl class="space-y-3 text-sm">

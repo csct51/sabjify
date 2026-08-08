@@ -111,19 +111,32 @@ test('cart page shows subtotal and free delivery above threshold', function () {
         ->assertSet('total', 600);
 });
 
-test('cart shows the recipe a product was added from', function () {
+test('cart groups products under the recipe they came from', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->available()->create(['name' => 'Mango']);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
+    $mint = Product::factory()->available()->create(['name' => 'Mint']);
+    $standalone = Product::factory()->available()->create(['name' => 'Apple']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
 
-    CartItem::factory()->create([
-        'user_id' => $user->id,
-        'product_id' => $product->id,
-        'recipe_id' => $recipe->id,
-    ]);
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $mango->id, 'recipe_id' => $recipe->id]);
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $mint->id, 'recipe_id' => $recipe->id]);
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $standalone->id]);
 
     Livewire::actingAs($user)
         ->test(Cart::class)
         ->assertOk()
-        ->assertSee('From Mango Salad');
+        ->assertSee('Mango Salad')
+        ->assertSee('Mango')
+        ->assertSee('Mint')
+        ->assertSee('Apple')
+        ->assertSet('cartGroups', function (array $groups) use ($recipe) {
+            expect($groups)->toHaveCount(2);
+
+            $recipeGroup = collect($groups)->first(fn (array $group) => $group['recipe'] !== null);
+
+            expect($recipeGroup['recipe']->id)->toBe($recipe->id);
+            expect($recipeGroup['items'])->toHaveCount(2);
+
+            return true;
+        });
 });

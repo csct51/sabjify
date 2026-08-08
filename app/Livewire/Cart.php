@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\CartItem;
+use App\Models\Recipe;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -69,6 +70,34 @@ class Cart extends Component
     public function subtotal(): int
     {
         return $this->cartItems()->sum(fn (CartItem $item) => $item->product ? $item->product->price * $item->quantity : 0);
+    }
+
+    /**
+     * Group cart items by the recipe they came from, keeping standalone
+     * items in their own single-item groups.
+     *
+     * @return array<int|string, array{recipe: Recipe|null, items: array<int, CartItem>}>
+     */
+    #[Computed]
+    public function cartGroups(): array
+    {
+        /** @var array<int|string, array{recipe: Recipe|null, items: array<int, CartItem>}> $grouped */
+        $grouped = [];
+
+        foreach ($this->cartItems() as $item) {
+            $key = $item->recipe_id ?? 'item-'.$item->id;
+
+            if (! isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'recipe' => $item->recipe,
+                    'items' => [],
+                ];
+            }
+
+            $grouped[$key]['items'][] = $item;
+        }
+
+        return $grouped;
     }
 
     #[Computed]

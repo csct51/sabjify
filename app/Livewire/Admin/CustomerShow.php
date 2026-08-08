@@ -19,6 +19,13 @@ class CustomerShow extends Component
     #[Locked]
     public User $user;
 
+    public ?string $status = null;
+
+    public function filter(string $status): void
+    {
+        $this->status = $status === 'all' ? null : $status;
+    }
+
     public function mount(): void
     {
         abort_unless(auth('admin')->check(), 403);
@@ -37,7 +44,29 @@ class CustomerShow extends Component
     #[Computed]
     public function orders(): Collection
     {
-        return $this->user->orders()->with('items')->latest()->get();
+        return $this->user->orders()
+            ->with('items')
+            ->when($this->status, fn ($query) => $query->where('status', $this->status))
+            ->latest()
+            ->get();
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    #[Computed]
+    public function counts(): array
+    {
+        $counts = $this->user->orders()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->all();
+
+        return [
+            'all' => $this->user->orders()->count(),
+            ...$counts,
+        ];
     }
 
     #[Computed]

@@ -10,7 +10,7 @@
         @foreach (['all', 'pending', 'confirmed', 'packing', 'out_for_delivery', 'delivered', 'cancelled'] as $value)
             <button
                 type="button"
-                wire:click="$set('status', '{{ $value === 'all' ? null : $value }}')"
+                wire:click="filter('{{ $value }}')"
                 class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition {{ ($this->status ?? 'all') === $value ? 'bg-stone-900 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300' }}"
             >
                 {{ $value === 'all' ? 'All' : \App\Models\Order::STATUSES[$value] }}

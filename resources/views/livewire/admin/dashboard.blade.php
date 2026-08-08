@@ -35,7 +35,7 @@
     </div>
 
     <div class="grid lg:grid-cols-2 gap-6">
-        <div class="bg-white rounded-2xl border border-stone-200">
+        <div class="min-w-0 bg-white rounded-2xl border border-stone-200">
             <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between">
                 <h2 class="font-semibold text-stone-900">Recent Orders</h2>
                 <a href="{{ route('admin.orders.index') }}" wire:navigate class="text-xs font-semibold text-brand-600">View all →</a>
@@ -58,7 +58,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-stone-200">
+        <div class="min-w-0 bg-white rounded-2xl border border-stone-200">
             <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between">
                 <h2 class="font-semibold text-stone-900">Low Stock Alerts</h2>
                 <a href="{{ route('admin.products.index', ['low_stock' => 1]) }}" wire:navigate class="text-xs font-semibold text-brand-600">Manage →</a>
