@@ -30,8 +30,10 @@
                 @enderror
             </div>
 
-            <button type="submit" class="w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition">
-                Send OTP
+            <button type="submit" wire:loading.attr="disabled" wire:target="sendOtp" class="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition disabled:opacity-70">
+                <x-loading-spinner wire:loading wire:target="sendOtp" class="w-4 h-4" />
+                <span wire:loading.remove wire:target="sendOtp">Send OTP</span>
+                <span wire:loading wire:target="sendOtp">Sending...</span>
             </button>
 
             <p class="text-center text-xs text-stone-400">
@@ -89,13 +91,19 @@
                 @endif
             </div>
 
-            <button type="submit" class="w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition">
-                {{ $this->isNewUser ? 'Create Account & Login' : 'Verify & Login' }}
+            <button type="submit" wire:loading.attr="disabled" wire:target="verifyOtp" class="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition disabled:opacity-70">
+                <x-loading-spinner wire:loading wire:target="verifyOtp" class="w-4 h-4" />
+                <span wire:loading.remove wire:target="verifyOtp">{{ $this->isNewUser ? 'Create Account & Login' : 'Verify & Login' }}</span>
+                <span wire:loading wire:target="verifyOtp">Verifying...</span>
             </button>
 
             <div class="flex items-center justify-between text-sm">
                 <button type="button" wire:click="goBack" class="text-stone-500 hover:text-stone-700">← Change number</button>
-                <button type="button" wire:click="resendOtp" class="text-brand-600 hover:text-brand-700 font-medium">Resend OTP</button>
+                <button type="button" wire:click="resendOtp" wire:loading.attr="disabled" wire:target="resendOtp" class="inline-flex items-center gap-1.5 text-brand-600 hover:text-brand-700 font-medium disabled:opacity-50">
+                    <x-loading-spinner wire:loading wire:target="resendOtp" class="w-3 h-3" />
+                    <span wire:loading.remove wire:target="resendOtp">Resend OTP</span>
+                    <span wire:loading wire:target="resendOtp">Resending...</span>
+                </button>
             </div>
         </form>
     @endif

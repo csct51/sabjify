@@ -42,6 +42,8 @@ class Units extends Component
         ]);
 
         $this->newUnit = '';
+
+        $this->dispatch('toast', message: "Unit \"{$unit}\" added.");
     }
 
     public function removeUnit(Unit $unit): void
@@ -50,11 +52,14 @@ class Units extends Component
 
         if ($inUse) {
             $this->addError('remove', "Cannot remove \"{$unit->name}\" because it is used by one or more products.");
+            $this->dispatch('toast', message: "Cannot remove \"{$unit->name}\" because it is used by products.", type: 'error');
 
             return;
         }
 
         $unit->delete();
+
+        $this->dispatch('toast', message: "Unit \"{$unit->name}\" removed.");
     }
 
     public function render(): View

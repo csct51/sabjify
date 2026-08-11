@@ -45,9 +45,10 @@
                             <td class="px-4 py-3 text-stone-500">{{ $category->slug }}</td>
                             <td class="px-4 py-3 text-center text-stone-600">{{ $category->products_count }}</td>
                             <td class="px-4 py-3 text-center">
-                                <button type="button" wire:click="toggleActive({{ $category->id }})" class="inline-flex items-center gap-1.5 text-xs font-medium {{ $category->is_active ? 'text-green-600' : 'text-stone-400' }}">
-                                    <span class="w-2 h-2 rounded-full {{ $category->is_active ? 'bg-green-500' : 'bg-stone-300' }}"></span>
-                                    {{ $category->is_active ? 'Active' : 'Hidden' }}
+                                <button type="button" wire:click="toggleActive({{ $category->id }})" wire:loading.attr="disabled" wire:target="toggleActive({{ $category->id }})" class="inline-flex items-center gap-1.5 text-xs font-medium {{ $category->is_active ? 'text-green-600' : 'text-stone-400' }} disabled:opacity-50">
+                                    <x-loading-spinner wire:loading wire:target="toggleActive({{ $category->id }})" class="w-3 h-3" />
+                                    <span wire:loading.remove wire:target="toggleActive({{ $category->id }})" class="w-2 h-2 rounded-full {{ $category->is_active ? 'bg-green-500' : 'bg-stone-300' }}"></span>
+                                    <span wire:loading.remove wire:target="toggleActive({{ $category->id }})">{{ $category->is_active ? 'Active' : 'Hidden' }}</span>
                                 </button>
                             </td>
                             <td class="px-4 py-3 text-right">

@@ -24,16 +24,22 @@ class Products extends Component
     public function toggleActive(Product $product): void
     {
         $product->update(['is_active' => ! $product->is_active]);
+
+        $this->dispatch('toast', message: $product->is_active ? "Product \"{$product->name}\" is now visible." : "Product \"{$product->name}\" is now hidden.");
     }
 
     public function toggleFeatured(Product $product): void
     {
         $product->update(['is_featured' => ! $product->is_featured]);
+
+        $this->dispatch('toast', message: $product->is_featured ? "Product \"{$product->name}\" is now featured." : "Product \"{$product->name}\" is no longer featured.");
     }
 
     public function delete(Product $product): void
     {
         $product->delete();
+
+        $this->dispatch('toast', message: "Product \"{$product->name}\" deleted.");
     }
 
     /**

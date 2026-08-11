@@ -1,210 +1,76 @@
-<div>
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="min-h-screen">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex items-center gap-4 mb-8">
             <span class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-600 text-white"><i data-lucide="user" class="w-7 h-7"></i></span>
             <div>
                 <h1 class="text-2xl font-bold text-stone-900">My Profile</h1>
-                <p class="text-sm text-stone-500">Manage your account details and saved addresses.</p>
+                <p class="text-sm text-stone-500">Manage your account, addresses and orders.</p>
             </div>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 space-y-6">
-                <section class="bg-white rounded-2xl border border-stone-200 p-6">
-                    <div class="flex items-center justify-between mb-5">
-                        <h2 class="font-semibold text-stone-900">Account Details</h2>
-                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-brand-600"><i data-lucide="shield-check" class="w-4 h-4"></i> Verified</span>
-                    </div>
-
-                    <form wire:submit="saveProfile" class="space-y-4">
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-stone-700 mb-1">Full name <span class="text-red-500">*</span></label>
-                            <input
-                                id="name"
-                                type="text"
-                                wire:model="name"
-                                class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
-                            />
-                            @error('name') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-stone-700 mb-1">Email (optional)</label>
-                            <input
-                                id="email"
-                                type="email"
-                                wire:model="email"
-                                placeholder="you@example.com"
-                                class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
-                            />
-                            @error('email') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label for="phone" class="block text-sm font-medium text-stone-700 mb-1">Phone</label>
-                            <div class="relative">
-                                <i data-lucide="phone" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"></i>
-                                <input
-                                    id="phone"
-                                    type="text"
-                                    value="{{ auth()->user()->phone }}"
-                                    disabled
-                                    class="w-full rounded-xl border-stone-200 bg-stone-50 text-stone-500 pl-9 pr-3 py-2.5 text-sm"
-                                />
-                            </div>
-                            <p class="mt-1 text-xs text-stone-400">Your phone number is your login and cannot be changed.</p>
-                        </div>
-
-                        <div class="flex justify-end">
-                            <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-5 py-2.5 transition">
-                                <i data-lucide="check" class="w-4 h-4"></i> Save Changes
-                            </button>
-                        </div>
-                    </form>
-                </section>
-
-                <section class="bg-white rounded-2xl border border-stone-200 p-6">
-                    <div class="flex items-center justify-between mb-5">
-                        <h2 class="font-semibold text-stone-900">Saved Addresses</h2>
-                        @if ($this->addressMode === 'list')
-                            <button type="button" wire:click="openAddressForm" class="inline-flex items-center gap-1.5 rounded-xl border border-brand-600 text-brand-600 hover:bg-brand-50 font-semibold px-4 py-2 text-sm transition">
-                                <i data-lucide="plus" class="w-4 h-4"></i> Add Address
-                            </button>
-                        @endif
-                    </div>
-
-                    @if ($this->addressMode === 'list')
-                        @if ($this->addresses->isEmpty())
-                            <div class="text-center py-10">
-                                <span class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 text-brand-600"><i data-lucide="map-pin" class="w-7 h-7"></i></span>
-                                <p class="mt-3 font-medium text-stone-700">No saved addresses yet</p>
-                                <p class="text-sm text-stone-500 mt-1">Add your delivery address so checkout is faster.</p>
-                            </div>
-                        @else
-                            <div class="space-y-3">
-                                @foreach ($this->addresses as $address)
-                                    <div class="rounded-xl border border-stone-200 p-4 {{ $address->is_default ? 'border-brand-300 bg-brand-50/50' : '' }}">
-                                        <div class="flex items-start justify-between gap-3">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-sm font-semibold text-stone-900">{{ $address->label }}</span>
-                                                @if ($address->is_default)
-                                                    <span class="inline-flex items-center gap-1 text-xs font-medium text-brand-700"><i data-lucide="check" class="w-3.5 h-3.5"></i> Default</span>
-                                                @endif
-                                            </div>
-                                            <div class="flex items-center gap-1">
-                                                <button type="button" wire:click="editAddress({{ $address->id }})" class="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100" aria-label="Edit address">
-                                                    <i data-lucide="pencil" class="w-4 h-4"></i>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    @click="$dispatch('confirm-modal', { message: 'Delete this address?', action: () => $wire.deleteAddress({{ $address->id }}) })"
-                                                    class="p-2 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50"
-                                                    aria-label="Delete address"
-                                                >
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <p class="mt-2 text-sm text-stone-600">{{ $address->receiver_name }} · {{ $address->receiver_phone }}</p>
-                                        <p class="text-sm text-stone-500">{{ $address->address_line }}{{ $address->landmark ? ', ' . $address->landmark : '' }}, {{ $address->city }}, {{ $address->state }} - {{ $address->pincode }}</p>
-                                        @if (! $address->is_default)
-                                            <button type="button" wire:click="setDefaultAddress({{ $address->id }})" class="mt-3 text-xs font-semibold text-brand-600 hover:text-brand-700">Set as default</button>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-                    @else
-                        <form wire:submit="saveAddress" class="space-y-4">
-                            <div class="grid sm:grid-cols-3 gap-4">
-                                <div>
-                                    <label for="label" class="block text-sm font-medium text-stone-700 mb-1">Label <span class="text-red-500">*</span></label>
-                                    <select id="label" wire:model="label" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500">
-                                        <option value="Home">Home</option>
-                                        <option value="Work">Work</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                    @error('label') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                                </div>
-                                <div>
-                                    <label for="receiverName" class="block text-sm font-medium text-stone-700 mb-1">Receiver name <span class="text-red-500">*</span></label>
-                                    <input id="receiverName" type="text" wire:model="receiverName" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
-                                    @error('receiverName') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                                </div>
-                                <div>
-                                    <label for="receiverPhone" class="block text-sm font-medium text-stone-700 mb-1">Receiver phone <span class="text-red-500">*</span></label>
-                                    <input id="receiverPhone" type="tel" wire:model="receiverPhone" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
-                                    @error('receiverPhone') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                                </div>
-                            </div>
-
-                            <div>
-                                <label for="addressLine" class="block text-sm font-medium text-stone-700 mb-1">Address <span class="text-red-500">*</span></label>
-                                <input id="addressLine" type="text" wire:model="addressLine" placeholder="Flat / house no, street, area" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
-                                @error('addressLine') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div class="grid sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="landmark" class="block text-sm font-medium text-stone-700 mb-1">Landmark (optional)</label>
-                                    <input id="landmark" type="text" wire:model="landmark" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
-                                    @error('landmark') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                                </div>
-                                <div>
-                                    <label for="city" class="block text-sm font-medium text-stone-700 mb-1">City <span class="text-red-500">*</span></label>
-                                    <input id="city" type="text" wire:model="city" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
-                                    @error('city') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                                </div>
-                            </div>
-
-                            <div class="grid sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="state" class="block text-sm font-medium text-stone-700 mb-1">State <span class="text-red-500">*</span></label>
-                                    <input id="state" type="text" wire:model="state" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
-                                    @error('state') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                                </div>
-                                <div>
-                                    <label for="pincode" class="block text-sm font-medium text-stone-700 mb-1">PIN code <span class="text-red-500">*</span></label>
-                                    <input id="pincode" type="text" wire:model="pincode" inputmode="numeric" maxlength="6" class="w-full rounded-xl border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500" />
-                                    @error('pincode') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                                </div>
-                            </div>
-
-                            <label class="flex items-center gap-2 text-sm text-stone-700">
-                                <input type="checkbox" wire:model="isDefault" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500" />
-                                Set as default address
-                            </label>
-
-                            <div class="flex items-center justify-end gap-3 pt-2">
-                                <button type="button" wire:click="cancelAddressForm" class="rounded-xl px-5 py-2.5 text-sm font-semibold text-stone-600 hover:bg-stone-100 transition">Cancel</button>
-                                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-5 py-2.5 text-sm transition">
-                                    <i data-lucide="check" class="w-4 h-4"></i> {{ $this->editingAddressId ? 'Update Address' : 'Save Address' }}
-                                </button>
-                            </div>
-                        </form>
+        <section class="bg-white rounded-2xl border border-stone-200 p-6 mb-6">
+            <div class="flex items-center gap-4">
+                <span class="flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-100 text-brand-700 text-xl font-bold">{{ auth()->user()->initials() }}</span>
+                <div class="min-w-0">
+                    <p class="font-semibold text-stone-900 text-lg truncate">{{ auth()->user()->name }}</p>
+                    <p class="text-sm text-stone-500 truncate">{{ auth()->user()->phone }}</p>
+                    @if (auth()->user()->email)
+                        <p class="text-sm text-stone-500 truncate">{{ auth()->user()->email }}</p>
                     @endif
-                </section>
-            </div>
-
-            <aside class="space-y-6">
-                <div class="bg-white rounded-2xl border border-stone-200 p-6">
-                    <div class="flex items-center gap-3">
-                        <span class="flex items-center justify-center w-11 h-11 rounded-full bg-brand-100 text-brand-700 font-bold">{{ auth()->user()->initials() }}</span>
-                        <div>
-                            <p class="font-semibold text-stone-900">{{ auth()->user()->name }}</p>
-                            <p class="text-xs text-stone-400">Member since {{ auth()->user()->created_at->format('M Y') }}</p>
-                        </div>
-                    </div>
-                    <a href="{{ route('orders.index') }}" wire:navigate class="mt-5 flex items-center justify-between rounded-xl border border-stone-200 hover:border-brand-300 px-4 py-3 text-sm font-medium text-stone-700 transition">
-                        <span class="inline-flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-stone-400"></i> My Orders</span>
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-stone-400"></i>
-                    </a>
-                    <button type="button" @click="$dispatch('confirm-modal', { message: 'Are you sure you want to log out?', action: () => $wire.logout() })" class="mt-3 w-full flex items-center justify-between rounded-xl border border-red-200 hover:border-red-300 hover:bg-red-50 px-4 py-3 text-sm font-medium text-red-600 transition">
-                        <span class="inline-flex items-center gap-2"><i data-lucide="log-out" class="w-4 h-4 text-red-400"></i> Logout</span>
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-red-400"></i>
-                    </button>
                 </div>
-            </aside>
-        </div>
+            </div>
+            <div class="mt-5 grid grid-cols-3 gap-3">
+                <div class="rounded-xl bg-stone-50 border border-stone-100 px-4 py-3 text-center">
+                    <p class="text-lg font-bold text-stone-900">{{ $this->ordersCount }}</p>
+                    <p class="text-xs text-stone-500">Orders</p>
+                </div>
+                <div class="rounded-xl bg-stone-50 border border-stone-100 px-4 py-3 text-center">
+                    <p class="text-lg font-bold text-stone-900">{{ $this->addressesCount }}</p>
+                    <p class="text-xs text-stone-500">Addresses</p>
+                </div>
+                <div class="rounded-xl bg-stone-50 border border-stone-100 px-4 py-3 text-center">
+                    <p class="text-lg font-bold text-stone-900">{{ auth()->user()->created_at->format('M Y') }}</p>
+                    <p class="text-xs text-stone-500">Since</p>
+                </div>
+            </div>
+        </section>
+
+        <nav class="space-y-3">
+            <a href="{{ route('profile.account') }}" wire:navigate class="flex items-center gap-4 rounded-2xl border border-stone-200 hover:border-brand-300 bg-white px-5 py-4 transition">
+                <span class="flex items-center justify-center w-11 h-11 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="user-circle" class="w-5 h-5"></i></span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-stone-900">Account Details</p>
+                    <p class="text-sm text-stone-500 truncate">Name, email & phone</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-stone-400"></i>
+            </a>
+
+            <a href="{{ route('profile.addresses') }}" wire:navigate class="flex items-center gap-4 rounded-2xl border border-stone-200 hover:border-brand-300 bg-white px-5 py-4 transition">
+                <span class="flex items-center justify-center w-11 h-11 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="map-pin" class="w-5 h-5"></i></span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-stone-900">Saved Addresses</p>
+                    <p class="text-sm text-stone-500 truncate">{{ $this->addressesCount }} saved address{{ $this->addressesCount === 1 ? '' : 'es' }}</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-stone-400"></i>
+            </a>
+
+            <a href="{{ route('orders.index') }}" wire:navigate class="flex items-center gap-4 rounded-2xl border border-stone-200 hover:border-brand-300 bg-white px-5 py-4 transition">
+                <span class="flex items-center justify-center w-11 h-11 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="package" class="w-5 h-5"></i></span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-stone-900">My Orders</p>
+                    <p class="text-sm text-stone-500 truncate">{{ $this->ordersCount }} order{{ $this->ordersCount === 1 ? '' : 's' }}</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-stone-400"></i>
+            </a>
+
+            <button type="button" @click="$dispatch('confirm-modal', { message: 'Are you sure you want to log out?', action: () => $wire.logout() })" class="w-full flex items-center gap-4 rounded-2xl border border-red-200 hover:border-red-300 hover:bg-red-50 bg-white px-5 py-4 transition">
+                <span class="flex items-center justify-center w-11 h-11 rounded-xl bg-red-50 text-red-600"><i data-lucide="log-out" class="w-5 h-5"></i></span>
+                <div class="flex-1 min-w-0 text-left">
+                    <p class="font-medium text-red-600">Logout</p>
+                    <p class="text-sm text-red-400">Sign out of your account</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-red-400"></i>
+            </button>
+        </nav>
     </div>
 </div>

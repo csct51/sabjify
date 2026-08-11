@@ -48,18 +48,27 @@
                         @if ($this->inCart)
                             <div class="flex flex-wrap items-center gap-4">
                                 <div class="flex items-center gap-1 bg-brand-600 text-white rounded-xl p-1">
-                                    <button type="button" wire:click="decrement" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-4 h-4"></i></button>
-                                    <span class="w-8 text-center text-lg font-semibold">{{ $quantity }}</span>
-                                    <button type="button" wire:click="increment" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Increase quantity"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                                    <button type="button" wire:click="decrement" wire:loading.attr="disabled" wire:target="decrement" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                                    <span class="w-8 text-center text-lg font-semibold">
+                                        <span wire:loading.remove wire:target="increment,decrement">{{ $quantity }}</span>
+                                        <x-loading-spinner wire:loading wire:target="increment,decrement" class="w-4 h-4 mx-auto" />
+                                    </span>
+                                    <button type="button" wire:click="increment" wire:loading.attr="disabled" wire:target="increment" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Increase quantity"><i data-lucide="plus" class="w-4 h-4"></i></button>
                                 </div>
                                 <a href="{{ route('cart') }}" wire:navigate class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
                                     View Cart →
                                 </a>
                             </div>
                         @else
-                            <button type="button" wire:click="addToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-8 py-3 transition">
-                                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-                                Add to Cart
+                            <button type="button" wire:click="addToCart" wire:loading.attr="disabled" wire:target="addToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-8 py-3 transition">
+                                <span wire:loading.remove.inline-flex wire:target="addToCart" class="inline-flex items-center gap-2">
+                                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                                    Add to Cart
+                                </span>
+                                <span wire:loading.inline-flex wire:target="addToCart" class="inline-flex items-center gap-2">
+                                    <x-loading-spinner class="w-4 h-4" />
+                                    Adding...
+                                </span>
                             </button>
                         @endif
 

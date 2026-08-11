@@ -15,13 +15,13 @@ class OrderService
      */
     public function createFromCart(User $user, array $data): Order
     {
-        $cartItems = $user->cartItems()->with('product')->get();
+        $cartItems = $user->cartItems()->with('product', 'basket')->get();
 
         if ($cartItems->isEmpty()) {
             throw new \RuntimeException('Your cart is empty.');
         }
 
-        $subtotal = $cartItems->sum(fn ($item) => $item->product->price * $item->quantity);
+        $subtotal = $cartItems->sum(fn ($item) => $item->total());
         $deliveryFee = $subtotal >= config('mart.free_delivery_threshold') ? 0 : (int) config('mart.delivery_fee');
 
         return DB::transaction(function () use ($user, $cartItems, $subtotal, $deliveryFee, $data) {
@@ -45,6 +45,23 @@ class OrderService
             ]);
 
             foreach ($cartItems as $cartItem) {
+                if ($cartItem->basket) {
+                    $basket = $cartItem->basket;
+
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => null,
+                        'basket_id' => $basket->id,
+                        'product_name' => $basket->name,
+                        'unit' => null,
+                        'price' => $basket->price,
+                        'quantity' => $cartItem->quantity,
+                        'total' => $basket->price * $cartItem->quantity,
+                    ]);
+
+                    continue;
+                }
+
                 $product = $cartItem->product;
 
                 OrderItem::create([

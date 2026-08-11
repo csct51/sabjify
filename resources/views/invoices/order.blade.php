@@ -8,6 +8,8 @@
         body { font-family: DejaVu Sans, sans-serif; color: #1c1917; font-size: 13px; }
         .invoice { padding: 40px; }
         .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .logo { width: 44px; height: 44px; object-fit: cover; }
         .store-name { font-size: 20px; font-weight: bold; }
         .store-sub { color: #78716c; margin-top: 4px; font-size: 12px; }
         .invoice-title { font-size: 24px; font-weight: bold; text-align: right; }
@@ -30,9 +32,15 @@
 <body>
     <div class="invoice">
         <div class="header">
-            <div>
-                <div class="store-name">{{ config('app.name') }}</div>
-                <div class="store-sub">Fresh groceries delivered to your door</div>
+            <div class="brand">
+                @php($logo = \App\Models\Setting::logoDataUri())
+                @if ($logo)
+                    <img src="{{ $logo }}" alt="Store logo" class="logo">
+                @endif
+                <div>
+                    <div class="store-name">{{ config('app.name') }}</div>
+                    <div class="store-sub">Fresh groceries delivered to your door</div>
+                </div>
             </div>
             <div>
                 <div class="invoice-title">INVOICE</div>
@@ -78,6 +86,20 @@
                         <td class="right">{{ $item->quantity }}</td>
                         <td class="right">{{ \Illuminate\Support\Number::currency($item->total, 'INR') }}</td>
                     </tr>
+                    @if ($item->basket)
+                        <tr>
+                            <td colspan="5">
+                                <div style="margin-left:16px; color:#57534e; font-size:11px;">
+                                    <div style="font-weight:bold; margin-bottom:2px;">What's inside</div>
+                                    @foreach ($item->basket->products as $product)
+                                        <div style="padding-left:8px;">
+                                            {{ $product->pivot->unit ?: $product->unit }} {{ $product->name }}@if ($product->pivot->price !== null) · {{ \Illuminate\Support\Number::currency($product->pivot->price, 'INR') }}@endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
                 @endforeach
             </tbody>
         </table>

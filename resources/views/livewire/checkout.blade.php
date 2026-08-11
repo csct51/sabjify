@@ -126,9 +126,9 @@
                             <div class="flex items-center justify-between gap-3 text-sm" wire:key="co-{{ $item->id }}">
                                 <span class="flex items-center gap-2 text-stone-600 min-w-0">
                                     <span class="text-xs text-stone-400">×{{ $item->quantity }}</span>
-                                    <span class="truncate">{{ $item->product->name }}</span>
+                                    <span class="truncate">{{ $item->name() }}</span>
                                 </span>
-                                <span class="font-medium text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($item->product->price * $item->quantity, 'INR') }}</span>
+                                <span class="font-medium text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($item->unitPrice() * $item->quantity, 'INR') }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -151,8 +151,14 @@
                         </div>
                     </div>
 
-                    <button type="button" wire:click="placeOrder" class="mt-5 w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition">
-                        {{ $this->paymentMethod === 'online' ? 'Pay Securely' : 'Place Order' }} · {{ \Illuminate\Support\Number::currency($this->total, 'INR') }}
+                    <button type="button" wire:click="placeOrder" wire:loading.attr="disabled" wire:target="placeOrder" class="mt-5 w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition disabled:opacity-70">
+                        <span wire:loading.remove wire:target="placeOrder">
+                            {{ $this->paymentMethod === 'online' ? 'Pay Securely' : 'Place Order' }} · {{ \Illuminate\Support\Number::currency($this->total, 'INR') }}
+                        </span>
+                        <span wire:loading.inline-flex wire:target="placeOrder" class="inline-flex items-center gap-2">
+                            <x-loading-spinner class="w-4 h-4" />
+                            {{ $this->paymentMethod === 'online' ? 'Processing Payment...' : 'Placing Order...' }}
+                        </span>
                     </button>
 
                     @error('minimum')

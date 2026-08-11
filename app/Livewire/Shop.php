@@ -66,6 +66,12 @@ class Shop extends Component
             ->get();
     }
 
+    #[Computed]
+    public function totalProducts(): int
+    {
+        return Product::active()->count();
+    }
+
     public function render(): View
     {
         $products = Product::active()

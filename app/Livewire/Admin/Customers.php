@@ -16,6 +16,8 @@ class Customers extends Component
     public function toggleActive(User $user): void
     {
         $user->update(['is_active' => ! $user->is_active]);
+
+        $this->dispatch('toast', message: $user->is_active ? "Customer \"{$user->name}\" is now unblocked." : "Customer \"{$user->name}\" is now blocked.");
     }
 
     #[Computed]

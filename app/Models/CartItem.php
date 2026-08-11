@@ -12,13 +12,14 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int $user_id
- * @property int $product_id
+ * @property int|null $product_id
  * @property int|null $recipe_id
+ * @property int|null $basket_id
  * @property int $quantity
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'product_id', 'recipe_id', 'quantity'])]
+#[Fillable(['user_id', 'product_id', 'recipe_id', 'basket_id', 'quantity'])]
 class CartItem extends Model
 {
     /** @use HasFactory<CartItemFactory> */
@@ -48,8 +49,34 @@ class CartItem extends Model
         return $this->belongsTo(Recipe::class);
     }
 
+    /**
+     * @return BelongsTo<Basket, $this>
+     */
+    public function basket(): BelongsTo
+    {
+        return $this->belongsTo(Basket::class);
+    }
+
+    public function name(): string
+    {
+        if ($this->basket) {
+            return $this->basket->name;
+        }
+
+        return $this->product->name;
+    }
+
+    public function unitPrice(): int
+    {
+        if ($this->basket) {
+            return $this->basket->price;
+        }
+
+        return $this->product->price;
+    }
+
     public function total(): int
     {
-        return $this->product->price * $this->quantity;
+        return $this->unitPrice() * $this->quantity;
     }
 }

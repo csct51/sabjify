@@ -162,7 +162,7 @@ test('admin can update an order status', function () {
         ->test(OrderShow::class, ['order' => $order])
         ->set('status', 'out_for_delivery')
         ->call('updateStatus')
-        ->assertOk();
+        ->assertDispatched('toast', message: 'Order status updated.');
 
     expect($order->fresh()->status)->toBe('out_for_delivery');
 });
@@ -174,7 +174,7 @@ test('admin can toggle product visibility', function () {
     Livewire::actingAs($admin, 'admin')
         ->test(Products::class)
         ->call('toggleActive', $product)
-        ->assertOk();
+        ->assertDispatched('toast', message: "Product \"{$product->name}\" is now hidden.");
 
     expect($product->fresh()->is_active)->toBeFalse();
 });
@@ -186,14 +186,14 @@ test('admin can block and unblock a customer', function () {
     Livewire::actingAs($admin, 'admin')
         ->test(Customers::class)
         ->call('toggleActive', $customer)
-        ->assertOk();
+        ->assertDispatched('toast', message: "Customer \"{$customer->name}\" is now blocked.");
 
     expect($customer->fresh()->is_active)->toBeFalse();
 
     Livewire::actingAs($admin, 'admin')
         ->test(Customers::class)
         ->call('toggleActive', $customer)
-        ->assertOk();
+        ->assertDispatched('toast', message: "Customer \"{$customer->name}\" is now unblocked.");
 
     expect($customer->fresh()->is_active)->toBeTrue();
 });

@@ -29,7 +29,7 @@ class RecipeForm extends Component
 
     public string $productSearch = '';
 
-    public bool $is_active = true;
+    public string $is_active = '1';
 
     public int $sort_order = 0;
 
@@ -47,7 +47,7 @@ class RecipeForm extends Component
             $this->title = $recipe->title;
             $this->slug = $recipe->slug;
             $this->productIds = $recipe->products()->pluck('products.id')->all();
-            $this->is_active = $recipe->is_active;
+            $this->is_active = $recipe->is_active ? '1' : '0';
             $this->sort_order = $recipe->sort_order;
             $this->imageUrl = $recipe->image && filter_var($recipe->image, FILTER_VALIDATE_URL) !== false ? $recipe->image : '';
         }
@@ -134,7 +134,7 @@ class RecipeForm extends Component
         $data = [
             'title' => $this->title,
             'slug' => $this->slug,
-            'is_active' => $this->is_active,
+            'is_active' => $this->is_active === '1',
             'sort_order' => $this->sort_order,
         ];
 

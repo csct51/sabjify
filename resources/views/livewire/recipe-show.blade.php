@@ -18,9 +18,11 @@
 
                 @if ($this->products->isNotEmpty())
                     <div class="mt-5 flex flex-wrap items-center gap-3">
-                        <button type="button" wire:click="addAllToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95">
-                            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-                            Add All to Cart
+                        <button type="button" wire:click="addAllToCart" wire:loading.attr="disabled" wire:target="addAllToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
+                            <span wire:loading.remove wire:target="addAllToCart"><i data-lucide="shopping-cart" class="w-5 h-5"></i></span>
+                            <x-loading-spinner wire:loading wire:target="addAllToCart" class="w-4 h-4" />
+                            <span wire:loading.remove wire:target="addAllToCart">Add All to Cart</span>
+                            <span wire:loading wire:target="addAllToCart">Adding...</span>
                         </button>
                         <a href="{{ route('cart') }}" wire:navigate class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
                             View Cart →

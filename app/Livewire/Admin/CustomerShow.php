@@ -36,6 +36,8 @@ class CustomerShow extends Component
     public function toggleActive(): void
     {
         $this->user->update(['is_active' => ! $this->user->is_active]);
+
+        $this->dispatch('toast', message: $this->user->is_active ? "Customer \"{$this->user->name}\" is now unblocked." : "Customer \"{$this->user->name}\" is now blocked.");
     }
 
     /**

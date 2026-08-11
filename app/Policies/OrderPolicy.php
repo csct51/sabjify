@@ -20,6 +20,6 @@ class OrderPolicy
     public function cancel(User $user, Order $order): bool
     {
         return $order->user_id === $user->id
-            && in_array($order->status, [Order::STATUS_PENDING, Order::STATUS_CONFIRMED], true);
+            && $order->status === Order::STATUS_PENDING;
     }
 }

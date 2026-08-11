@@ -24,7 +24,7 @@ class CategoryForm extends Component
 
     public string $description = '';
 
-    public bool $is_active = true;
+    public string $is_active = '1';
 
     public int $sort_order = 0;
 
@@ -44,7 +44,7 @@ class CategoryForm extends Component
             $this->name = $category->name;
             $this->slug = $category->slug;
             $this->description = $category->description ?? '';
-            $this->is_active = $category->is_active;
+            $this->is_active = $category->is_active ? '1' : '0';
             $this->sort_order = $category->sort_order;
             $this->existingImage = $category->image ?? '';
             $this->imageUrl = $category->image && filter_var($category->image, FILTER_VALIDATE_URL) !== false ? $category->image : '';
@@ -89,7 +89,7 @@ class CategoryForm extends Component
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description ?: null,
-            'is_active' => $this->is_active,
+            'is_active' => $this->is_active === '1',
             'sort_order' => $this->sort_order,
         ];
 

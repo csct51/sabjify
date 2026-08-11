@@ -67,7 +67,7 @@ class Settings extends Component
 
         $this->saveLogo();
 
-        session()->flash('success', 'Settings saved.');
+        $this->dispatch('toast', message: 'Settings saved.');
     }
 
     protected function saveLogo(): void

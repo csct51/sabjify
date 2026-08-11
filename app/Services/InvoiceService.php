@@ -10,7 +10,7 @@ class InvoiceService
 {
     public function download(Order $order): Response
     {
-        $order->load(['items.product', 'user']);
+        $order->load(['items.product', 'items.basket.products', 'user']);
 
         return Pdf::loadView('invoices.order', ['order' => $order])
             ->setPaper('a4')

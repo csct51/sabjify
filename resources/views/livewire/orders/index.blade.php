@@ -9,7 +9,8 @@
                 <button
                     type="button"
                     wire:click="$set('status', '{{ $value }}')"
-                    class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition {{ $this->status === $value ? 'bg-stone-900 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300' }}"
+                    wire:loading.attr="disabled"
+                    class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition disabled:opacity-70 {{ $this->status === $value ? 'bg-stone-900 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300' }}"
                 >
                     {{ $value ? \App\Models\Order::STATUSES[$value] : 'All' }}
                 </button>

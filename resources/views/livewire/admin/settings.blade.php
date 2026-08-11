@@ -4,10 +4,6 @@
             <h2 class="text-lg font-semibold text-stone-900 mb-1">Platform Settings</h2>
             <p class="text-sm text-stone-500 mb-6">Manage how your store appears to customers.</p>
 
-            @if (session('success'))
-                <div class="mb-5 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">{{ session('success') }}</div>
-            @endif
-
             <form wire:submit="save" class="space-y-5">
                 <div>
                     <label class="block text-sm font-medium text-stone-700 mb-1">Store Name <span class="text-red-500">*</span></label>
@@ -98,7 +94,11 @@
                 </div>
 
                 <div class="flex items-center justify-end pt-2">
-                    <button type="submit" class="rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 text-sm font-semibold transition">Save Settings</button>
+                    <button type="submit" wire:loading.attr="disabled" wire:target="save" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 text-sm font-semibold transition disabled:opacity-70">
+                        <x-loading-spinner wire:loading wire:target="save" class="w-4 h-4" />
+                        <span wire:loading.remove wire:target="save">Save Settings</span>
+                        <span wire:loading wire:target="save">Saving...</span>
+                    </button>
                 </div>
             </form>
         </div>

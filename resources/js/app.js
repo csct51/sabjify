@@ -1,4 +1,4 @@
-import { createIcons, Apple, ArrowRight, BadgeCheck, Banknote, Bell, BookOpen, Carrot, Check, ChevronDown, ChevronRight, CircleCheck, Citrus, CreditCard, Eye, EyeOff, Filter, Folder, Headset, Home, IndianRupee, LayoutDashboard, LayoutGrid, Leaf, Link, Lock, LogOut, MapPin, Menu, Minus, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Scale, Search, Settings, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, Users, X } from 'lucide';
+import { createIcons, Apple, ArrowRight, BadgeCheck, Banknote, Bell, BookOpen, Carrot, Check, ChevronDown, ChevronRight, CircleCheck, Citrus, CreditCard, Eye, EyeOff, Filter, Folder, Gift, Headset, Home, IndianRupee, KeyRound, LayoutDashboard, LayoutGrid, Leaf, Link, Lock, LogOut, MapPin, Menu, Minus, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Scale, Search, Settings, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, Users, X } from 'lucide';
 import DataTable from 'datatables.net-dt';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
 
@@ -20,9 +20,11 @@ const icons = {
     EyeOff,
     Filter,
     Folder,
+    Gift,
     Headset,
     Home,
     IndianRupee,
+    KeyRound,
     LayoutDashboard,
     LayoutGrid,
     Leaf,
@@ -57,6 +59,46 @@ const icons = {
 
 function renderIcons() {
     createIcons({ icons });
+}
+
+let pageLoadingBar;
+
+function initPageLoadingBar() {
+    if (pageLoadingBar) {
+        return;
+    }
+
+    pageLoadingBar = document.createElement('div');
+    pageLoadingBar.className = 'page-loading-bar';
+    pageLoadingBar.innerHTML = '<div class="page-loading-bar-inner"></div>';
+    document.body.appendChild(pageLoadingBar);
+}
+
+function startPageLoading() {
+    initPageLoadingBar();
+    pageLoadingBar.classList.add('active');
+}
+
+function stopPageLoading() {
+    if (! pageLoadingBar) {
+        return;
+    }
+
+    pageLoadingBar.classList.remove('active');
+}
+
+function animatePageEnter() {
+    const main = document.querySelector('main') ?? document.body;
+
+    main.classList.remove('page-enter');
+    void main.offsetWidth;
+    main.classList.add('page-enter');
+
+    main.addEventListener('animationend', (event) => {
+        if (event.target === main) {
+            main.classList.remove('page-enter');
+        }
+    }, { once: true });
 }
 
 let revealObserver;
@@ -155,6 +197,7 @@ document.addEventListener('livewire:init', () => {
     renderIcons();
     initReveals();
     initDataTables();
+    animatePageEnter();
 
     Livewire.hook('morph', () => {
         destroyDataTables();
@@ -192,7 +235,13 @@ document.addEventListener('livewire:navigate', () => {
     destroyDataTables();
 });
 
+document.addEventListener('livewire:navigating', () => {
+    startPageLoading();
+});
+
 document.addEventListener('livewire:navigated', () => {
+    stopPageLoading();
+    animatePageEnter();
     renderIcons();
     initReveals();
     initDataTables();

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Basket;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Recipe;
@@ -25,7 +26,7 @@ class Home extends Component
         return Category::active()
             ->withCount('products')
             ->orderBy('sort_order')
-            ->limit(6)
+            ->limit(5)
             ->get();
     }
 
@@ -39,7 +40,6 @@ class Home extends Component
             ->with('category')
             ->featured()
             ->orderBy('sort_order')
-            ->limit(8)
             ->get();
     }
 
@@ -52,7 +52,7 @@ class Home extends Component
         return Product::active()
             ->with('category')
             ->latest()
-            ->limit(8)
+            ->limit(3)
             ->get();
     }
 
@@ -66,7 +66,37 @@ class Home extends Component
             ->withCount('products')
             ->orderBy('sort_order')
             ->latest()
-            ->limit(6)
+            ->limit(5)
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, Basket>
+     */
+    #[Computed]
+    public function wellnessBaskets(): Collection
+    {
+        return Basket::active()
+            ->wellness()
+            ->withCount('products')
+            ->orderBy('sort_order')
+            ->latest()
+            ->limit(4)
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, Basket>
+     */
+    #[Computed]
+    public function sabjifyBaskets(): Collection
+    {
+        return Basket::active()
+            ->sabjify()
+            ->withCount('products')
+            ->orderBy('sort_order')
+            ->latest()
+            ->limit(4)
             ->get();
     }
 

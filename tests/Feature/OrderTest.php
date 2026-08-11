@@ -8,8 +8,10 @@ use App\Models\Admin;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\OrderService;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('checkout redirects to cart when cart is empty', function () {
@@ -235,6 +237,20 @@ test('customer can cancel order with a reason', function () {
         ->and($order->fresh()->cancelled_by)->toBe('customer');
 });
 
+test('customer cannot cancel a confirmed order', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'confirmed']);
+
+    Livewire::actingAs($user)
+        ->test(Show::class, ['order' => $order])
+        ->assertDontSee('Cancel Order')
+        ->set('cancelReason', 'Changed my mind')
+        ->call('cancelOrder');
+
+    expect($order->fresh()->status)->toBe('confirmed')
+        ->and($order->fresh()->cancelled_reason)->toBeNull();
+});
+
 test('admin can cancel order on behalf of the platform', function () {
     $user = User::factory()->create();
     $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'pending']);
@@ -351,6 +367,37 @@ test('admin cannot access customer invoice route without admin session', functio
 
     $this->get(route('orders.invoice', $order))
         ->assertRedirect(route('login'));
+});
+
+test('invoice embeds the store logo as a data uri', function () {
+    Storage::fake('public');
+
+    $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+
+    Storage::disk('public')->put('logos/logo.png', $png);
+
+    Setting::updateOrCreate(['key' => 'logo_type'], ['value' => 'image']);
+    Setting::updateOrCreate(['key' => 'logo_value'], ['value' => 'logos/logo.png']);
+
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id]);
+
+    $html = view('invoices.order', ['order' => $order])->render();
+
+    expect(Setting::logoDataUri())->toStartWith('data:image/png;base64,')
+        ->and($html)->toContain('data:image/png;base64,');
+});
+
+test('invoice renders without a logo when none is configured', function () {
+    Setting::whereIn('key', ['logo_type', 'logo_value'])->delete();
+
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id]);
+
+    $this->actingAs($user)
+        ->get(route('orders.invoice', $order))
+        ->assertOk()
+        ->assertDownload('invoice-'.$order->order_number.'.pdf');
 });
 
 test('admin sees payment details for a paid online order', function () {

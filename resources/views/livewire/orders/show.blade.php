@@ -10,10 +10,6 @@
                 <p class="text-sm text-stone-500 mt-1">Placed on {{ $order->created_at->format('d M Y, h:i A') }}</p>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{{ route('orders.invoice', $order) }}" target="_blank" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 hover:bg-stone-50 px-4 py-2 text-sm font-semibold text-stone-700 transition">
-                    <i data-lucide="download" class="w-4 h-4"></i>
-                    Download Invoice
-                </a>
                 <x-status-badge :status="$order->status" />
             </div>
         </div>
@@ -35,8 +31,14 @@
                     <i data-lucide="credit-card" class="w-5 h-5"></i>
                     <span>Your order is placed, but the payment is pending.</span>
                 </div>
-                <button type="button" wire:click="payOnline" class="rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 text-sm font-semibold transition">
-                    Pay Now · {{ \Illuminate\Support\Number::currency($order->total, 'INR') }}
+                <button type="button" wire:click="payOnline" wire:loading.attr="disabled" wire:target="payOnline" class="rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 text-sm font-semibold transition disabled:opacity-70">
+                    <span wire:loading.remove wire:target="payOnline">
+                        Pay Now · {{ \Illuminate\Support\Number::currency($order->total, 'INR') }}
+                    </span>
+                    <span wire:loading.inline-flex wire:target="payOnline" class="inline-flex items-center gap-2">
+                        <x-loading-spinner class="w-4 h-4" />
+                        Processing...
+                    </span>
                 </button>
             </div>
         @endif
@@ -47,20 +49,24 @@
                     <h2 class="font-semibold text-stone-900 mb-4">Items</h2>
                     <div class="divide-y divide-stone-100">
                         @foreach ($order->items as $item)
-                            <div class="flex items-center gap-4 py-3">
-                                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center shrink-0 overflow-hidden">
-                                    @if ($item->product)
-                                        <img src="{{ $item->product->displayImageUrl() }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
-                                    @else
-                                        <span class="text-2xl">🥗</span>
-                                    @endif
+                            @if ($item->basket)
+                                @include('partials.order-basket-group', ['item' => $item, 'imageClass' => 'w-14 h-14'])
+                            @else
+                                <div class="flex items-center gap-4 py-3">
+                                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                        @if ($item->product)
+                                            <img src="{{ $item->product->displayImageUrl() }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
+                                        @else
+                                            <span class="text-2xl">🥗</span>
+                                        @endif
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-stone-900">{{ $item->product_name }}</p>
+                                        <p class="text-xs text-stone-400">{{ $item->quantity }} × {{ \Illuminate\Support\Number::currency($item->price, 'INR') }} @if ($item->unit) / {{ $item->unit }} @endif</p>
+                                    </div>
+                                    <p class="font-semibold text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($item->total, 'INR') }}</p>
                                 </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="font-medium text-stone-900">{{ $item->product_name }}</p>
-                                    <p class="text-xs text-stone-400">{{ $item->quantity }} × {{ \Illuminate\Support\Number::currency($item->price, 'INR') }} @if ($item->unit) / {{ $item->unit }} @endif</p>
-                                </div>
-                                <p class="font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($item->total, 'INR') }}</p>
-                            </div>
+                            @endif
                         @endforeach
                     </div>
 
@@ -116,6 +122,10 @@
                             <span class="font-medium text-amber-600">Payment Pending</span>
                         @endif
                     </div>
+                    <a href="{{ route('orders.invoice', $order) }}" target="_blank" class="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 text-sm font-semibold transition mt-2 w-full">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Download Invoice
+                    </a>
                 </div>
             </div>
 
@@ -146,7 +156,7 @@
             @endif
         </div>
 
-        @if (in_array($order->status, [\App\Models\Order::STATUS_PENDING, \App\Models\Order::STATUS_CONFIRMED], true))
+        @if ($order->status === \App\Models\Order::STATUS_PENDING)
             <div class="mt-8">
                 @if (! $this->showCancelForm)
                     <button type="button" wire:click="$set('showCancelForm', true)" class="inline-flex items-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 px-6 py-2.5 text-sm font-semibold transition">

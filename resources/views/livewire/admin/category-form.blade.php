@@ -39,8 +39,8 @@
                     <div>
                         <label class="block text-sm font-medium text-stone-700 mb-1">Status</label>
                         <select wire:model="is_active" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
-                            <option value="1">Active</option>
-                            <option value="0">Hidden</option>
+                            <option value="1" @selected($is_active === '1')>Active</option>
+                            <option value="0" @selected($is_active === '0')>Hidden</option>
                         </select>
                     </div>
                 </div>
@@ -64,8 +64,10 @@
 
                 <div class="flex items-center justify-end gap-3 pt-2">
                     <a href="{{ route('admin.categories.index') }}" wire:navigate class="rounded-xl border border-stone-200 px-5 py-2.5 text-sm font-medium hover:bg-stone-50">Cancel</a>
-                    <button type="submit" class="rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 text-sm font-semibold transition">
-                        {{ $category ? 'Save Changes' : 'Create Category' }}
+                    <button type="submit" wire:loading.attr="disabled" wire:target="save" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 text-sm font-semibold transition disabled:opacity-70">
+                        <x-loading-spinner wire:loading wire:target="save" class="w-4 h-4" />
+                        <span wire:loading.remove wire:target="save">{{ $category ? 'Save Changes' : 'Create Category' }}</span>
+                        <span wire:loading wire:target="save">{{ $category ? 'Saving...' : 'Creating...' }}</span>
                     </button>
                 </div>
             </form>

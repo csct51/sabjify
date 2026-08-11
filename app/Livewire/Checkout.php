@@ -76,7 +76,7 @@ class Checkout extends Component
     #[Computed]
     public function cartItems(): Collection
     {
-        return auth('web')->user()->cartItems()->with('product.category')->get();
+        return auth('web')->user()->cartItems()->with('product.category', 'basket')->get();
     }
 
     /**
@@ -91,7 +91,7 @@ class Checkout extends Component
     #[Computed]
     public function subtotal(): int
     {
-        return $this->cartItems()->sum(fn (CartItem $item) => $item->product ? $item->product->price * $item->quantity : 0);
+        return $this->cartItems()->sum(fn (CartItem $item) => $item->total());
     }
 
     #[Computed]

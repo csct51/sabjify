@@ -15,11 +15,15 @@ class Recipes extends Component
     public function toggleActive(Recipe $recipe): void
     {
         $recipe->update(['is_active' => ! $recipe->is_active]);
+
+        $this->dispatch('toast', message: $recipe->is_active ? "Recipe \"{$recipe->title}\" is now visible." : "Recipe \"{$recipe->title}\" is now hidden.");
     }
 
     public function delete(Recipe $recipe): void
     {
         $recipe->delete();
+
+        $this->dispatch('toast', message: "Recipe \"{$recipe->title}\" deleted.");
     }
 
     public function render(): View

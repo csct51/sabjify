@@ -19,6 +19,7 @@
                     ['route' => 'admin.units', 'label' => 'Units', 'icon' => 'scale'],
                     ['route' => 'admin.products.index', 'label' => 'Products', 'icon' => 'shopping-basket'],
                     ['route' => 'admin.recipes.index', 'label' => 'Recipes', 'icon' => 'book-open'],
+                    ['route' => 'admin.baskets.index', 'label' => 'Baskets', 'icon' => 'gift'],
                     ['route' => 'admin.customers.index', 'label' => 'Customers', 'icon' => 'users'],
                 ];
             @endphp
@@ -44,6 +45,9 @@
                 <div class="p-3 border-t border-stone-800 space-y-1">
                     <a href="{{ route('admin.settings') }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-800 text-sm font-medium {{ request()->routeIs('admin.settings') ? 'bg-brand-600 text-white' : '' }}">
                         <i data-lucide="settings" class="w-5 h-5"></i> Settings
+                    </a>
+                    <a href="{{ route('admin.password') }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-800 text-sm font-medium {{ request()->routeIs('admin.password') ? 'bg-brand-600 text-white' : '' }}">
+                        <i data-lucide="key-round" class="w-5 h-5"></i> Change Password
                     </a>
                     <a href="{{ route('home') }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-800 text-sm font-medium">
                         <i data-lucide="store" class="w-5 h-5"></i> View Store
@@ -88,6 +92,9 @@
                         <div class="p-3 border-t border-stone-800 space-y-1">
                             <a href="{{ route('admin.settings') }}" wire:navigate @click="sidebarOpen = false" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-800 text-sm font-medium {{ request()->routeIs('admin.settings') ? 'bg-brand-600 text-white' : '' }}">
                                 <i data-lucide="settings" class="w-5 h-5"></i> Settings
+                            </a>
+                            <a href="{{ route('admin.password') }}" wire:navigate @click="sidebarOpen = false" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-800 text-sm font-medium {{ request()->routeIs('admin.password') ? 'bg-brand-600 text-white' : '' }}">
+                                <i data-lucide="key-round" class="w-5 h-5"></i> Change Password
                             </a>
                             <a href="{{ route('home') }}" wire:navigate @click="sidebarOpen = false" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-800 text-sm font-medium">
                                 <i data-lucide="store" class="w-5 h-5"></i> View Store
@@ -136,6 +143,8 @@
         </div>
 
         <x-confirm-modal />
+
+        <x-toast :initial-message="session('success')" initial-type="success" />
 
         @livewireScripts
     </body>

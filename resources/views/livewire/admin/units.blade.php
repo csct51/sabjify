@@ -16,9 +16,11 @@
             <div class="p-4 border-b border-stone-100">
                 <form wire:submit="addUnit" class="flex items-center gap-2">
                     <input wire:model="newUnit" type="text" placeholder="e.g. 750 ml" class="flex-1 rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                    <button type="submit" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 text-sm font-semibold transition">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Add Unit
+                    <button type="submit" wire:loading.attr="disabled" wire:target="addUnit" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 text-sm font-semibold transition disabled:opacity-70">
+                        <span wire:loading.remove wire:target="addUnit"><i data-lucide="plus" class="w-4 h-4"></i></span>
+                        <x-loading-spinner wire:loading wire:target="addUnit" class="w-4 h-4" />
+                        <span wire:loading.remove wire:target="addUnit">Add Unit</span>
+                        <span wire:loading wire:target="addUnit">Adding...</span>
                     </button>
                 </form>
                 @error('newUnit')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror

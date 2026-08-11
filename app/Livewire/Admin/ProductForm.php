@@ -37,7 +37,7 @@ class ProductForm extends Component
 
     public int $stock = 0;
 
-    public bool $is_active = true;
+    public string $is_active = '1';
 
     public bool $is_featured = false;
 
@@ -62,7 +62,7 @@ class ProductForm extends Component
             $this->price = $product->price;
             $this->mrp = $product->mrp;
             $this->stock = $product->stock;
-            $this->is_active = $product->is_active;
+            $this->is_active = $product->is_active ? '1' : '0';
             $this->is_featured = $product->is_featured;
             $this->sort_order = $product->sort_order;
             $this->imageUrl = $product->image && filter_var($product->image, FILTER_VALIDATE_URL) !== false ? $product->image : '';
@@ -136,7 +136,7 @@ class ProductForm extends Component
             'price' => $this->price,
             'mrp' => $this->mrp,
             'stock' => $this->stock,
-            'is_active' => $this->is_active,
+            'is_active' => $this->is_active === '1',
             'is_featured' => $this->is_featured,
             'sort_order' => $this->sort_order,
         ];

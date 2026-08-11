@@ -25,7 +25,7 @@ class OrderShow extends Component
     {
         abort_unless(auth('admin')->check(), 403);
 
-        $this->order->load(['items.product', 'user']);
+        $this->order->load(['items.product', 'items.basket.products', 'user']);
 
         $this->status = $this->order->status;
         $this->paymentStatus = $this->order->payment_status;
@@ -67,6 +67,8 @@ class OrderShow extends Component
 
         $this->status = $this->order->status;
         $this->order->refresh();
+
+        $this->dispatch('toast', message: 'Order cancelled and items restocked.');
     }
 
     /**

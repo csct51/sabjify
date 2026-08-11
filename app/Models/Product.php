@@ -29,6 +29,7 @@ use Illuminate\Support\Str;
  * @property int $sort_order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read BasketProduct $pivot
  */
 #[Fillable(['category_id', 'name', 'slug', 'description', 'unit', 'price', 'mrp', 'stock', 'image', 'is_active', 'is_featured', 'sort_order'])]
 class Product extends Model

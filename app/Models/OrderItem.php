@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $order_id
  * @property int|null $product_id
+ * @property int|null $basket_id
  * @property string $product_name
  * @property string|null $unit
  * @property int $price
@@ -21,7 +22,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['order_id', 'product_id', 'product_name', 'unit', 'price', 'quantity', 'total'])]
+#[Fillable(['order_id', 'product_id', 'basket_id', 'product_name', 'unit', 'price', 'quantity', 'total'])]
 class OrderItem extends Model
 {
     /** @use HasFactory<OrderItemFactory> */
@@ -41,5 +42,13 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * @return BelongsTo<Basket, $this>
+     */
+    public function basket(): BelongsTo
+    {
+        return $this->belongsTo(Basket::class);
     }
 }

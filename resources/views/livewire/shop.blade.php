@@ -1,53 +1,68 @@
 <div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-stone-900 mb-1">{{ $this->category ? collect($this->categories)->firstWhere('slug', $this->category)?->name : 'All Products' }}</h1>
                 <p class="text-sm text-stone-500">{{ $products->total() }} items available</p>
             </div>
-            <button type="button" wire:click="$set('showFilters', true)" class="lg:hidden inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition">
-                <i data-lucide="filter" class="w-4 h-4"></i>
-                Filters
-            </button>
-        </div>
-    </div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
-        <aside data-reveal class="hidden lg:block">
-            <div class="bg-white rounded-2xl border border-stone-200 p-4 space-y-4">
-                <div>
-                    <h2 class="text-sm font-semibold text-stone-900 uppercase tracking-wide mb-3">Search</h2>
+            <div class="flex items-center gap-3">
+                <div class="hidden lg:flex items-center gap-2">
                     <input
                         wire:model="search"
                         type="search"
                         placeholder="Search products..."
-                        class="w-full rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                        class="w-56 rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
                     >
-                </div>
-
-                <div>
-                    <h2 class="text-sm font-semibold text-stone-900 uppercase tracking-wide mb-3">Sort By</h2>
-                    <select wire:model="sort" class="w-full rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                    <label class="text-sm text-stone-500">Sort by</label>
+                    <select wire:model="sort" class="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                         <option value="latest">Latest</option>
                         <option value="price_low">Price: Low to High</option>
                         <option value="price_high">Price: High to Low</option>
                         <option value="popular">Popular</option>
                     </select>
+                    <button type="button" wire:click="resetPage" wire:loading.attr="disabled" wire:target="resetPage" class="rounded-xl bg-brand-600 text-white px-4 py-2 text-sm font-semibold hover:bg-brand-700 transition disabled:opacity-70">Apply Filters</button>
+                    <button type="button" wire:click="clearFilters" class="rounded-xl border border-stone-300 text-stone-600 px-4 py-2 text-sm font-medium hover:bg-stone-50 transition">Clear Filters</button>
                 </div>
+                <button type="button" wire:click="$set('showFilters', true)" class="lg:hidden inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition">
+                    <i data-lucide="filter" class="w-4 h-4"></i>
+                    Filters
+                </button>
+            </div>
+        </div>
+    </div>
 
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 grid grid-cols-1 lg:grid-cols-[170px_1fr] gap-8">
+        <aside data-reveal class="hidden lg:block">
+            <div class="lg:sticky lg:top-24 space-y-6">
                 <div>
                     <h2 class="text-sm font-semibold text-stone-900 uppercase tracking-wide mb-3">Categories</h2>
-                    <select wire:model="category" class="w-full rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
-                        <option value="">All Products</option>
-                        @foreach ($this->categories as $cat)
-                            <option value="{{ $cat->slug }}">{{ $cat->name }} ({{ $cat->products_count }})</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="max-h-80 overflow-y-auto space-y-2 pr-1">
+                        <button
+                            type="button"
+                            wire:click="$set('category', null)"
+                            class="w-full flex flex-col items-center gap-1.5 rounded-xl border-l-4 px-1.5 py-2 text-center transition {{ $this->category === null ? 'border-brand-500 bg-brand-50' : 'border-transparent bg-stone-100 hover:bg-stone-200' }}"
+                        >
+                            <span class="w-full aspect-square rounded-lg flex items-center justify-center bg-white text-brand-600 shadow-sm shrink-0 overflow-hidden">
+                                <i data-lucide="layout-grid" class="w-8 h-8"></i>
+                            </span>
+                            <span class="text-sm font-medium leading-tight {{ $this->category === null ? 'text-brand-700' : 'text-stone-600' }} line-clamp-1">All</span>
+                        </button>
 
-                <div class="pt-4 border-t border-stone-200 flex gap-2">
-                    <button type="button" wire:click="resetPage" class="flex-1 rounded-xl bg-brand-600 text-white px-4 py-2 text-sm font-semibold hover:bg-brand-700 transition">Apply Filters</button>
-                    <button type="button" wire:click="clearFilters" class="flex-1 rounded-xl border border-stone-300 text-stone-600 px-4 py-2 text-sm font-medium hover:bg-stone-50 transition">Clear Filters</button>
+                        @foreach ($this->categories as $cat)
+                            <button
+                                type="button"
+                                wire:click="$set('category', '{{ $cat->slug }}')"
+                                class="w-full flex flex-col items-center gap-1.5 rounded-xl border-l-4 px-1.5 py-2 text-center transition {{ $this->category === $cat->slug ? 'border-brand-500 bg-brand-50' : 'border-transparent bg-stone-100 hover:bg-stone-200' }}"
+                            >
+                                <span class="w-full aspect-square rounded-lg bg-gradient-to-br from-brand-50 to-lime-100 shadow-sm shrink-0 overflow-hidden">
+                                    @if ($cat->image)
+                                        <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" class="w-full h-full object-cover">
+                                    @endif
+                                </span>
+                                <span class="text-sm font-medium leading-tight {{ $this->category === $cat->slug ? 'text-brand-700' : 'text-stone-600' }} line-clamp-1">{{ $cat->name }}</span>
+                            </button>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </aside>
@@ -61,7 +76,7 @@
                     <a href="{{ route('shop') }}" wire:navigate class="mt-4 inline-block rounded-xl bg-brand-600 text-white px-5 py-2.5 text-sm font-semibold hover:bg-brand-700">Clear filters</a>
                 </div>
             @else
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     @foreach ($products as $product)
                         <livewire:product-card :product="$product" :key="$product->id" />
                     @endforeach

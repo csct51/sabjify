@@ -3,12 +3,14 @@
     'icon' => 'w-5 h-5',
     'alt' => config('app.name').' logo',
     'src' => null,
+    'objectFit' => 'cover',
 ])
 
 @php($url = $src ?? \App\Models\Setting::logoUrl())
+@php($fit = $objectFit === 'contain' ? 'contain' : 'cover')
 
 @if ($url)
-    <img src="{{ $url }}" alt="{{ $alt }}" class="{{ $class }} bg-white object-cover">
+    <img src="{{ $url }}" alt="{{ $alt }}" class="{{ $class }} bg-white {{ $fit === 'contain' ? 'object-contain' : 'object-cover' }}">
 @else
     <span class="{{ $class }} flex items-center justify-center bg-brand-600 text-white">
         <i data-lucide="leaf" class="{{ $icon }}"></i>

@@ -12,9 +12,7 @@
     <body class="bg-[#F7F8F5] text-stone-900 antialiased min-h-screen flex flex-col items-center justify-center px-4 py-10">
         <div class="w-full max-w-md">
             <div class="flex flex-col items-center mb-6">
-                <x-logo class="w-14 h-14 rounded-2xl shadow-lg mb-3" icon="w-7 h-7" />
-                <h1 class="text-2xl font-bold text-stone-900">{{ config('app.name') }}</h1>
-                <p class="text-sm text-stone-500">Fresh fruits & vegetables, delivered.</p>
+                <x-logo class="w-full max-w-md h-48 rounded-3xl shadow-lg" object-fit="contain" icon="w-16 h-16" />
             </div>
 
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">

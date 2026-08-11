@@ -9,7 +9,7 @@
             <p class="text-sm text-stone-400 mt-0.5">Placed on {{ $order->created_at->format('d M Y, h:i A') }}</p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.orders.invoice', $order) }}" target="_blank" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 hover:bg-stone-50 px-4 py-2 text-sm font-semibold text-stone-700 transition">
+            <a href="{{ route('admin.orders.invoice', $order) }}" target="_blank" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 text-sm font-semibold transition">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Download Invoice
             </a>
@@ -26,30 +26,30 @@
         </div>
     @endif
 
-    @if (session('success'))
-        <div class="mb-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">{{ session('success') }}</div>
-    @endif
-
     <div class="grid lg:grid-cols-3 gap-6">
         <div class="min-w-0 lg:col-span-2 space-y-6">
             <div class="bg-white rounded-2xl border border-stone-200 p-6">
                 <h3 class="font-semibold text-stone-900 mb-4">Items</h3>
                 <div class="divide-y divide-stone-100">
                     @foreach ($order->items as $item)
-                        <div class="flex items-center gap-4 py-3">
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center shrink-0 overflow-hidden">
-                                @if ($item->product)
-                                    <img src="{{ $item->product->displayImageUrl() }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
-                                @else
-                                    <span class="text-xl">🥗</span>
-                                @endif
+                        @if ($item->basket)
+                            @include('partials.order-basket-group', ['item' => $item])
+                        @else
+                            <div class="flex items-center gap-4 py-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                    @if ($item->product)
+                                        <img src="{{ $item->product->displayImageUrl() }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
+                                    @else
+                                        <span class="text-xl">🥗</span>
+                                    @endif
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-stone-900">{{ $item->product_name }}</p>
+                                    <p class="text-xs text-stone-400">{{ $item->quantity }} × {{ \Illuminate\Support\Number::currency($item->price, 'INR') }} @if ($item->unit) / {{ $item->unit }} @endif</p>
+                                </div>
+                                <p class="font-semibold text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($item->total, 'INR') }}</p>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-medium text-stone-900">{{ $item->product_name }}</p>
-                                <p class="text-xs text-stone-400">{{ $item->quantity }} × {{ \Illuminate\Support\Number::currency($item->price, 'INR') }} @if ($item->unit) / {{ $item->unit }} @endif</p>
-                            </div>
-                            <p class="font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($item->total, 'INR') }}</p>
-                        </div>
+                        @endif
                     @endforeach
                 </div>
 
@@ -90,7 +90,11 @@
                         @endforeach
                     </select>
                     @error('status')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
-                    <button type="submit" class="w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold py-2.5 transition">Save Status</button>
+                    <button type="submit" wire:loading.attr="disabled" wire:target="updateStatus" class="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold py-2.5 transition disabled:opacity-70">
+                        <x-loading-spinner wire:loading wire:target="updateStatus" class="w-4 h-4" />
+                        <span wire:loading.remove wire:target="updateStatus">Save Status</span>
+                        <span wire:loading wire:target="updateStatus">Saving...</span>
+                    </button>
                 </form>
             </div>
 
@@ -109,7 +113,11 @@
                             <option value="paid">Paid</option>
                             <option value="refunded">Refunded</option>
                         </select>
-                        <button type="submit" class="w-full rounded-xl border border-stone-200 hover:bg-stone-50 text-sm font-semibold py-2.5 transition">Save Payment</button>
+                        <button type="submit" wire:loading.attr="disabled" wire:target="updatePaymentStatus" class="inline-flex items-center justify-center gap-2 w-full rounded-xl border border-stone-200 hover:bg-stone-50 text-sm font-semibold py-2.5 transition disabled:opacity-70">
+                            <x-loading-spinner wire:loading wire:target="updatePaymentStatus" class="w-4 h-4" />
+                            <span wire:loading.remove wire:target="updatePaymentStatus">Save Payment</span>
+                            <span wire:loading wire:target="updatePaymentStatus">Saving...</span>
+                        </button>
                     </form>
                 @elseif ($order->payment_status === 'paid')
                     <dl class="space-y-2 text-sm">
@@ -142,7 +150,11 @@
                     <form wire:submit="cancelOrder" class="space-y-3">
                         <input type="text" wire:model="cancelReason" maxlength="200" placeholder="Enter reason for cancellation…" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
                         @error('cancelReason')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
-                        <button type="submit" class="w-full rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 transition">Cancel Order</button>
+                        <button type="submit" wire:loading.attr="disabled" wire:target="cancelOrder" class="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 transition disabled:opacity-70">
+                            <x-loading-spinner wire:loading wire:target="cancelOrder" class="w-4 h-4" />
+                            <span wire:loading.remove wire:target="cancelOrder">Cancel Order</span>
+                            <span wire:loading wire:target="cancelOrder">Cancelling...</span>
+                        </button>
                     </form>
                 </div>
             @endif

@@ -63,4 +63,32 @@ class Setting extends Model
 
         return null;
     }
+
+    /**
+     * Resolve the store logo as a base64 data URI for embedding in documents
+     * such as PDF invoices, or null when no logo is configured.
+     */
+    public static function logoDataUri(): ?string
+    {
+        $type = static::get('logo_type');
+        $value = static::get('logo_value');
+
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        $content = match ($type) {
+            'url' => @file_get_contents($value),
+            'image' => Storage::disk('public')->exists($value) ? Storage::disk('public')->get($value) : null,
+            default => null,
+        };
+
+        if (! is_string($content) || $content === '') {
+            return null;
+        }
+
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($content) ?: 'image/png';
+
+        return 'data:'.$mime.';base64,'.base64_encode($content);
+    }
 }

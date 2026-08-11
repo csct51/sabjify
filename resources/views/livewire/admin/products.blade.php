@@ -69,9 +69,10 @@
                                 <button type="button" wire:click="toggleFeatured({{ $product->id }})" class="transition {{ $product->is_featured ? 'text-amber-500 fill-amber-500' : 'text-stone-300' }} hover:scale-110" aria-label="Toggle featured"><i data-lucide="star" class="w-4 h-4"></i></button>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <button type="button" wire:click="toggleActive({{ $product->id }})" class="inline-flex items-center gap-1.5 text-xs font-medium {{ $product->is_active ? 'text-green-600' : 'text-stone-400' }}">
-                                    <span class="w-2 h-2 rounded-full {{ $product->is_active ? 'bg-green-500' : 'bg-stone-300' }}"></span>
-                                    {{ $product->is_active ? 'Active' : 'Hidden' }}
+                                <button type="button" wire:click="toggleActive({{ $product->id }})" wire:loading.attr="disabled" wire:target="toggleActive({{ $product->id }})" class="inline-flex items-center gap-1.5 text-xs font-medium {{ $product->is_active ? 'text-green-600' : 'text-stone-400' }} disabled:opacity-50">
+                                    <x-loading-spinner wire:loading wire:target="toggleActive({{ $product->id }})" class="w-3 h-3" />
+                                    <span wire:loading.remove wire:target="toggleActive({{ $product->id }})" class="w-2 h-2 rounded-full {{ $product->is_active ? 'bg-green-500' : 'bg-stone-300' }}"></span>
+                                    <span wire:loading.remove wire:target="toggleActive({{ $product->id }})">{{ $product->is_active ? 'Active' : 'Hidden' }}</span>
                                 </button>
                             </td>
                             <td class="px-4 py-3 text-right">

@@ -50,8 +50,10 @@
             @enderror
         </div>
 
-        <button type="submit" class="w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition">
-            Sign In
+        <button type="submit" wire:loading.attr="disabled" wire:target="login" class="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition disabled:opacity-70">
+            <x-loading-spinner wire:loading wire:target="login" class="w-4 h-4" />
+            <span wire:loading.remove wire:target="login">Sign In</span>
+            <span wire:loading wire:target="login">Signing in...</span>
         </button>
 
         <p class="text-center text-xs text-stone-400">

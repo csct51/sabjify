@@ -28,6 +28,35 @@
                                     @include('partials.cart-item', ['item' => $item])
                                 @endforeach
                             </div>
+                        @elseif ($group['basket'])
+                            <div wire:key="basket-{{ $group['basket']->id }}" x-data="{ open: false }">
+                                <div class="flex items-center gap-2 px-4 py-3 bg-brand-50/60 border-b border-brand-100">
+                                    <a href="{{ route('baskets.show', $group['basket']) }}" wire:navigate class="flex items-center gap-2 text-sm font-semibold text-brand-700 hover:text-brand-800">
+                                        <i data-lucide="gift" class="w-4 h-4"></i>
+                                        {{ $group['basket']->name }}
+                                    </a>
+                                    <span class="text-xs text-stone-400">{{ $group['basket']->typeLabel() }}</span>
+                                </div>
+                                @foreach ($group['items'] as $item)
+                                    @include('partials.cart-basket-item', ['item' => $item])
+                                @endforeach
+                                <div x-show="open" x-collapse class="border-t border-stone-200 divide-y divide-stone-100">
+                                    @foreach ($group['basket']->products as $product)
+                                        <div class="flex items-center gap-3 px-4 py-2.5">
+                                            <div class="w-10 h-10 rounded-lg bg-stone-100 overflow-hidden shrink-0">
+                                                <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-stone-800 truncate">{{ $product->name }}</p>
+                                                <p class="text-xs text-stone-400">{{ $product->pivot->unit ?: $product->unit }}</p>
+                                            </div>
+                                            @if ($product->pivot->price !== null)
+                                                <p class="text-sm font-medium text-stone-700">{{ \Illuminate\Support\Number::currency($product->pivot->price, 'INR') }}</p>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         @else
                             @foreach ($group['items'] as $item)
                                 @include('partials.cart-item', ['item' => $item])

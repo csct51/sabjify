@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Basket;
 use App\Models\CartItem;
 use App\Models\Recipe;
 use Illuminate\Contracts\View\View;
@@ -17,6 +18,13 @@ class Cart extends Component
 {
     public function increment(CartItem $item): void
     {
+        if ($item->basket) {
+            $item->increment('quantity');
+            $this->dispatch('cart-updated');
+
+            return;
+        }
+
         if (! $item->product || ! $item->product->inStock()) {
             return;
         }
@@ -61,7 +69,7 @@ class Cart extends Component
     public function cartItems(): Collection
     {
         return auth('web')->user()->cartItems()
-            ->with('product.category', 'recipe')
+            ->with('product.category', 'recipe', 'basket.products')
             ->latest()
             ->get();
     }
@@ -69,27 +77,30 @@ class Cart extends Component
     #[Computed]
     public function subtotal(): int
     {
-        return $this->cartItems()->sum(fn (CartItem $item) => $item->product ? $item->product->price * $item->quantity : 0);
+        return $this->cartItems()->sum(fn (CartItem $item) => $item->total());
     }
 
     /**
-     * Group cart items by the recipe they came from, keeping standalone
-     * items in their own single-item groups.
+     * Group cart items by the recipe or basket they came from, keeping
+     * standalone items in their own single-item groups.
      *
-     * @return array<int|string, array{recipe: Recipe|null, items: array<int, CartItem>}>
+     * @return array<int|string, array{recipe: Recipe|null, basket: Basket|null, items: array<int, CartItem>}>
      */
     #[Computed]
     public function cartGroups(): array
     {
-        /** @var array<int|string, array{recipe: Recipe|null, items: array<int, CartItem>}> $grouped */
+        /** @var array<int|string, array{recipe: Recipe|null, basket: Basket|null, items: array<int, CartItem>}> $grouped */
         $grouped = [];
 
         foreach ($this->cartItems() as $item) {
-            $key = $item->recipe_id ?? 'item-'.$item->id;
+            $key = $item->recipe_id
+                ? 'recipe-'.$item->recipe_id
+                : ($item->basket_id ? 'basket-'.$item->basket_id : 'item-'.$item->id);
 
             if (! isset($grouped[$key])) {
                 $grouped[$key] = [
                     'recipe' => $item->recipe,
+                    'basket' => $item->basket,
                     'items' => [],
                 ];
             }

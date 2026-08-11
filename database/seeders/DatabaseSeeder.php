@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             UnitSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
+            RecipeSeeder::class,
+            BasketSeeder::class,
         ]);
     }
 }

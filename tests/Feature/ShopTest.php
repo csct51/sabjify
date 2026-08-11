@@ -15,8 +15,10 @@ test('shop page renders the filter button and modal toggle', function () {
 
     Livewire::test(Shop::class)
         ->assertSee('Filters')
+        ->assertDontSeeHtml('role="dialog"')
         ->call('$set', 'showFilters', true)
-        ->assertSee('Categories')
+        ->assertSeeHtml('role="dialog"')
+        ->assertSeeHtml('aria-modal="true"')
         ->assertSee('Fruits');
 });
 
