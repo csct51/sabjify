@@ -70,7 +70,7 @@
                                         <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-stone-50">
                                             <input type="checkbox" wire:model.live="productIds" value="{{ $product->id }}" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
                                             <span class="flex items-center gap-2 min-w-0 flex-1">
-                                                <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
+                                                <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-linear-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
                                                     <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                                                 </span>
                                                 <span class="min-w-0">
