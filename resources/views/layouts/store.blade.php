@@ -23,6 +23,8 @@
 
         <x-confirm-modal />
 
+        <x-toast :initial-message="session('success')" initial-type="success" />
+
         @livewireScripts
     </body>
 </html>

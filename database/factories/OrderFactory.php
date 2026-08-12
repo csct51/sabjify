@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Order>
@@ -19,11 +18,14 @@ class OrderFactory extends Factory
      */
     public function definition(): array
     {
+        static $sequence = 0;
+        $sequence++;
+
         $subtotal = fake()->numberBetween(100, 2000);
 
         return [
             'user_id' => User::factory(),
-            'order_number' => 'ORD-'.Str::upper(Str::random(8)),
+            'order_number' => 'ORD-'.str_pad((string) $sequence, 3, '0', STR_PAD_LEFT),
             'status' => fake()->randomElement(['pending', 'confirmed', 'packing', 'out_for_delivery', 'delivered']),
             'subtotal' => $subtotal,
             'delivery_fee' => $subtotal >= 499 ? 0 : 40,

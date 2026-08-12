@@ -209,6 +209,8 @@ class Checkout extends Component
 
         $order = app(OrderService::class)->createFromCart(auth('web')->user(), $data);
 
+        session()->flash('success', 'Order placed successfully.'.($order->order_number ? ' Order no: '.$order->order_number : ''));
+
         $this->dispatch('cart-updated');
 
         $this->redirect(route('orders.show', $order), navigate: true);

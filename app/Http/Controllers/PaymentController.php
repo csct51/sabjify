@@ -87,6 +87,8 @@ class PaymentController extends Controller
             $order = Order::find($payload['order_id']);
 
             if ($order && $order->user_id === auth('web')->id()) {
+                session()->flash('success', 'Payment successful. Order no: '.$order->order_number);
+
                 return response()->json([
                     'success' => true,
                     'order_id' => $order->id,
@@ -114,6 +116,8 @@ class PaymentController extends Controller
         ]);
 
         session(['pending_payment_'.$validated['razorpay_order_id'] => array_merge($payload, ['order_id' => $order->id])]);
+
+        session()->flash('success', 'Payment successful. Order no: '.$order->order_number);
 
         return response()->json([
             'success' => true,

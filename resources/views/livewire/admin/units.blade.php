@@ -43,7 +43,7 @@
                             <td class="px-4 py-3"></td>
                             <td class="px-4 py-3">
                                     <div class="flex items-center gap-3">
-                                        <span class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-brand-50 to-lime-100 text-stone-400">
+                                        <span class="flex items-center justify-center w-9 h-9 rounded-lg bg-linear-to-br from-brand-50 to-lime-100 text-stone-400">
                                             <i data-lucide="scale" class="w-4 h-4"></i>
                                         </span>
                                         <p class="font-medium text-stone-900">{{ $unit->name }}</p>

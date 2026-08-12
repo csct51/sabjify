@@ -6,7 +6,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class OrderService
 {
@@ -107,6 +106,16 @@ class OrderService
 
     private function generateOrderNumber(): string
     {
-        return 'ORD-'.strtoupper(Str::random(8));
+        $prefix = 'ORD-';
+
+        $maxSuffix = Order::query()
+            ->where('order_number', 'like', $prefix.'%')
+            ->lockForUpdate()
+            ->pluck('order_number')
+            ->map(fn (string $number): ?int => ($suffix = substr($number, strlen($prefix))) !== '' && ctype_digit($suffix) ? (int) $suffix : null)
+            ->filter()
+            ->max() ?? 0;
+
+        return $prefix.str_pad((string) ($maxSuffix + 1), 3, '0', STR_PAD_LEFT);
     }
 }

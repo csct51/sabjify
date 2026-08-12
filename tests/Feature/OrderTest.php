@@ -103,6 +103,30 @@ test('placing an order creates order, items, decrements stock and clears cart', 
         ->and($user->cartItems()->count())->toBe(0);
 });
 
+test('placing an order flashes a success message', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    $order = Order::first();
+
+    expect(session('success'))->toBe('Order placed successfully. Order no: '.$order->order_number);
+});
+
 test('free delivery above threshold', function () {
     $user = User::factory()->create();
     $product = Product::factory()->create(['price' => 600]);
@@ -472,4 +496,82 @@ test('order creation requires a non-empty cart', function () {
         'state' => 'Maharashtra',
         'pincode' => '400001',
     ]))->toThrow(RuntimeException::class);
+});
+
+test('order numbers are sequential and zero padded', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    for ($i = 0; $i < 3; $i++) {
+        CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+        Livewire::actingAs($user)
+            ->test(Checkout::class)
+            ->set('addressMode', 'new')
+            ->set('receiverName', 'Rahul Sharma')
+            ->set('receiverPhone', '9876501234')
+            ->set('addressLine', '12 Main Street')
+            ->set('city', 'Mumbai')
+            ->set('state', 'Maharashtra')
+            ->set('pincode', '400001')
+            ->set('paymentMethod', 'cod')
+            ->call('placeOrder')
+            ->assertRedirect();
+    }
+
+    expect(Order::orderBy('id')->pluck('order_number')->all())
+        ->toBe(['ORD-001', 'ORD-002', 'ORD-003']);
+});
+
+test('order numbers continue after existing orders', function () {
+    $user = User::factory()->create();
+    Order::factory()->create(['user_id' => $user->id]);
+    Order::factory()->create(['user_id' => $user->id]);
+
+    $maxBefore = Order::query()
+        ->pluck('order_number')
+        ->map(fn (string $number): ?int => ctype_digit(substr($number, 4)) ? (int) substr($number, 4) : null)
+        ->filter()
+        ->max() ?? 0;
+
+    $product = Product::factory()->available()->create(['price' => 100]);
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    expect(Order::orderBy('id')->get()->last()->order_number)->toBe('ORD-'.str_pad((string) ($maxBefore + 1), 3, '0', STR_PAD_LEFT));
+});
+
+test('legacy random order numbers do not break sequential generation', function () {
+    $user = User::factory()->create();
+    Order::factory()->create(['user_id' => $user->id, 'order_number' => 'ORD-'.Str::upper(Str::random(8))]);
+
+    $product = Product::factory()->available()->create(['price' => 100]);
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    expect(Order::orderBy('id')->get()->last()->order_number)->toBe('ORD-001');
 });
