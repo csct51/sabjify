@@ -15,13 +15,14 @@ use Illuminate\Support\Facades\Storage;
  * @property int $id
  * @property string $title
  * @property string $slug
+ * @property string|null $description
  * @property string|null $image
  * @property bool $is_active
  * @property int $sort_order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'slug', 'image', 'is_active', 'sort_order'])]
+#[Fillable(['title', 'slug', 'description', 'image', 'is_active', 'sort_order'])]
 class Recipe extends Model
 {
     /** @use HasFactory<RecipeFactory> */
@@ -61,6 +62,11 @@ class Recipe extends Model
     public function displayImageUrl(): string
     {
         return $this->imageUrl() ?? config('mart.placeholder_image');
+    }
+
+    public function imageFit(): string
+    {
+        return str_ends_with(strtolower((string) $this->image), '.png') ? 'object-contain' : 'object-cover';
     }
 
     /**

@@ -100,6 +100,11 @@ class Basket extends Model
         return $this->imageUrl() ?? config('mart.placeholder_image');
     }
 
+    public function imageFit(): string
+    {
+        return str_ends_with(strtolower((string) $this->image), '.png') ? 'object-contain' : 'object-cover';
+    }
+
     /**
      * @param  Builder<Basket>  $query
      * @return Builder<Basket>

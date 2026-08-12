@@ -12,8 +12,10 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" data-reveal>
             @foreach ($recipes as $recipe)
                 <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-                    <div class="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-lime-100 overflow-hidden">
-                        <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                    <div class="p-4 pb-0">
+                        <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
+                            <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" class="absolute inset-0 w-full h-full {{ $recipe->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+                        </div>
                     </div>
                     <div class="p-4">
                         <h2 class="font-semibold text-stone-900 group-hover:text-brand-700">{{ $recipe->title }}</h2>

@@ -39,6 +39,8 @@ use App\Livewire\Shop;
 use Illuminate\Support\Facades\Route;
 
 Route::livewire('/login', PhoneLogin::class)->name('login')->middleware('guest');
+Route::livewire('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+Route::livewire('/terms-conditions', 'terms-conditions')->name('terms-conditions');
 
 Route::redirect('/admin', '/admin/login')->name('admin.index');
 

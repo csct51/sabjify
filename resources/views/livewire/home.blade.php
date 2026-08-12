@@ -31,7 +31,10 @@
     </section>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12" data-reveal>
-        <h2 class="text-2xl font-bold text-stone-900 text-center mb-6">Shop by Category</h2>
+        <div class="mb-6 text-center">
+            <h2 class="text-2xl font-bold text-stone-900">Shop by Category</h2>
+            <p class="mt-1 text-sm text-stone-500">Browse our fresh selection</p>
+        </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             @foreach ($this->categories as $category)
                 <a href="{{ route('shop', ['category' => $category->slug]) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-3 text-center">
@@ -54,14 +57,17 @@
 
     @if ($this->recipes->isNotEmpty())
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
-            <div class="relative flex items-center justify-center mb-6">
-                <h2 class="text-2xl font-bold text-stone-900 text-center">Recipes</h2>
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-stone-900">Recipes</h2>
+                <p class="mt-1 text-sm text-stone-500">Simple meals made fresh</p>
             </div>
             <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
                 @foreach ($this->recipes as $recipe)
                     <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group bg-white rounded-xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                        <div class="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-lime-100 overflow-hidden">
-                            <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        <div class="p-2.5 pb-0">
+                            <div class="relative aspect-[4/3] overflow-hidden rounded-lg">
+                                <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" class="absolute inset-0 w-full h-full {{ $recipe->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+                            </div>
                         </div>
                         <div class="p-2.5">
                             <h3 class="text-xs font-medium text-stone-800 leading-snug group-hover:text-brand-700 line-clamp-1">{{ $recipe->title }}</h3>
@@ -69,13 +75,11 @@
                         </div>
                     </a>
                 @endforeach
-                <a href="{{ route('recipes.index') }}" wire:navigate class="group bg-white rounded-xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col">
-                    <div class="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center">
-                        <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white shadow-sm"><i data-lucide="arrow-right" class="w-5 h-5 text-brand-600"></i></span>
-                    </div>
-                    <div class="p-2.5 flex items-center justify-center">
-                        <p class="text-xs font-medium text-stone-800 group-hover:text-brand-700">View all</p>
-                    </div>
+                <a href="{{ route('recipes.index') }}" wire:navigate class="group bg-white rounded-xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-2.5">
+                    <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
+                        <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
+                    </span>
+                    <p class="mt-2 text-xs font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
                 </a>
             </div>
         </section>
@@ -83,14 +87,17 @@
 
     @if ($this->wellnessBaskets->isNotEmpty())
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
-            <div class="relative flex items-center justify-center mb-6">
-                <h2 class="text-2xl font-bold text-stone-900 text-center">Wellness Baskets</h2>
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-stone-900">Wellness Baskets</h2>
+                <p class="mt-1 text-sm text-stone-500">Curated for a healthier you</p>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 @foreach ($this->wellnessBaskets as $basket)
                     <a href="{{ route('baskets.show', $basket) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                        <div class="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-lime-100 overflow-hidden">
-                            <img src="{{ $basket->displayImageUrl() }}" alt="{{ $basket->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        <div class="p-3 pb-0">
+                            <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
+                                <img src="{{ $basket->displayImageUrl() }}" alt="{{ $basket->name }}" class="absolute inset-0 w-full h-full {{ $basket->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+                            </div>
                         </div>
                         <div class="p-3">
                             <h3 class="text-sm font-medium text-stone-800 leading-snug group-hover:text-brand-700 line-clamp-1">{{ $basket->name }}</h3>
@@ -98,13 +105,11 @@
                         </div>
                     </a>
                 @endforeach
-                <a href="{{ route('baskets.index') }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col">
-                    <div class="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center">
-                        <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white shadow-sm"><i data-lucide="arrow-right" class="w-5 h-5 text-brand-600"></i></span>
-                    </div>
-                    <div class="p-3 flex items-center justify-center">
-                        <p class="text-sm font-medium text-stone-800 group-hover:text-brand-700">View all</p>
-                    </div>
+                <a href="{{ route('baskets.index') }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
+                    <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
+                        <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
+                    </span>
+                    <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
                 </a>
             </div>
         </section>
@@ -112,14 +117,17 @@
 
     @if ($this->sabjifyBaskets->isNotEmpty())
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
-            <div class="relative flex items-center justify-center mb-6">
-                <h2 class="text-2xl font-bold text-stone-900 text-center">Sabjify Baskets</h2>
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-stone-900">Sabjify Baskets</h2>
+                <p class="mt-1 text-sm text-stone-500">Our signature daily baskets</p>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 @foreach ($this->sabjifyBaskets as $basket)
                     <a href="{{ route('baskets.show', $basket) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                        <div class="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-lime-100 overflow-hidden">
-                            <img src="{{ $basket->displayImageUrl() }}" alt="{{ $basket->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        <div class="p-3 pb-0">
+                            <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
+                                <img src="{{ $basket->displayImageUrl() }}" alt="{{ $basket->name }}" class="absolute inset-0 w-full h-full {{ $basket->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+                            </div>
                         </div>
                         <div class="p-3">
                             <h3 class="text-sm font-medium text-stone-800 leading-snug group-hover:text-brand-700 line-clamp-1">{{ $basket->name }}</h3>
@@ -127,21 +135,20 @@
                         </div>
                     </a>
                 @endforeach
-                <a href="{{ route('baskets.index') }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col">
-                    <div class="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center">
-                        <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white shadow-sm"><i data-lucide="arrow-right" class="w-5 h-5 text-brand-600"></i></span>
-                    </div>
-                    <div class="p-3 flex items-center justify-center">
-                        <p class="text-sm font-medium text-stone-800 group-hover:text-brand-700">View all</p>
-                    </div>
+                <a href="{{ route('baskets.index') }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
+                    <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
+                        <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
+                    </span>
+                    <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
                 </a>
             </div>
         </section>
     @endif
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
-        <div class="relative flex items-center justify-center mb-6">
-            <h2 class="text-2xl font-bold text-stone-900 text-center">Featured Products</h2>
+        <div class="mb-6 text-center">
+            <h2 class="text-2xl font-bold text-stone-900">Featured Products</h2>
+            <p class="mt-1 text-sm text-stone-500">Handpicked favourites just for you</p>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             @foreach ($this->featuredProducts as $product)
@@ -151,20 +158,19 @@
     </section>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
-        <div class="relative flex items-center justify-center mb-6">
-            <h2 class="text-2xl font-bold text-stone-900 text-center">New Arrivals</h2>
+        <div class="mb-6 text-center">
+            <h2 class="text-2xl font-bold text-stone-900">New Arrivals</h2>
+            <p class="mt-1 text-sm text-stone-500">Just landed in our store</p>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             @foreach ($this->newArrivals as $product)
                 <livewire:product-card :product="$product" :key="'new-'.$product->id" />
             @endforeach
-            <a href="{{ route('shop') }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 overflow-hidden flex flex-col">
-                <div class="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center">
-                    <span class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-white shadow-sm"><i data-lucide="arrow-right" class="w-6 h-6 text-brand-600"></i></span>
-                </div>
-                <div class="p-3 flex items-center justify-center">
-                    <p class="text-sm font-semibold text-stone-800 group-hover:text-brand-700">View all</p>
-                </div>
+            <a href="{{ route('shop') }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 overflow-hidden flex flex-col items-center justify-center p-3">
+                <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
+                    <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
+                </span>
+                <p class="mt-2 text-sm font-semibold text-stone-800 group-hover:text-brand-700 text-center">View all</p>
             </a>
         </div>
     </section>

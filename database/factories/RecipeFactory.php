@@ -24,6 +24,7 @@ class RecipeFactory extends Factory
         return [
             'title' => Str::title($title),
             'slug' => Str::slug($title),
+            'description' => fake()->paragraph(),
             'image' => null,
             'is_active' => true,
             'sort_order' => fake()->numberBetween(0, 20),

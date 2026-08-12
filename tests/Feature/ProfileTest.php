@@ -19,6 +19,8 @@ test('authenticated user can view their profile hub', function () {
         ->assertSee('Account Details')
         ->assertSee('Saved Addresses')
         ->assertSee('My Orders')
+        ->assertSee('Privacy Policy')
+        ->assertSee('Terms & Conditions', false)
         ->assertSee('Logout');
 });
 

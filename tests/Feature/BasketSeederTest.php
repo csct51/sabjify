@@ -36,11 +36,37 @@ it('seeds the wellness baskets with their products', function () {
         ->toContain('fresh-apple', 'spinach-palak', 'avocado');
 });
 
+it('seeds the sabjify baskets with fixed prices', function () {
+    $this->seed(BasketSeeder::class);
+
+    $baskets = Basket::where('type', Basket::TYPE_SABJIFY)->get();
+
+    expect($baskets)->toHaveCount(4)
+        ->and($baskets->pluck('name'))->toContain(
+            'Essential Basket',
+            'Smart Basket',
+            'Premium Basket',
+            'Complete Basket'
+        );
+
+    $prices = $baskets->pluck('price', 'name');
+
+    expect($prices['Essential Basket'])->toBe(299)
+        ->and($prices['Smart Basket'])->toBe(499)
+        ->and($prices['Premium Basket'])->toBe(799)
+        ->and($prices['Complete Basket'])->toBe(999);
+
+    $baskets->each(
+        fn (Basket $basket) => expect($basket->products)->not->toBeEmpty()
+            ->and($basket->is_active)->toBeTrue()
+    );
+});
+
 it('is idempotent when run twice', function () {
     $this->seed(BasketSeeder::class);
     $this->seed(BasketSeeder::class);
 
-    expect(Basket::count())->toBe(6);
+    expect(Basket::count())->toBe(10);
 });
 
 it('links baskets only to products that exist', function () {

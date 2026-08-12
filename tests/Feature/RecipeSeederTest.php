@@ -20,6 +20,7 @@ it('seeds recipes with their products', function () {
     $recipe = Recipe::where('slug', 'green-detox-smoothie')->first();
 
     expect($recipe)->not->toBeNull()
+        ->and($recipe->description)->not->toBeNull()->not->toBe('')
         ->and($recipe->products)->toHaveCount(5)
         ->and($recipe->products->pluck('slug'))
         ->toContain('fresh-apple', 'spinach-palak', 'mint-leaves');

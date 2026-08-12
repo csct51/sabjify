@@ -11,6 +11,16 @@
                 <span class="text-[10px] font-medium">Home</span>
             </a>
 
+            <a href="{{ route('shop') }}" wire:navigate class="flex flex-col items-center gap-1 py-2.5 {{ request()->routeIs('shop') ? 'text-brand-600' : 'text-stone-500 hover:text-stone-700' }}">
+                <span class="relative">
+                    <i data-lucide="store" class="w-5 h-5"></i>
+                    @if (request()->routeIs('shop'))
+                        <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-brand-600"></span>
+                    @endif
+                </span>
+                <span class="text-[10px] font-medium">Shop</span>
+            </a>
+
             <a href="{{ route('cart') }}" wire:navigate class="flex flex-col items-center gap-1 py-2.5 {{ request()->routeIs('cart') ? 'text-brand-600' : 'text-stone-500 hover:text-stone-700' }}">
                 <span class="relative">
                     <i data-lucide="shopping-cart" class="w-5 h-5"></i>
@@ -31,30 +41,8 @@
                         <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-brand-600"></span>
                     @endif
                 </span>
-                <span class="text-[10px] font-medium">Orders</span>
+<span class="text-[10px] font-medium">Orders</span>
             </a>
-
-            @auth
-                <a href="{{ route('profile') }}" wire:navigate class="flex flex-col items-center gap-1 py-2.5 {{ request()->routeIs('profile') ? 'text-brand-600' : 'text-stone-500 hover:text-stone-700' }}">
-                    <span class="relative">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                        @if (request()->routeIs('profile'))
-                            <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-brand-600"></span>
-                        @endif
-                    </span>
-                    <span class="text-[10px] font-medium">Profile</span>
-                </a>
-            @else
-                <a href="{{ route('login') }}" wire:navigate class="flex flex-col items-center gap-1 py-2.5 {{ request()->routeIs('login') ? 'text-brand-600' : 'text-stone-500 hover:text-stone-700' }}">
-                    <span class="relative">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                        @if (request()->routeIs('login'))
-                            <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-brand-600"></span>
-                        @endif
-                    </span>
-                    <span class="text-[10px] font-medium">Login</span>
-                </a>
-            @endauth
         </nav>
     </div>
 </div>

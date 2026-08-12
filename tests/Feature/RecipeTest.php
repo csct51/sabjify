@@ -57,7 +57,46 @@ test('selected product appears in the selected products panel immediately', func
         ->assertSee('Mango');
 });
 
-test('admin can update a recipe', function () {
+test('admin can create a recipe with description', function () {
+    $admin = Admin::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(RecipeForm::class)
+        ->set('title', 'Fresh Mango Salad')
+        ->set('slug', 'fresh-mango-salad')
+        ->set('description', 'A light and refreshing salad for warm days.')
+        ->set('productIds', [$mango->id])
+        ->call('save')
+        ->assertRedirect(route('admin.recipes.index'));
+
+    $this->assertDatabaseHas('recipes', ['slug' => 'fresh-mango-salad', 'description' => 'A light and refreshing salad for warm days.']);
+});
+
+test('recipe detail page shows the description', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango']);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad', 'description' => 'A light and refreshing salad for warm days.']);
+    $recipe->products()->attach($mango);
+
+    Livewire::actingAs($user)
+        ->test(RecipeShow::class, ['recipe' => $recipe])
+        ->assertOk()
+        ->assertSee('Mango Salad')
+        ->assertSee('A light and refreshing salad for warm days.');
+});
+
+test('recipe detail page hides an empty description', function () {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad', 'description' => null]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeShow::class, ['recipe' => $recipe])
+        ->assertOk()
+        ->assertSee('Mango Salad');
+});
+
+test('admin can update a recipe with description', function () {
     $admin = Admin::factory()->create();
     $oldProduct = Product::factory()->create();
     $newProduct = Product::factory()->create();
@@ -67,11 +106,13 @@ test('admin can update a recipe', function () {
     Livewire::actingAs($admin, 'admin')
         ->test(RecipeForm::class, ['recipe' => $recipe])
         ->set('title', 'New Title')
+        ->set('description', 'An updated description.')
         ->set('productIds', [$newProduct->id])
         ->call('save')
         ->assertRedirect(route('admin.recipes.index'));
 
     expect($recipe->fresh()->title)->toBe('New Title');
+    expect($recipe->fresh()->description)->toBe('An updated description.');
     expect($recipe->fresh()->products()->pluck('products.id')->all())->toEqualCanonicalizing([$newProduct->id]);
 });
 

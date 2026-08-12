@@ -1,17 +1,19 @@
 <div class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 overflow-hidden flex flex-col" wire:key="product-{{ $product->id }}">
-    <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="relative block aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-50 to-lime-100">
-        <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+    <div class="p-3 pb-0">
+        <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="relative block aspect-[4/3] overflow-hidden rounded-xl">
+            <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full {{ $product->imageFit() }} transition-transform duration-300 group-hover:scale-105">
 
-        @if ($product->discountPercent() > 0)
-            <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">{{ $product->discountPercent() }}% OFF</span>
-        @endif
+            @if ($product->discountPercent() > 0)
+                <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">{{ $product->discountPercent() }}% OFF</span>
+            @endif
 
-        @if (! $product->inStock())
-            <span class="absolute inset-0 bg-white/70 flex items-center justify-center">
-                <span class="bg-stone-900 text-white text-[10px] font-semibold px-2 py-1 rounded-md">Out of Stock</span>
-            </span>
-        @endif
-    </a>
+            @if (! $product->inStock())
+                <span class="absolute inset-0 bg-white/70 flex items-center justify-center">
+                    <span class="bg-stone-900 text-white text-[10px] font-semibold px-2 py-1 rounded-md">Out of Stock</span>
+                </span>
+            @endif
+        </a>
+    </div>
 
     <div class="p-3 flex flex-col flex-1">
         <p class="text-[10px] uppercase tracking-wide text-stone-400 font-medium">{{ $product->category?->name }}</p>

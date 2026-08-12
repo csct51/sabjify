@@ -57,6 +57,37 @@ class BasketSeeder extends Seeder
                 'image' => 'https://images.unsplash.com/photo-1543353071-873f17a7a088?q=80&w=600&auto=format&fit=crop',
                 'products' => ['fresh-apple', 'banana-robusta', 'tomato', 'onion', 'potato', 'spinach-palak', 'carrot', 'cucumber', 'sweet-orange', 'capsicum-mix'],
             ],
+            [
+                'name' => 'Essential Basket',
+                'type' => Basket::TYPE_SABJIFY,
+                'description' => 'The everyday essentials — fresh daily staples to keep your kitchen stocked.',
+                'products' => ['tomato', 'onion', 'potato', 'carrot', 'spinach-palak', 'cucumber', 'coriander', 'curry-leaves'],
+                'price' => 299,
+            ],
+            [
+                'name' => 'Smart Basket',
+                'type' => Basket::TYPE_SABJIFY,
+                'description' => 'A smart mix of kitchen staples plus seasonal fruits and greens for balanced weekly shopping.',
+                'image' => 'https://images.unsplash.com/photo-1543168256-418811576931?q=80&w=600&auto=format&fit=crop',
+                'products' => ['tomato', 'onion', 'potato', 'carrot', 'cucumber', 'capsicum-mix', 'banana-robusta', 'sweet-orange', 'ginger', 'mint-leaves'],
+                'price' => 499,
+            ],
+            [
+                'name' => 'Premium Basket',
+                'type' => Basket::TYPE_SABJIFY,
+                'description' => 'Premium fruits and premium produce — exotic picks and top-grade vegetables.',
+                'image' => 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=600&auto=format&fit=crop',
+                'products' => ['fresh-apple', 'avocado', 'kiwi', 'blueberry', 'seedless-grapes', 'sweet-orange', 'watermelon', 'lettuce-iceberg', 'capsicum-mix', 'tomato'],
+                'price' => 799,
+            ],
+            [
+                'name' => 'Complete Basket',
+                'type' => Basket::TYPE_SABJIFY,
+                'description' => 'The complete sabjify experience — every fruit and vegetable you love, in one basket.',
+                'image' => 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop',
+                'products' => ['fresh-apple', 'banana-robusta', 'avocado', 'kiwi', 'blueberry', 'seedless-grapes', 'sweet-orange', 'watermelon', 'tomato', 'onion', 'potato', 'carrot', 'spinach-palak', 'cucumber'],
+                'price' => 999,
+            ],
         ];
 
         foreach ($baskets as $index => $basket) {
@@ -66,19 +97,24 @@ class BasketSeeder extends Seeder
                 continue;
             }
 
-            $basketPrice = (int) round($products->sum('price') * 0.9);
+            $basketPrice = $basket['price'] ?? (int) round($products->sum('price') * 0.9);
+
+            $attributes = [
+                'name' => $basket['name'],
+                'type' => $basket['type'],
+                'description' => $basket['description'],
+                'price' => $basketPrice,
+                'is_active' => true,
+                'sort_order' => $index,
+            ];
+
+            if (isset($basket['image'])) {
+                $attributes['image'] = $basket['image'];
+            }
 
             $model = Basket::updateOrCreate(
                 ['slug' => Str::slug($basket['name'])],
-                [
-                    'name' => $basket['name'],
-                    'type' => $basket['type'],
-                    'description' => $basket['description'],
-                    'image' => $basket['image'],
-                    'price' => $basketPrice,
-                    'is_active' => true,
-                    'sort_order' => $index,
-                ]
+                $attributes
             );
 
             $model->products()->sync(

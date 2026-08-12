@@ -24,6 +24,8 @@ class RecipeForm extends Component
 
     public string $slug = '';
 
+    public string $description = '';
+
     /** @var array<int, int> */
     public array $productIds = [];
 
@@ -46,6 +48,7 @@ class RecipeForm extends Component
         if ($recipe) {
             $this->title = $recipe->title;
             $this->slug = $recipe->slug;
+            $this->description = $recipe->description ?? '';
             $this->productIds = $recipe->products()->pluck('products.id')->all();
             $this->is_active = $recipe->is_active ? '1' : '0';
             $this->sort_order = $recipe->sort_order;
@@ -123,6 +126,7 @@ class RecipeForm extends Component
         $this->validate([
             'title' => ['required', 'string', 'max:120'],
             'slug' => ['required', 'string', 'max:140', 'unique:recipes,slug,'.($this->recipe->id ?? 'NULL')],
+            'description' => ['nullable', 'string', 'max:1000'],
             'productIds' => ['required', 'array', 'min:1'],
             'productIds.*' => ['integer', 'exists:products,id'],
             'is_active' => ['boolean'],
@@ -134,6 +138,7 @@ class RecipeForm extends Component
         $data = [
             'title' => $this->title,
             'slug' => $this->slug,
+            'description' => $this->description !== '' ? $this->description : null,
             'is_active' => $this->is_active === '1',
             'sort_order' => $this->sort_order,
         ];

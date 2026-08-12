@@ -63,6 +63,24 @@
                 <i data-lucide="chevron-right" class="w-5 h-5 text-stone-400"></i>
             </a>
 
+            <a href="{{ route('privacy-policy') }}" wire:navigate class="flex items-center gap-4 rounded-2xl border border-stone-200 hover:border-brand-300 bg-white px-5 py-4 transition">
+                <span class="flex items-center justify-center w-11 h-11 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shield" class="w-5 h-5"></i></span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-stone-900">Privacy Policy</p>
+                    <p class="text-sm text-stone-500 truncate">How we handle your data</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-stone-400"></i>
+            </a>
+
+            <a href="{{ route('terms-conditions') }}" wire:navigate class="flex items-center gap-4 rounded-2xl border border-stone-200 hover:border-brand-300 bg-white px-5 py-4 transition">
+                <span class="flex items-center justify-center w-11 h-11 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="file-text" class="w-5 h-5"></i></span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-stone-900">Terms & Conditions</p>
+                    <p class="text-sm text-stone-500 truncate">Rules for using our service</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-stone-400"></i>
+            </a>
+
             <button type="button" @click="$dispatch('confirm-modal', { message: 'Are you sure you want to log out?', action: () => $wire.logout() })" class="w-full flex items-center gap-4 rounded-2xl border border-red-200 hover:border-red-300 hover:bg-red-50 bg-white px-5 py-4 transition">
                 <span class="flex items-center justify-center w-11 h-11 rounded-xl bg-red-50 text-red-600"><i data-lucide="log-out" class="w-5 h-5"></i></span>
                 <div class="flex-1 min-w-0 text-left">

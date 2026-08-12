@@ -67,7 +67,7 @@
                                 </div>
                                 <div class="max-h-64 overflow-y-auto divide-y divide-stone-100">
                                     @forelse ($this->products as $product)
-                                        <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-stone-50">
+                                        <label wire:key="product-checkbox-{{ $product->id }}" class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-stone-50">
                                             <input type="checkbox" wire:model.live="productIds" value="{{ $product->id }}" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
                                             <span class="flex items-center gap-2 min-w-0 flex-1">
                                                 <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-linear-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
@@ -93,7 +93,7 @@
                             </div>
                             <div class="max-h-72 overflow-y-auto divide-y divide-stone-100">
                                 @forelse ($this->selectedProducts as $product)
-                                    <div class="px-3 py-2.5">
+                                    <div wire:key="selected-product-{{ $product->id }}" class="px-3 py-2.5">
                                         <div class="flex items-center gap-3">
                                             <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-stone-200 shrink-0 overflow-hidden">
                                                 <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">

@@ -94,6 +94,11 @@ class Product extends Model
         return $this->imageUrl() ?? $this->placeholderImageUrl();
     }
 
+    public function imageFit(): string
+    {
+        return str_ends_with(strtolower((string) $this->image), '.png') ? 'object-contain' : 'object-cover';
+    }
+
     public function emoji(): string
     {
         return match (strtolower($this->category->name ?? '')) {

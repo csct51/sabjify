@@ -1,17 +1,25 @@
 <div class="bg-white border-b border-stone-200 sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center gap-4 h-16">
-            <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
-                <x-logo class="w-9 h-9 rounded-xl shadow-sm" />
-                <span class="font-bold text-lg text-stone-900">{{ config('app.name') }}</span>
+        <div class="flex items-center justify-between h-20">
+            <a href="{{ route('home') }}" wire:navigate class="flex items-center">
+                <img src="{{ asset('logo.svg') }}" alt="Sabjify" class="h-16 w-auto">
             </a>
 
-            <a href="{{ route('search') }}" wire:navigate class="flex-1 max-w-md mx-auto block">
-                <div class="relative">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"></i>
-                    <span class="w-full flex items-center rounded-full border border-stone-200 bg-stone-50 py-2 pl-10 pr-4 text-sm text-stone-400 text-left truncate whitespace-nowrap">Search</span>
-                </div>
-            </a>
+            <div class="flex items-center">
+                <a href="{{ route('search') }}" wire:navigate aria-label="Search" class="inline-flex items-center justify-center w-10 h-10 rounded-full text-stone-600 hover:bg-stone-100 transition">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </a>
+
+                @auth
+                    <a href="{{ route('profile') }}" wire:navigate aria-label="Profile" class="inline-flex items-center justify-center w-10 h-10 rounded-full text-stone-600 hover:bg-stone-100 transition {{ request()->routeIs('profile') ? 'text-brand-600' : '' }}">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" wire:navigate aria-label="Login" class="inline-flex items-center justify-center w-10 h-10 rounded-full text-stone-600 hover:bg-stone-100 transition">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                    </a>
+                @endauth
+            </div>
         </div>
     </div>
 </div>

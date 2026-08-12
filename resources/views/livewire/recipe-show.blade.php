@@ -16,6 +16,10 @@
             <div>
                 <h1 class="text-3xl font-bold text-stone-900">{{ $recipe->title }}</h1>
 
+                @if ($recipe->description)
+                    <p class="mt-3 text-stone-600 leading-relaxed">{{ $recipe->description }}</p>
+                @endif
+
                 @if ($this->products->isNotEmpty())
                     <div class="mt-5 flex flex-wrap items-center gap-3">
                         <button type="button" wire:click="addAllToCart" wire:loading.attr="disabled" wire:target="addAllToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
@@ -36,27 +40,36 @@
                 @if ($cartError)
                     <div class="mt-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ $cartError }}</div>
                 @endif
-
-                <div class="mt-6 border-t border-stone-200 pt-6">
-                    <h2 class="text-lg font-semibold text-stone-900 mb-3">Products in this recipe</h2>
-                    <p class="text-sm text-stone-500 mb-4">{{ $this->products->count() }} products · all available in our shop</p>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        @forelse ($this->products as $product)
-                            <a href="{{ route('product.show', $product) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 p-3 hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                                <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-50 to-lime-100">
-                                    <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-                                </div>
-                                <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 truncate">{{ $product->name }}</p>
-                                <p class="text-xs text-stone-400">{{ $product->category?->name }}</p>
-                                <p class="mt-1 text-sm font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($product->price, 'INR') }}<span class="text-xs font-normal text-stone-400"> / {{ $product->unit }}</span></p>
-                            </a>
-                        @empty
-                            <p class="text-stone-400 col-span-full">No products linked to this recipe yet.</p>
-                        @endforelse
-                    </div>
-                </div>
             </div>
         </div>
+
+        @if ($this->products->isNotEmpty())
+            <div class="mt-10 border-t border-stone-200 pt-8">
+                <h2 class="text-lg font-semibold text-stone-900 mb-3">Products in this recipe</h2>
+                <p class="text-sm text-stone-500 mb-5">{{ $this->products->count() }} products · all available in our shop</p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" data-reveal>
+                    @foreach ($this->products as $product)
+                        <a href="{{ route('product.show', $product) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 p-3 hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                            <div class="relative w-full aspect-square rounded-xl overflow-hidden">
+                                <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full {{ $product->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+                            </div>
+                            <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 truncate">{{ $product->name }}</p>
+                            <p class="text-xs text-stone-400">{{ $product->category?->name }}</p>
+                            <p class="mt-1 text-sm font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($product->price, 'INR') }}<span class="text-xs font-normal text-stone-400"> / {{ $product->unit }}</span></p>
+                        </a>
+                    @endforeach
+                </div>
+
+                <div class="mt-8 lg:hidden">
+                    <button type="button" wire:click="addAllToCart" wire:loading.attr="disabled" wire:target="addAllToCart" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
+                        <span wire:loading.remove wire:target="addAllToCart"><i data-lucide="shopping-cart" class="w-5 h-5"></i></span>
+                        <x-loading-spinner wire:loading wire:target="addAllToCart" class="w-4 h-4" />
+                        <span wire:loading.remove wire:target="addAllToCart">Add All to Cart</span>
+                        <span wire:loading wire:target="addAllToCart">Adding...</span>
+                    </button>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
