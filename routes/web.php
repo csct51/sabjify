@@ -13,6 +13,7 @@ use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\Orders as AdminOrders;
 use App\Livewire\Admin\OrderShow as AdminOrderShow;
 use App\Livewire\Admin\Password as AdminPassword;
+use App\Livewire\Admin\Prices as AdminPrices;
 use App\Livewire\Admin\ProductForm as AdminProductForm;
 use App\Livewire\Admin\Products as AdminProducts;
 use App\Livewire\Admin\RecipeForm as AdminRecipeForm;
@@ -97,6 +98,7 @@ Route::middleware(['auth:admin', 'admin'])->prefix('admin')->name('admin.')->gro
     Route::livewire('/customers', AdminCustomers::class)->name('customers.index');
     Route::livewire('/customers/{user}', AdminCustomerShow::class)->name('customers.show');
     Route::livewire('/units', AdminUnits::class)->name('units');
+    Route::livewire('/prices', AdminPrices::class)->name('prices');
     Route::livewire('/password', AdminPassword::class)->name('password');
     Route::livewire('/settings', AdminSettings::class)->name('settings');
 });

@@ -6,14 +6,41 @@
 
 @layer base {
     body {
-        font-feature-settings: 'ss01', 'cv05', 'cv08', 'cv11', 'tnum';
+        font-feature-settings: 'ss01', 'cv05', 'cv08', 'tnum';
+    }
+
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #d6d3d1;
+        border-radius: 9999px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a8a29e;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #d6d3d1 transparent;
     }
 }
 
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-    --font-feature-settings: 'ss01', 'cv05', 'cv08', 'cv11', 'tnum';
+    --font-feature-settings: 'ss01', 'cv05', 'cv08', 'tnum';
 
     --color-brand-50: #f0fdf4;
     --color-brand-100: #dcfce7;

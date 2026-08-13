@@ -7,6 +7,7 @@ use App\Livewire\Admin\Customers;
 use App\Livewire\Admin\CustomerShow;
 use App\Livewire\Admin\NotificationBell;
 use App\Livewire\Admin\OrderShow;
+use App\Livewire\Admin\Prices;
 use App\Livewire\Admin\ProductForm;
 use App\Livewire\Admin\Products;
 use App\Models\Address;
@@ -14,6 +15,7 @@ use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductUnit;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -296,4 +298,94 @@ test('notification bell lists pending orders in the modal', function () {
         ->call('toggle')
         ->assertSet('show', true)
         ->assertSee($order->order_number);
+});
+
+test('admin can update product unit prices', function () {
+    $admin = Admin::factory()->create();
+    $product = Product::factory()->create(['unit' => 'kg']);
+    $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g', 'price' => 100, 'mrp' => 120]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Prices::class)
+        ->set('prices', [$unit->id => 130])
+        ->set('mrps', [$unit->id => 150])
+        ->call('save')
+        ->assertDispatched('toast', message: 'Prices updated.');
+
+    expect($unit->fresh())
+        ->price->toBe(130)
+        ->mrp->toBe(150);
+});
+
+test('admin can update price and clear mrp', function () {
+    $admin = Admin::factory()->create();
+    $product = Product::factory()->create(['unit' => 'kg']);
+    $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g', 'price' => 100, 'mrp' => 120]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Prices::class)
+        ->set('prices', [$unit->id => 140])
+        ->set('mrps', [$unit->id => ''])
+        ->call('save')
+        ->assertDispatched('toast', message: 'Prices updated.');
+
+    expect($unit->fresh())
+        ->price->toBe(140)
+        ->mrp->toBeNull();
+});
+
+test('prices page rejects invalid price', function () {
+    $admin = Admin::factory()->create();
+    $product = Product::factory()->create(['unit' => 'kg']);
+    $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g', 'price' => 100]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Prices::class)
+        ->set('prices', [$unit->id => 0])
+        ->call('save')
+        ->assertHasErrors('prices.'.$unit->id);
+
+    expect($unit->fresh()->price)->toBe(100);
+});
+
+test('prices page filters units by search', function () {
+    $admin = Admin::factory()->create();
+    $product = Product::factory()->create(['name' => 'Fresh Mango', 'unit' => 'kg']);
+    $otherProduct = Product::factory()->create(['name' => 'Ripe Banana', 'unit' => 'kg']);
+    $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g']);
+    $otherUnit = ProductUnit::factory()->create(['product_id' => $otherProduct->id, 'unit' => '250 g']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Prices::class)
+        ->set('search', 'Mango')
+        ->assertSet('units', fn ($units) => $units->contains('id', $unit->id) && ! $units->contains('id', $otherUnit->id))
+        ->assertDontSee($otherUnit->unit);
+});
+
+test('prices page toggles product stock', function () {
+    $admin = Admin::factory()->create();
+    $product = Product::factory()->create(['in_stock' => true]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Prices::class)
+        ->call('toggleStock', $product)
+        ->assertDispatched('toast', message: "\"{$product->name}\" is now out of stock.");
+
+    expect($product->fresh()->in_stock)->toBeFalse();
+});
+
+test('prices page filters units by category', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+    $otherCategory = Category::factory()->create();
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => 'kg']);
+    $otherProduct = Product::factory()->create(['category_id' => $otherCategory->id, 'unit' => 'kg']);
+    $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g']);
+    $otherUnit = ProductUnit::factory()->create(['product_id' => $otherProduct->id, 'unit' => '250 g']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Prices::class)
+        ->set('category', $category->id)
+        ->assertSet('units', fn ($units) => $units->count() === 2 && $units->contains('id', $unit->id))
+        ->assertDontSee($otherUnit->unit);
 });

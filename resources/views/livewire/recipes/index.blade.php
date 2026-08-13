@@ -19,7 +19,10 @@
                     </div>
                     <div class="p-4">
                         <h2 class="font-semibold text-stone-900 group-hover:text-brand-700">{{ $recipe->title }}</h2>
-                        <p class="mt-1 text-xs text-stone-400">{{ $recipe->products_count }} items in this recipe</p>
+                        @if ($recipe->description)
+                            <p class="mt-1.5 text-sm text-stone-500 leading-relaxed line-clamp-3">{{ $recipe->description }}</p>
+                        @endif
+                        <p class="mt-2 text-xs text-stone-400">{{ $recipe->products_count }} items in this recipe</p>
                     </div>
                 </a>
             @endforeach

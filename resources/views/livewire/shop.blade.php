@@ -32,17 +32,17 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 grid grid-cols-1 lg:grid-cols-[170px_1fr] gap-8">
-        <aside data-reveal class="block">
+        <aside data-reveal class="block sticky top-20 z-30 -mx-4 px-4 pt-2 pb-2 bg-[#F7F8F5]/70 backdrop-blur-md lg:mx-0 lg:px-0 lg:pt-0 lg:pb-0 lg:bg-transparent lg:static">
             <div class="lg:sticky lg:top-24">
                 <div>
                     <h2 class="text-xs font-semibold text-stone-900 uppercase tracking-wide mb-3">Categories</h2>
-                    <div class="flex lg:flex-col gap-1.5 lg:max-h-80 lg:overflow-y-auto lg:pr-1 overflow-x-auto -mx-4 px-4 lg:mx-0 lg:px-0">
+                    <div class="flex lg:flex-col gap-1.5 lg:max-h-80 lg:overflow-y-auto lg:pr-1 overflow-x-auto">
                         <button
                             type="button"
                             wire:click="$set('category', null)"
                             class="shrink-0 lg:w-full flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-center transition {{ $this->category === null ? 'bg-brand-600 text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}"
                         >
-                            <span class="w-9 h-9 rounded flex items-center justify-center {{ $this->category === null ? 'bg-white/20 text-white' : 'bg-white text-brand-600 shadow-sm' }}">
+                            <span class="w-12 h-12 rounded flex items-center justify-center {{ $this->category === null ? 'bg-white/20 text-white' : 'bg-white text-brand-600 shadow-sm' }}">
                                 <i data-lucide="layout-grid" class="w-4 h-4"></i>
                             </span>
                             <span class="text-xs font-medium leading-tight line-clamp-1">All</span>
@@ -54,7 +54,7 @@
                                 wire:click="$set('category', '{{ $cat->slug }}')"
                                 class="shrink-0 lg:w-full flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-center transition {{ $this->category === $cat->slug ? 'bg-brand-600 text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}"
                             >
-                                <span class="w-9 h-9 rounded bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
+                                <span class="w-12 h-12 rounded bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
                                     @if ($cat->image)
                                         <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" class="w-full h-full object-cover">
                                     @endif
@@ -111,28 +111,6 @@
                                     class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ $this->sort === $value ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}"
                                 >
                                     {{ $label }}
-                                </button>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-semibold text-stone-900 uppercase tracking-wide mb-3">Categories</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <button
-                                type="button"
-                                wire:click="$set('category', null)"
-                                class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ $this->category === null ? 'bg-brand-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}"
-                            >
-                                All
-                            </button>
-                            @foreach ($this->categories as $cat)
-                                <button
-                                    type="button"
-                                    wire:click="$set('category', '{{ $cat->slug }}')"
-                                    class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ $this->category === $cat->slug ? 'bg-brand-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}"
-                                >
-                                    {{ $cat->name }}
                                 </button>
                             @endforeach
                         </div>

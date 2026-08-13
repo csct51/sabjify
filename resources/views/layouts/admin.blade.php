@@ -17,6 +17,7 @@
                     ['route' => 'admin.orders.index', 'label' => 'Orders', 'icon' => 'package'],
                     ['route' => 'admin.categories.index', 'label' => 'Categories', 'icon' => 'folder'],
                     ['route' => 'admin.units', 'label' => 'Units', 'icon' => 'scale'],
+                    ['route' => 'admin.prices', 'label' => 'Prices', 'icon' => 'indian-rupee'],
                     ['route' => 'admin.products.index', 'label' => 'Products', 'icon' => 'shopping-basket'],
                     ['route' => 'admin.recipes.index', 'label' => 'Recipes', 'icon' => 'book-open'],
                     ['route' => 'admin.baskets.index', 'label' => 'Baskets', 'icon' => 'gift'],

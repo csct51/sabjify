@@ -44,19 +44,6 @@ class Home extends Component
     }
 
     /**
-     * @return Collection<int, Product>
-     */
-    #[Computed]
-    public function newArrivals(): Collection
-    {
-        return Product::active()
-            ->with('category')
-            ->latest()
-            ->limit(3)
-            ->get();
-    }
-
-    /**
      * @return Collection<int, Recipe>
      */
     #[Computed]
