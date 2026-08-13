@@ -26,11 +26,18 @@
 
         <div class="mt-auto pt-2 flex items-end justify-between gap-2">
             <div>
+                @php $unit = $product->defaultUnit(); @endphp
                 @if ($product->hasMultipleUnits())
                     <p class="text-xs text-stone-400">From</p>
+                    @if ($product->discountPercent() > 0 && $unit?->mrp)
+                        <p class="text-xs text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($unit->mrp, 'INR') }}</p>
+                    @endif
                     <p class="text-base font-bold text-stone-900 -mt-1">{{ \Illuminate\Support\Number::currency($product->minPrice(), 'INR') }}</p>
                 @else
-                    <p class="text-base font-bold text-stone-900">{{ \Illuminate\Support\Number::currency($product->minPrice(), 'INR') }}</p>
+                    @if ($product->discountPercent() > 0 && $unit?->mrp)
+                        <p class="text-xs text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($unit->mrp, 'INR') }}</p>
+                    @endif
+                    <p class="text-base font-bold text-stone-900 -mt-1">{{ \Illuminate\Support\Number::currency($product->minPrice(), 'INR') }}</p>
                 @endif
             </div>
 
