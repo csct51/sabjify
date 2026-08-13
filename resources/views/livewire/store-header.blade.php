@@ -1,4 +1,4 @@
-<div class="bg-white border-b border-stone-200 sticky top-0 z-40">
+<div class="bg-white/70 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-40 supports-[backdrop-filter]:bg-white/70">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
             <a href="{{ route('home') }}" wire:navigate class="flex items-center">

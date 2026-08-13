@@ -1,5 +1,5 @@
 <div class="fixed bottom-0 inset-x-0 z-40">
-    <div class="bg-white border-t border-stone-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+    <div class="bg-white/70 backdrop-blur-md border-t border-stone-200/80 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <nav class="max-w-3xl mx-auto grid grid-cols-4">
             <a href="{{ route('home') }}" wire:navigate class="flex flex-col items-center gap-1 py-2.5 {{ request()->routeIs('home') ? 'text-brand-600' : 'text-stone-500 hover:text-stone-700' }}">
                 <span class="relative">

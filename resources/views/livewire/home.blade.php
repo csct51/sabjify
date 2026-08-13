@@ -1,5 +1,5 @@
 <div>
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+    <section class="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div class="relative bg-brand-600 text-white overflow-hidden rounded-3xl aspect-[16/9]">
         {{-- <div class="absolute inset-0" style="background-image: url('https://images.unsplash.com/photo-1762965619761-e5bee9d18e50?q=80&w=1600&auto=format&fit=crop'); background-size: cover; background-position: center;"></div> --}}
         <div class="absolute inset-0" style="background-image: url('{{ asset('storage/heroes/hero.jpg') }}'); background-size: cover; background-position: center;"></div>
@@ -37,20 +37,18 @@
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             @foreach ($this->categories as $category)
-                <a href="{{ route('shop', ['category' => $category->slug]) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-3 text-center">
-                    <div class="relative block w-20 h-20 mx-auto rounded-full overflow-hidden bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
+                <a href="{{ route('shop', ['category' => $category->slug]) }}" wire:navigate class="group text-center">
+                    <div class="relative w-full aspect-square overflow-hidden rounded-full bg-gradient-to-br from-brand-50 to-lime-100 group-hover:shadow-md group-hover:-translate-y-0.5 transition-all duration-300">
                         <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
                     </div>
                     <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 truncate">{{ $category->name }}</p>
-                    <p class="text-xs text-stone-400">{{ $category->products_count }} items</p>
                 </a>
             @endforeach
-            <a href="{{ route('categories.index') }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-3 text-center flex flex-col items-center justify-center">
-                <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
+            <a href="{{ route('categories.index') }}" wire:navigate class="group text-center flex flex-col items-center justify-center">
+                <div class="relative w-full aspect-square rounded-full bg-gradient-to-br from-brand-50 to-lime-100 inline-flex items-center justify-center group-hover:shadow-md group-hover:-translate-y-0.5 transition-all duration-300">
                     <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
-                </span>
+                </div>
                 <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700">View all</p>
-                <p class="text-xs text-stone-400">{{ $this->categories->sum('products_count') }} items</p>
             </a>
         </div>
     </section>
