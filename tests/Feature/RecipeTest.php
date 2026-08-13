@@ -232,10 +232,10 @@ test('recipe detail page shows linked products', function () {
 
 test('add all to cart adds every in-stock product from the recipe', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'stock' => 10]);
-    $mint = Product::factory()->create(['name' => 'Mint', 'stock' => 5]);
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mint = Product::factory()->create(['name' => 'Mint', 'in_stock' => true]);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
-    $recipe->products()->attach([$mango->id, $mint->id]);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id], $mint->id => ['product_unit_id' => $mint->defaultUnit()->id]]);
 
     Livewire::actingAs($user)
         ->test(RecipeShow::class, ['recipe' => $recipe])
@@ -249,10 +249,10 @@ test('add all to cart adds every in-stock product from the recipe', function () 
 
 test('add all to cart skips out-of-stock products and reports them', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'stock' => 10]);
-    $mint = Product::factory()->create(['name' => 'Mint', 'stock' => 0]);
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mint = Product::factory()->create(['name' => 'Mint', 'in_stock' => false]);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
-    $recipe->products()->attach([$mango->id, $mint->id]);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id], $mint->id => ['product_unit_id' => $mint->defaultUnit()->id]]);
 
     Livewire::actingAs($user)
         ->test(RecipeShow::class, ['recipe' => $recipe])
@@ -266,9 +266,9 @@ test('add all to cart skips out-of-stock products and reports them', function ()
 });
 
 test('guest is redirected to login when adding recipe to cart', function () {
-    $mango = Product::factory()->create(['name' => 'Mango', 'stock' => 10]);
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
-    $recipe->products()->attach($mango);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
 
     Livewire::test(RecipeShow::class, ['recipe' => $recipe])
         ->call('addAllToCart')

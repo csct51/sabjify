@@ -18,18 +18,29 @@
     <div class="p-3 flex flex-col flex-1">
         <p class="text-[10px] uppercase tracking-wide text-stone-400 font-medium">{{ $product->category?->name }}</p>
         <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="mt-0.5 text-sm font-medium text-stone-900 leading-snug hover:text-brand-700">{{ $product->name }}</a>
-        <p class="text-[11px] text-stone-400 mt-0.5">per {{ $product->unit }}</p>
+        @if ($product->hasMultipleUnits())
+            <p class="text-[11px] text-stone-400 mt-0.5">Multiple sizes available</p>
+        @else
+            <p class="text-[11px] text-stone-400 mt-0.5">per {{ $product->defaultUnit()?->unit ?? $product->unit }}</p>
+        @endif
 
         <div class="mt-auto pt-2 flex items-end justify-between gap-2">
             <div>
-                <p class="text-base font-bold text-stone-900">{{ \Illuminate\Support\Number::currency($product->price, 'INR') }}</p>
-                @if ($product->mrp && $product->mrp > $product->price)
-                    <p class="text-[11px] text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($product->mrp, 'INR') }}</p>
+                @if ($product->hasMultipleUnits())
+                    <p class="text-xs text-stone-400">From</p>
+                    <p class="text-base font-bold text-stone-900 -mt-1">{{ \Illuminate\Support\Number::currency($product->minPrice(), 'INR') }}</p>
+                @else
+                    <p class="text-base font-bold text-stone-900">{{ \Illuminate\Support\Number::currency($product->minPrice(), 'INR') }}</p>
                 @endif
             </div>
 
             @if ($product->inStock())
-                @if ($this->inCart)
+                @if ($product->hasMultipleUnits())
+                    <button type="button" @click="$dispatch('product-unit-picker:open', { productId: {{ $product->id }} })" class="inline-flex items-center gap-0.5 px-2.5 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 active:scale-95 transition">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        Add
+                    </button>
+                @elseif ($this->inCart)
                     <div class="flex items-center gap-0.5 bg-brand-600 text-white rounded-lg p-0.5">
                         <button type="button" wire:click="decrement" wire:loading.attr="disabled" wire:target="decrement" class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-3 h-3"></i></button>
                         <span class="w-5 text-center text-xs font-semibold">

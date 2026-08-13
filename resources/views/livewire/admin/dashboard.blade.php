@@ -60,20 +60,20 @@
 
         <div class="min-w-0 bg-white rounded-2xl border border-stone-200">
             <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between">
-                <h2 class="font-semibold text-stone-900">Low Stock Alerts</h2>
-                <a href="{{ route('admin.products.index', ['low_stock' => 1]) }}" wire:navigate class="text-xs font-semibold text-brand-600">Manage →</a>
+                <h2 class="font-semibold text-stone-900">Out of Stock</h2>
+                <a href="{{ route('admin.products.index') }}" wire:navigate class="text-xs font-semibold text-brand-600">Manage →</a>
             </div>
             <div class="divide-y divide-stone-100">
-                @forelse ($this->lowStockProducts as $product)
+                @forelse ($this->outOfStockProducts as $product)
                     <a href="{{ route('admin.products.edit', $product) }}" wire:navigate class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-stone-50 transition">
                         <div class="min-w-0">
                             <p class="font-medium text-sm text-stone-900 truncate">{{ $product->name }}</p>
                             <p class="text-xs text-stone-400">{{ $product->category?->name }}</p>
                         </div>
-                        <span class="shrink-0 inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">{{ $product->stock }} left</span>
+                        <span class="shrink-0 inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">Out of stock</span>
                     </a>
                 @empty
-                    <p class="px-5 py-10 text-center text-sm text-stone-400">All products are well stocked. 🎉</p>
+                    <p class="px-5 py-10 text-center text-sm text-stone-400">All products are in stock. 🎉</p>
                 @endforelse
             </div>
         </div>

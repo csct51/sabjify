@@ -14,7 +14,7 @@ class OrderService
      */
     public function createFromCart(User $user, array $data): Order
     {
-        $cartItems = $user->cartItems()->with('product', 'basket')->get();
+        $cartItems = $user->cartItems()->with('product', 'productUnit', 'basket')->get();
 
         if ($cartItems->isEmpty()) {
             throw new \RuntimeException('Your cart is empty.');
@@ -62,18 +62,19 @@ class OrderService
                 }
 
                 $product = $cartItem->product;
+                $unit = $cartItem->productUnit;
+                $price = $unit?->price ?? $product->price;
+                $unitName = $unit?->unit ?? $product->unit;
 
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'product_name' => $product->name,
-                    'unit' => $product->unit,
-                    'price' => $product->price,
+                    'unit' => $unitName,
+                    'price' => $price,
                     'quantity' => $cartItem->quantity,
-                    'total' => $product->price * $cartItem->quantity,
+                    'total' => $price * $cartItem->quantity,
                 ]);
-
-                $product->decrement('stock', $cartItem->quantity);
             }
 
             $user->cartItems()->delete();
@@ -94,12 +95,6 @@ class OrderService
             'cancelled_reason' => $reason,
             'cancelled_by' => $cancelledBy,
         ]);
-
-        foreach ($order->items as $item) {
-            if ($item->product) {
-                $item->product->increment('stock', $item->quantity);
-            }
-        }
 
         return true;
     }

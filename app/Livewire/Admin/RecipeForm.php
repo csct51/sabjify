@@ -29,6 +29,9 @@ class RecipeForm extends Component
     /** @var array<int, int> */
     public array $productIds = [];
 
+    /** @var array<int, int|null> */
+    public array $productUnitIds = [];
+
     public string $productSearch = '';
 
     public string $is_active = '1';
@@ -50,6 +53,11 @@ class RecipeForm extends Component
             $this->slug = $recipe->slug;
             $this->description = $recipe->description ?? '';
             $this->productIds = $recipe->products()->pluck('products.id')->all();
+
+            foreach ($recipe->products()->withPivot('product_unit_id')->get() as $product) {
+                $this->productUnitIds[$product->id] = $product->pivot->product_unit_id;
+            }
+
             $this->is_active = $recipe->is_active ? '1' : '0';
             $this->sort_order = $recipe->sort_order;
             $this->imageUrl = $recipe->image && filter_var($recipe->image, FILTER_VALIDATE_URL) !== false ? $recipe->image : '';
@@ -104,7 +112,7 @@ class RecipeForm extends Component
 
         return Product::active()
             ->whereIn('id', $this->productIds)
-            ->with('category')
+            ->with('category', 'units')
             ->orderBy('name')
             ->get();
     }
@@ -115,6 +123,8 @@ class RecipeForm extends Component
             $this->productIds,
             fn (int $id) => $id !== $productId
         ));
+
+        unset($this->productUnitIds[$productId]);
     }
 
     public function save(): void
@@ -129,6 +139,7 @@ class RecipeForm extends Component
             'description' => ['nullable', 'string', 'max:1000'],
             'productIds' => ['required', 'array', 'min:1'],
             'productIds.*' => ['integer', 'exists:products,id'],
+            'productUnitIds.*' => ['nullable', 'integer', 'exists:product_units,id'],
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
@@ -151,13 +162,21 @@ class RecipeForm extends Component
             $data['image'] = null;
         }
 
+        $sync = [];
+
+        foreach ($this->productIds as $productId) {
+            $sync[$productId] = [
+                'product_unit_id' => $this->productUnitIds[$productId] ?? null,
+            ];
+        }
+
         if ($this->recipe) {
             $this->recipe->update($data);
-            $this->recipe->products()->sync($this->productIds);
+            $this->recipe->products()->sync($sync);
             session()->flash('success', 'Recipe updated.');
         } else {
             $recipe = Recipe::create($data);
-            $recipe->products()->sync($this->productIds);
+            $recipe->products()->sync($sync);
             session()->flash('success', 'Recipe created.');
         }
 

@@ -109,10 +109,9 @@ test('admin can create a product', function () {
         ->set('categoryId', $category->id)
         ->set('name', 'Fresh Mango')
         ->set('slug', 'fresh-mango')
-        ->set('price', 120)
-        ->set('mrp', 150)
-        ->set('unit', '1 kg')
-        ->set('stock', 20)
+        ->set('unitRows', [
+            ['unit' => '1 kg', 'price' => '120', 'mrp' => '150'],
+        ])
         ->call('save')
         ->assertRedirect(route('admin.products.index'));
 
@@ -120,6 +119,11 @@ test('admin can create a product', function () {
         'name' => 'Fresh Mango',
         'price' => 120,
         'category_id' => $category->id,
+    ]);
+
+    $this->assertDatabaseHas('product_units', [
+        'unit' => '1 kg',
+        'price' => 120,
     ]);
 });
 
@@ -131,9 +135,9 @@ test('product slug is auto-generated from the name', function () {
         ->test(ProductForm::class)
         ->set('categoryId', $category->id)
         ->set('name', 'Fresh Mango')
-        ->set('price', 120)
-        ->set('unit', '1 kg')
-        ->set('stock', 20)
+        ->set('unitRows', [
+            ['unit' => '1 kg', 'price' => '120', 'mrp' => null],
+        ])
         ->call('save')
         ->assertRedirect(route('admin.products.index'));
 
@@ -143,15 +147,18 @@ test('product slug is auto-generated from the name', function () {
 test('admin can update product stock', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();
-    $product = Product::factory()->create(['category_id' => $category->id, 'stock' => 5]);
+    $product = Product::factory()->create(['category_id' => $category->id]);
 
     Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class, ['product' => $product])
-        ->set('stock', 50)
+        ->set('in_stock', false)
+        ->set('unitRows', [
+            ['unit' => '1 kg', 'price' => '50', 'mrp' => null],
+        ])
         ->call('save')
         ->assertRedirect(route('admin.products.index'));
 
-    expect($product->fresh()->stock)->toBe(50);
+    expect($product->fresh()->in_stock)->toBeFalse();
 });
 
 test('admin can update an order status', function () {

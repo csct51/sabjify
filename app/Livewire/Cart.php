@@ -29,12 +29,6 @@ class Cart extends Component
             return;
         }
 
-        if ($item->quantity >= $item->product->stock) {
-            $this->addError('quantity', 'Stock limit reached for '.$item->product->name.'.');
-
-            return;
-        }
-
         $item->increment('quantity');
 
         $this->dispatch('cart-updated');
@@ -69,7 +63,7 @@ class Cart extends Component
     public function cartItems(): Collection
     {
         return auth('web')->user()->cartItems()
-            ->with('product.category', 'recipe', 'basket.products')
+            ->with('product.category', 'productUnit', 'recipe', 'basket.products')
             ->latest()
             ->get();
     }

@@ -69,9 +69,9 @@ test('checkout renders with items in cart', function () {
         ->assertSet('subtotal', 200);
 });
 
-test('placing an order creates order, items, decrements stock and clears cart', function () {
+test('placing an order creates order, items and clears cart', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 100, 'stock' => 10]);
+    $product = Product::factory()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
 
@@ -99,7 +99,6 @@ test('placing an order creates order, items, decrements stock and clears cart', 
         ->and($order->payment_method)->toBe('cod')
         ->and($order->items->count())->toBe(1)
         ->and($order->items->first()->product_name)->toBe($product->name)
-        ->and($product->fresh()->stock)->toBe(8)
         ->and($user->cartItems()->count())->toBe(0);
 });
 
@@ -202,9 +201,9 @@ test('cart disables checkout when below the minimum order amount', function () {
         ->assertSeeHtml('disabled');
 });
 
-test('order can be cancelled and restocks items', function () {
+test('order can be cancelled', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 100, 'stock' => 5]);
+    $product = Product::factory()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
 
@@ -226,13 +225,12 @@ test('order can be cancelled and restocks items', function () {
     expect(app(OrderService::class)->cancel($order, 'Found a better price elsewhere', 'customer'))->toBeTrue()
         ->and($order->fresh()->status)->toBe('cancelled')
         ->and($order->fresh()->cancelled_reason)->toBe('Found a better price elsewhere')
-        ->and($order->fresh()->cancelled_by)->toBe('customer')
-        ->and($product->fresh()->stock)->toBe(5);
+        ->and($order->fresh()->cancelled_by)->toBe('customer');
 });
 
 test('customer can cancel order with a reason', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 100, 'stock' => 5]);
+    $product = Product::factory()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
 

@@ -6,7 +6,7 @@
         <div class="flex items-start justify-between gap-2">
             <div>
                 <a href="{{ route('product.show', $item->product->slug) }}" wire:navigate class="font-medium text-stone-900 hover:text-brand-700">{{ $item->product->name }}</a>
-                <p class="text-xs text-stone-400 mt-0.5">{{ $item->product->unit }} · {{ \Illuminate\Support\Number::currency($item->product->price, 'INR') }}</p>
+                <p class="text-xs text-stone-400 mt-0.5">{{ $item->unitName() }} · {{ \Illuminate\Support\Number::currency($item->unitPrice(), 'INR') }}</p>
             </div>
             <button type="button" wire:click="remove({{ $item->id }})" wire:loading.attr="disabled" wire:target="remove({{ $item->id }})" class="text-stone-400 hover:text-red-600 disabled:opacity-40" aria-label="Remove">
                 <span wire:loading.remove wire:target="remove({{ $item->id }})"><i data-lucide="trash-2" class="w-5 h-5"></i></span>
@@ -23,10 +23,7 @@
                 </span>
                 <button type="button" wire:click="increment({{ $item->id }})" wire:loading.attr="disabled" wire:target="increment({{ $item->id }})" class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center hover:bg-stone-50 disabled:opacity-40" aria-label="Increase quantity"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
             </div>
-            <p class="font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($item->product->price * $item->quantity, 'INR') }}</p>
+            <p class="font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($item->unitPrice() * $item->quantity, 'INR') }}</p>
         </div>
-        @if (! $item->product->inStock())
-            <p class="mt-1 text-xs text-red-500">Only {{ $item->product->stock }} left in stock</p>
-        @endif
     </div>
 </div>

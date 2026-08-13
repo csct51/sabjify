@@ -79,10 +79,17 @@
                                         <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-stone-200 shrink-0 overflow-hidden">
                                             <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                                         </span>
-                                        <span class="min-w-0 flex-1">
+                                        <div class="min-w-0 flex-1">
                                             <span class="block text-sm font-medium text-stone-800 truncate">{{ $product->name }}</span>
                                             <span class="block text-xs text-stone-400">{{ $product->category?->name }}</span>
-                                        </span>
+                                            <select wire:model="productUnitIds.{{ $product->id }}" class="mt-1 w-full rounded-lg border border-stone-300 px-2 py-1.5 text-xs outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                                                <option value="">Default unit</option>
+                                                @foreach ($product->units as $unit)
+                                                    <option value="{{ $unit->id }}">{{ $unit->unit }} — {{ \Illuminate\Support\Number::currency($unit->price, 'INR') }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('productUnitIds.'.$product->id)<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
+                                        </div>
                                         <button type="button" wire:click="removeProduct({{ $product->id }})" class="flex items-center justify-center w-7 h-7 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition" aria-label="Remove {{ $product->name }}">
                                             <i data-lucide="x" class="w-4 h-4"></i>
                                         </button>

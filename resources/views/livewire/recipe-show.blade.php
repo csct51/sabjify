@@ -56,7 +56,13 @@
                             </div>
                             <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 truncate">{{ $product->name }}</p>
                             <p class="text-xs text-stone-400">{{ $product->category?->name }}</p>
-                            <p class="mt-1 text-sm font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($product->price, 'INR') }}<span class="text-xs font-normal text-stone-400"> / {{ $product->unit }}</span></p>
+                            @php($pivotUnit = $product->units->firstWhere('id', $product->pivot?->product_unit_id))
+                            <p class="mt-1 text-sm font-semibold text-stone-900">
+                                {{ \Illuminate\Support\Number::currency($pivotUnit?->price ?? $product->minPrice(), 'INR') }}
+                                @if ($pivotUnit)
+                                    <span class="text-xs font-normal text-stone-400"> / {{ $pivotUnit->unit }}</span>
+                                @endif
+                            </p>
                         </a>
                     @endforeach
                 </div>

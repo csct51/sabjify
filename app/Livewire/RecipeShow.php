@@ -32,7 +32,7 @@ class RecipeShow extends Component
     #[Computed]
     public function products(): Collection
     {
-        return $this->recipe->products()->with('category')->get();
+        return $this->recipe->products()->with('category', 'units')->get();
     }
 
     public function addAllToCart(): void
@@ -53,9 +53,14 @@ class RecipeShow extends Component
                 continue;
             }
 
-            $cartItem = auth('web')->user()->cartItems()->firstOrNew(['product_id' => $product->id]);
+            $pivotUnitId = $product->pivot?->product_unit_id;
+
+            $cartItem = auth('web')->user()->cartItems()->firstOrNew([
+                'product_id' => $product->id,
+                'product_unit_id' => $pivotUnitId,
+            ]);
             $cartItem->recipe_id = $this->recipe->id;
-            $cartItem->quantity = min($cartItem->quantity + 1, $product->stock);
+            $cartItem->quantity++;
             $cartItem->save();
             $added++;
         }

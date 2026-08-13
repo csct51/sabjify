@@ -19,7 +19,7 @@ test('online checkout opens payment without placing the order first', function (
     ]);
 
     $user = User::factory()->create();
-    $product = Product::factory()->available()->create(['price' => 100, 'stock' => 10]);
+    $product = Product::factory()->available()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
 
@@ -43,7 +43,6 @@ test('online checkout opens payment without placing the order first', function (
 
     expect(Order::count())->toBe(0)
         ->and($user->cartItems()->count())->toBe(1)
-        ->and($product->fresh()->stock)->toBe(10)
         ->and(session('pending_payment_order_rzp_123'))->not->toBeNull();
 });
 
@@ -276,7 +275,7 @@ test('verified checkout creates a paid order and clears the cart', function () {
     ]);
 
     $user = User::factory()->create();
-    $product = Product::factory()->available()->create(['price' => 100, 'stock' => 10]);
+    $product = Product::factory()->available()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
 
@@ -321,7 +320,6 @@ test('verified checkout creates a paid order and clears the cart', function () {
             'amount' => 24000,
         ])
         ->and($order->total)->toBe(240)
-        ->and($product->fresh()->stock)->toBe(8)
         ->and($user->cartItems()->count())->toBe(0);
 });
 

@@ -18,10 +18,6 @@
                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                 @endforeach
             </select>
-            <label class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm cursor-pointer">
-                <input type="checkbox" wire:model.live="lowStock" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
-                Low stock only
-            </label>
         </div>
 
         <div class="overflow-x-auto">
@@ -55,14 +51,16 @@
                             </td>
                             <td class="px-4 py-3 text-stone-500">{{ $product->category?->name }}</td>
                             <td class="px-4 py-3 text-right">
-                                <p class="font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($product->price, 'INR') }}</p>
-                                @if ($product->mrp && $product->mrp > $product->price)
-                                    <p class="text-xs text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($product->mrp, 'INR') }}</p>
-                                @endif
+                                <p class="font-semibold text-stone-900">
+                                    @if ($product->hasMultipleUnits())
+                                        From
+                                    @endif
+                                    {{ \Illuminate\Support\Number::currency($product->minPrice(), 'INR') }}
+                                </p>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $product->stock <= 10 ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200' }}">
-                                    {{ $product->stock }}
+                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $product->inStock() ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200' }}">
+                                    {{ $product->inStock() ? 'In stock' : 'Out of stock' }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">

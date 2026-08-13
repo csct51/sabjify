@@ -25,4 +25,20 @@ class CartItemFactory extends Factory
             'quantity' => fake()->numberBetween(1, 5),
         ];
     }
+
+    public function configure(): static
+    {
+        return $this->afterMaking(function (CartItem $cartItem) {
+            if ($cartItem->product_id && ! $cartItem->product_unit_id) {
+                $cartItem->product_unit_id = Product::findOrFail($cartItem->product_id)->defaultUnit()?->id;
+            }
+        });
+    }
+
+    public function ofUnit(int $unitId): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'product_unit_id' => $unitId,
+        ]);
+    }
 }

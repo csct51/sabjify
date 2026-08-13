@@ -12,6 +12,8 @@ class ProductCard extends Component
     #[Locked]
     public Product $product;
 
+    public ?int $unitId = null;
+
     public int $quantity = 1;
 
     public bool $inCart = false;
@@ -27,11 +29,12 @@ class ProductCard extends Component
             if ($cartItem) {
                 $this->inCart = true;
                 $this->quantity = $cartItem->quantity;
+                $this->unitId = $cartItem->product_unit_id;
             }
         }
     }
 
-    public function addToCart(): void
+    public function addToCart(?int $unitId = null): void
     {
         if (! auth('web')->check()) {
             $this->redirect(route('login'));
@@ -41,12 +44,18 @@ class ProductCard extends Component
 
         $this->ensureStock();
 
-        $cartItem = auth('web')->user()->cartItems()->firstOrNew(['product_id' => $this->product->id]);
-        $cartItem->quantity = min($cartItem->quantity + 1, $this->product->stock);
+        $unitId = $unitId ?? $this->unitId ?? $this->product->defaultUnit()?->id;
+
+        $cartItem = auth('web')->user()->cartItems()->firstOrNew([
+            'product_id' => $this->product->id,
+            'product_unit_id' => $unitId,
+        ]);
+        $cartItem->quantity++;
         $cartItem->save();
 
         $this->inCart = true;
         $this->quantity = $cartItem->quantity;
+        $this->unitId = $cartItem->product_unit_id;
 
         $this->dispatch('cart-updated');
     }
@@ -55,9 +64,11 @@ class ProductCard extends Component
     {
         $this->ensureStock();
 
-        $cartItem = auth('web')->user()->cartItems()->where('product_id', $this->product->id)->firstOrFail();
-        $cartItem->quantity = min($cartItem->quantity + 1, $this->product->stock);
-        $cartItem->save();
+        $cartItem = auth('web')->user()->cartItems()
+            ->where('product_id', $this->product->id)
+            ->where('product_unit_id', $this->unitId)
+            ->firstOrFail();
+        $cartItem->increment('quantity');
 
         $this->quantity = $cartItem->quantity;
 
@@ -66,7 +77,10 @@ class ProductCard extends Component
 
     public function decrement(): void
     {
-        $cartItem = auth('web')->user()->cartItems()->where('product_id', $this->product->id)->firstOrFail();
+        $cartItem = auth('web')->user()->cartItems()
+            ->where('product_id', $this->product->id)
+            ->where('product_unit_id', $this->unitId)
+            ->firstOrFail();
 
         if ($cartItem->quantity <= 1) {
             $cartItem->delete();

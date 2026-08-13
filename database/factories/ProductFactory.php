@@ -20,7 +20,6 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         $price = fake()->numberBetween(10, 600);
-
         $name = fake()->unique()->words(2, true);
         $name = is_array($name) ? implode(' ', $name) : $name;
 
@@ -32,7 +31,7 @@ class ProductFactory extends Factory
             'unit' => fake()->randomElement(['kg', '500 g', '1 pc', 'dozen', 'bunch', '250 g']),
             'price' => $price,
             'mrp' => fake()->boolean(70) ? (int) ($price * 1.25) : null,
-            'stock' => fake()->numberBetween(0, 100),
+            'in_stock' => fake()->boolean(80),
             'image' => null,
             'is_active' => true,
             'is_featured' => fake()->boolean(30),
@@ -40,11 +39,44 @@ class ProductFactory extends Factory
         ];
     }
 
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Product $product) {
+            $product->units()->create([
+                'unit' => $product->unit,
+                'price' => $product->price,
+                'mrp' => $product->mrp,
+                'sort_order' => 0,
+            ]);
+        });
+    }
+
     public function available(): static
     {
         return $this->state(fn (array $attributes) => [
             'is_active' => true,
-            'stock' => fake()->numberBetween(1, 100),
+            'in_stock' => true,
         ]);
+    }
+
+    public function withUnits(int $count): static
+    {
+        return $this->afterCreating(function (Product $product) use ($count) {
+            $basePrice = $product->price;
+
+            $product->units()->where('sort_order', '>', 0)->delete();
+
+            $pool = ['500 g', '250 g', '125 g', '2 kg', '3 kg', '1 pc', 'dozen', 'bunch'];
+            $available = array_values(array_filter($pool, fn (string $unit) => $unit !== $product->unit));
+
+            for ($i = 1; $i < $count; $i++) {
+                $product->units()->create([
+                    'unit' => $available[$i % count($available)],
+                    'price' => (int) ceil($basePrice * (1 + $i * 0.5)),
+                    'mrp' => null,
+                    'sort_order' => $i,
+                ]);
+            }
+        });
     }
 }

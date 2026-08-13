@@ -265,7 +265,7 @@ test('baskets index shows wellness and sabjify baskets in separate sections', fu
 
 test('order detail page shows basket contents', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->available()->create(['name' => 'Mango', 'stock' => 10, 'price' => 100]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango', 'price' => 100]);
     $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
     $basket->products()->attach($mango, ['unit' => '2 pcs', 'price' => 120]);
 
@@ -292,7 +292,7 @@ test('order detail page shows basket contents', function () {
 test('admin order page shows basket contents', function () {
     $admin = Admin::factory()->create();
     $user = User::factory()->create();
-    $mango = Product::factory()->available()->create(['name' => 'Mango', 'stock' => 10, 'price' => 100]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango', 'price' => 100]);
     $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
     $basket->products()->attach($mango, ['unit' => '2 pcs', 'price' => 120]);
 
@@ -436,7 +436,7 @@ test('cart increments a basket quantity without a stock cap', function () {
 
 test('placing an order snapshots the basket as an order item without touching product stock', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->available()->create(['name' => 'Mango', 'stock' => 10, 'price' => 100]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango', 'price' => 100]);
     $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
 
     CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 2]);
@@ -463,13 +463,12 @@ test('placing an order snapshots the basket as an order item without touching pr
     expect($basketItem->quantity)->toBe(2);
     expect($basketItem->total)->toBe(998);
 
-    expect($mango->fresh()->stock)->toBe(9);
     expect($user->fresh()->cartItems()->count())->toBe(0);
 });
 
 test('basket order items survive cancellation', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->available()->create(['name' => 'Mango', 'stock' => 5]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
 
     CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 1]);
@@ -488,5 +487,4 @@ test('basket order items survive cancellation', function () {
     app(OrderService::class)->cancel($order, 'not needed');
 
     expect($order->fresh()->status)->toBe(Order::STATUS_CANCELLED);
-    expect($mango->fresh()->stock)->toBe(5);
 });

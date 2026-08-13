@@ -55,7 +55,15 @@ class RecipeSeeder extends Seeder
                 ]
             );
 
-            $model->products()->sync($products->pluck('id'));
+            $sync = [];
+
+            foreach ($products as $product) {
+                $sync[$product->id] = [
+                    'product_unit_id' => $product->defaultUnit()?->id,
+                ];
+            }
+
+            $model->products()->sync($sync);
         }
     }
 }

@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
-use Livewire\Attributes\Url;
 use Livewire\Component;
 
 #[Layout('layouts.admin')]
@@ -17,9 +16,6 @@ use Livewire\Component;
 class Products extends Component
 {
     public ?string $category = null;
-
-    #[Url]
-    public bool $lowStock = false;
 
     public function toggleActive(Product $product): void
     {
@@ -55,7 +51,6 @@ class Products extends Component
     {
         $products = Product::with('category')
             ->when($this->category, fn ($query) => $query->where('category_id', $this->category))
-            ->when($this->lowStock, fn ($query) => $query->where('stock', '<=', 10))
             ->orderByDesc('id')
             ->get();
 

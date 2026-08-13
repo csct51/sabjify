@@ -52,11 +52,11 @@ class Dashboard extends Component
      * @return Collection<int, Product>
      */
     #[Computed]
-    public function lowStockProducts(): Collection
+    public function outOfStockProducts(): Collection
     {
         return Product::with('category')
-            ->where('stock', '<=', 10)
-            ->orderBy('stock')
+            ->where('in_stock', false)
+            ->orderByDesc('updated_at')
             ->limit(6)
             ->get();
     }

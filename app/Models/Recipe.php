@@ -45,7 +45,7 @@ class Recipe extends Model
      */
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'recipe_product');
+        return $this->belongsToMany(Product::class, 'recipe_product')->withPivot('product_unit_id');
     }
 
     public function imageUrl(): ?string

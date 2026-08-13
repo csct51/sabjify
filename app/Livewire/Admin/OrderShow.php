@@ -68,7 +68,7 @@ class OrderShow extends Component
         $this->status = $this->order->status;
         $this->order->refresh();
 
-        $this->dispatch('toast', message: 'Order cancelled and items restocked.');
+        $this->dispatch('toast', message: 'Order cancelled.');
     }
 
     /**

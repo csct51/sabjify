@@ -29,19 +29,16 @@ class ProductForm extends Component
 
     public string $description = '';
 
-    public string $unit = 'kg';
-
-    public int $price = 0;
-
-    public ?int $mrp = null;
-
-    public int $stock = 0;
+    public bool $in_stock = true;
 
     public string $is_active = '1';
 
     public bool $is_featured = false;
 
     public int $sort_order = 0;
+
+    /** @var array<int, array{unit: string, price: string, mrp: string|null}> */
+    public array $unitRows = [];
 
     public ?TemporaryUploadedFile $image = null;
 
@@ -58,14 +55,39 @@ class ProductForm extends Component
             $this->name = $product->name;
             $this->slug = $product->slug;
             $this->description = $product->description ?? '';
-            $this->unit = $product->unit;
-            $this->price = $product->price;
-            $this->mrp = $product->mrp;
-            $this->stock = $product->stock;
+            $this->in_stock = $product->in_stock;
             $this->is_active = $product->is_active ? '1' : '0';
             $this->is_featured = $product->is_featured;
             $this->sort_order = $product->sort_order;
             $this->imageUrl = $product->image && filter_var($product->image, FILTER_VALIDATE_URL) !== false ? $product->image : '';
+
+            foreach ($product->units as $unit) {
+                $this->unitRows[] = [
+                    'unit' => $unit->unit,
+                    'price' => (string) $unit->price,
+                    'mrp' => $unit->mrp !== null ? (string) $unit->mrp : null,
+                ];
+            }
+        }
+
+        if ($this->unitRows === []) {
+            $this->addUnitRow();
+        }
+    }
+
+    public function addUnitRow(): void
+    {
+        $this->unitRows[] = ['unit' => '', 'price' => '', 'mrp' => null];
+    }
+
+    public function removeUnitRow(int $index): void
+    {
+        unset($this->unitRows[$index]);
+
+        $this->unitRows = array_values($this->unitRows);
+
+        if ($this->unitRows === []) {
+            $this->addUnitRow();
         }
     }
 
@@ -116,26 +138,29 @@ class ProductForm extends Component
             'name' => ['required', 'string', 'max:100'],
             'slug' => ['required', 'string', 'max:120', 'unique:products,slug,'.($this->product->id ?? 'NULL')],
             'description' => ['nullable', 'string', 'max:1000'],
-            'unit' => ['required', 'string', 'max:20'],
-            'price' => ['required', 'integer', 'min:1'],
-            'mrp' => ['nullable', 'integer', 'min:1'],
-            'stock' => ['required', 'integer', 'min:0'],
+            'in_stock' => ['boolean'],
             'is_active' => ['boolean'],
             'is_featured' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
+            'unitRows' => ['required', 'array', 'min:1'],
+            'unitRows.*.unit' => ['required', 'string', 'max:20'],
+            'unitRows.*.price' => ['required', 'integer', 'min:1'],
+            'unitRows.*.mrp' => ['nullable', 'integer', 'min:1'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'imageUrl' => ['nullable', 'url', 'max:500'],
         ]);
+
+        $first = $this->unitRows[0];
 
         $data = [
             'category_id' => $this->categoryId,
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description ?: null,
-            'unit' => $this->unit,
-            'price' => $this->price,
-            'mrp' => $this->mrp,
-            'stock' => $this->stock,
+            'unit' => $first['unit'],
+            'price' => (int) $first['price'],
+            'mrp' => $first['mrp'] !== null && $first['mrp'] !== '' ? (int) $first['mrp'] : null,
+            'in_stock' => $this->in_stock,
             'is_active' => $this->is_active === '1',
             'is_featured' => $this->is_featured,
             'sort_order' => $this->sort_order,
@@ -151,13 +176,30 @@ class ProductForm extends Component
 
         if ($this->product) {
             $this->product->update($data);
+            $product = $this->product;
             session()->flash('success', 'Product updated.');
         } else {
-            Product::create($data);
+            $product = Product::create($data);
             session()->flash('success', 'Product created.');
         }
 
+        $this->syncUnits($product);
+
         $this->redirect(route('admin.products.index'), navigate: true);
+    }
+
+    private function syncUnits(Product $product): void
+    {
+        $product->units()->delete();
+
+        foreach ($this->unitRows as $index => $row) {
+            $product->units()->create([
+                'unit' => $row['unit'],
+                'price' => (int) $row['price'],
+                'mrp' => $row['mrp'] !== null && $row['mrp'] !== '' ? (int) $row['mrp'] : null,
+                'sort_order' => $index,
+            ]);
+        }
     }
 
     public function render(): View

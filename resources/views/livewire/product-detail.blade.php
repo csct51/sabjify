@@ -18,15 +18,44 @@
             <div>
                 <p class="text-sm uppercase tracking-wide text-brand-600 font-semibold">{{ $product->category?->name }}</p>
                 <h1 class="mt-2 text-3xl font-bold text-stone-900">{{ $product->name }}</h1>
-                <p class="text-sm text-stone-500 mt-1">Price per {{ $product->unit }}</p>
+                @if ($product->hasMultipleUnits())
+                    <p class="text-sm text-stone-500 mt-1">Available in multiple sizes</p>
+                @else
+                    <p class="text-sm text-stone-500 mt-1">Price per {{ $product->defaultUnit()?->unit ?? $product->unit }}</p>
+                @endif
 
-                <div class="mt-4 flex items-center gap-3">
-                    <span class="text-3xl font-bold text-stone-900">{{ \Illuminate\Support\Number::currency($product->price, 'INR') }}</span>
-                    @if ($product->mrp && $product->mrp > $product->price)
-                        <span class="text-lg text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($product->mrp, 'INR') }}</span>
-                        <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-lg">{{ $product->discountPercent() }}% OFF</span>
-                    @endif
-                </div>
+                @if ($product->hasMultipleUnits())
+                    <div class="mt-4">
+                        <p class="text-sm font-medium text-stone-700 mb-2">Select size</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($product->units as $unit)
+                                <button type="button" wire:click="selectUnit({{ $unit->id }})" class="rounded-xl border px-4 py-2.5 text-sm font-medium transition {{ $this->selectedUnit?->id === $unit->id ? 'border-brand-600 bg-brand-50 text-brand-700 ring-2 ring-brand-100' : 'border-stone-200 hover:border-brand-300 text-stone-700' }}">
+                                    <span class="block">{{ $unit->unit }}</span>
+                                    <span class="block text-xs font-semibold {{ $this->selectedUnit?->id === $unit->id ? 'text-brand-700' : 'text-stone-500' }}">
+                                        {{ \Illuminate\Support\Number::currency($unit->price, 'INR') }}
+                                        @if ($unit->mrp && $unit->mrp > $unit->price)
+                                            <span class="line-through font-normal text-stone-400">{{ \Illuminate\Support\Number::currency($unit->mrp, 'INR') }}</span>
+                                        @endif
+                                    </span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex items-center gap-3">
+                        <span class="text-3xl font-bold text-stone-900">{{ \Illuminate\Support\Number::currency($this->selectedUnit?->price ?? 0, 'INR') }}</span>
+                        @if ($this->selectedUnit?->mrp && $this->selectedUnit->mrp > $this->selectedUnit->price)
+                            <span class="text-lg text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($this->selectedUnit->mrp, 'INR') }}</span>
+                        @endif
+                    </div>
+                @else
+                    <div class="mt-4 flex items-center gap-3">
+                        <span class="text-3xl font-bold text-stone-900">{{ \Illuminate\Support\Number::currency($this->selectedUnit?->price ?? $product->price, 'INR') }}</span>
+                        @if ($this->selectedUnit?->mrp && $this->selectedUnit->mrp > $this->selectedUnit->price)
+                            <span class="text-lg text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($this->selectedUnit->mrp, 'INR') }}</span>
+                        @endif
+                    </div>
+                @endif
 
                 <div class="mt-3 flex items-center gap-4 text-sm">
                     @if ($product->inStock())

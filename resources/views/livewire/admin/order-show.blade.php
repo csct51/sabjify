@@ -146,7 +146,7 @@
             @if (in_array($order->status, ['pending', 'confirmed'], true))
                 <div class="bg-white rounded-2xl border border-red-200 p-6">
                     <h3 class="font-semibold text-red-700 mb-2">Cancel Order</h3>
-                    <p class="text-xs text-stone-500 mb-4">Cancelling restocks all items in this order.</p>
+                    <p class="text-xs text-stone-500 mb-4">The order will be cancelled and removed from fulfilment.</p>
                     <form wire:submit="cancelOrder" class="space-y-3">
                         <input type="text" wire:model="cancelReason" maxlength="200" placeholder="Enter reason for cancellation…" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
                         @error('cancelReason')<p class="text-xs text-red-600">{{ $message }}</p>@enderror

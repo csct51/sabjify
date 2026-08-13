@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,16 +23,17 @@ use Illuminate\Support\Str;
  * @property string $unit
  * @property int $price
  * @property int|null $mrp
- * @property int $stock
+ * @property bool $in_stock
  * @property string|null $image
  * @property bool $is_active
  * @property bool $is_featured
  * @property int $sort_order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Collection<int, ProductUnit> $units
  * @property-read BasketProduct $pivot
  */
-#[Fillable(['category_id', 'name', 'slug', 'description', 'unit', 'price', 'mrp', 'stock', 'image', 'is_active', 'is_featured', 'sort_order'])]
+#[Fillable(['category_id', 'name', 'slug', 'description', 'unit', 'price', 'mrp', 'in_stock', 'image', 'is_active', 'is_featured', 'sort_order'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -45,6 +47,7 @@ class Product extends Model
     protected function casts(): array
     {
         return [
+            'in_stock' => 'boolean',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
         ];
@@ -66,9 +69,32 @@ class Product extends Model
         return $this->hasMany(CartItem::class);
     }
 
+    /**
+     * @return HasMany<ProductUnit, $this>
+     */
+    public function units(): HasMany
+    {
+        return $this->hasMany(ProductUnit::class)->orderBy('sort_order')->orderBy('price');
+    }
+
+    public function defaultUnit(): ?ProductUnit
+    {
+        return $this->units()->first();
+    }
+
+    public function minPrice(): int
+    {
+        return $this->units()->min('price') ?? $this->price;
+    }
+
+    public function hasMultipleUnits(): bool
+    {
+        return $this->units()->count() > 1;
+    }
+
     public function inStock(): bool
     {
-        return $this->stock > 0;
+        return $this->in_stock;
     }
 
     public function imageUrl(): ?string
@@ -145,6 +171,6 @@ class Product extends Model
      */
     public function scopeAvailable(Builder $query): Builder
     {
-        return $query->where('is_active', true)->where('stock', '>', 0);
+        return $query->where('is_active', true)->where('in_stock', true);
     }
 }
