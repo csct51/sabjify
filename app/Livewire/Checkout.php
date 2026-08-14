@@ -106,6 +106,19 @@ class Checkout extends Component
         return $subtotal >= config('mart.free_delivery_threshold') ? 0 : (int) config('mart.delivery_fee');
     }
 
+    /**
+     * Cart items whose product is no longer in stock.
+     *
+     * @return Collection<int, CartItem>
+     */
+    #[Computed]
+    public function outOfStockItems(): Collection
+    {
+        return $this->cartItems()
+            ->filter(fn (CartItem $item) => $item->product && ! $item->product->inStock())
+            ->values();
+    }
+
     #[Computed]
     public function total(): int
     {
@@ -139,6 +152,17 @@ class Checkout extends Component
 
         if ($minimum > 0 && $this->subtotal() < $minimum) {
             $this->addError('minimum', 'Your order is below the minimum order amount of '.config('mart.currency').$minimum.' required to checkout.');
+
+            return;
+        }
+
+        if ($this->outOfStockItems()->isNotEmpty()) {
+            $names = $this->outOfStockItems()
+                ->map(fn (CartItem $item) => $item->product->name)
+                ->unique()
+                ->implode(', ');
+
+            $this->addError('stock', 'The following items are out of stock and need to be removed before you can checkout: '.$names);
 
             return;
         }

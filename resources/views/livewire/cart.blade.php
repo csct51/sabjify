@@ -98,6 +98,11 @@
                             Proceed to Checkout
                         </button>
                         <p class="mt-2 text-xs text-red-600 text-center">Minimum order of {{ \Illuminate\Support\Number::currency(config('mart.minimum_order_amount'), 'INR') }} required to checkout.</p>
+                    @elseif ($this->outOfStockItems->isNotEmpty())
+                        <button type="button" disabled class="mt-5 block w-full rounded-xl bg-stone-200 text-stone-500 text-center font-semibold py-3 cursor-not-allowed">
+                            Proceed to Checkout
+                        </button>
+                        <p class="mt-2 text-xs text-red-600 text-center">Some items in your cart are out of stock. Please remove them before checkout.</p>
                     @else
                         <a href="{{ route('checkout') }}" wire:navigate class="mt-5 block w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-center font-semibold py-3 transition">
                             Proceed to Checkout

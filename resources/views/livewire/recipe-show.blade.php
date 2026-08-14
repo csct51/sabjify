@@ -21,7 +21,7 @@
                 @endif
 
                 @if ($this->products->isNotEmpty())
-                    <div class="mt-5 flex flex-wrap items-center gap-3">
+                    <div class="mt-5 hidden lg:flex flex-wrap items-center gap-3">
                         <button type="button" wire:click="addAllToCart" wire:loading.attr="disabled" wire:target="addAllToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
                             <span wire:loading.remove wire:target="addAllToCart"><i data-lucide="shopping-cart" class="w-5 h-5"></i></span>
                             <x-loading-spinner wire:loading wire:target="addAllToCart" class="w-4 h-4" />

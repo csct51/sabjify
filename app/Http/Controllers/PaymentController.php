@@ -106,7 +106,13 @@ class PaymentController extends Controller
         $data = $payload['address'];
         $data['payment_method'] = 'online';
 
-        $order = app(OrderService::class)->createFromCart($user, $data);
+        try {
+            $order = app(OrderService::class)->createFromCart($user, $data);
+        } catch (\RuntimeException $e) {
+            Log::warning('Order creation failed during checkout verification.', ['user_id' => $user->id, 'message' => $e->getMessage()]);
+
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
 
         $order->update([
             'payment_status' => 'paid',

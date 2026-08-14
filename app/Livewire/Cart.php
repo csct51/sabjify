@@ -131,6 +131,17 @@ class Cart extends Component
         return $minimum > 0 && $this->subtotal() < $minimum;
     }
 
+    /**
+     * @return Collection<int, CartItem>
+     */
+    #[Computed]
+    public function outOfStockItems(): Collection
+    {
+        return $this->cartItems()
+            ->filter(fn (CartItem $item) => $item->product && ! $item->product->inStock())
+            ->values();
+    }
+
     public function render(): View
     {
         return view('livewire.cart');

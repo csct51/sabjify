@@ -71,7 +71,7 @@ test('checkout renders with items in cart', function () {
 
 test('placing an order creates order, items and clears cart', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 100]);
+    $product = Product::factory()->available()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
 
@@ -128,7 +128,7 @@ test('placing an order flashes a success message', function () {
 
 test('free delivery above threshold', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 600]);
+    $product = Product::factory()->available()->create(['price' => 600]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
 
@@ -203,7 +203,7 @@ test('cart disables checkout when below the minimum order amount', function () {
 
 test('order can be cancelled', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 100]);
+    $product = Product::factory()->available()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
 
@@ -230,7 +230,7 @@ test('order can be cancelled', function () {
 
 test('customer can cancel order with a reason', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 100]);
+    $product = Product::factory()->available()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
 
@@ -480,6 +480,131 @@ test('user cannot view another users order', function () {
     $order = Order::factory()->create(['user_id' => $owner->id]);
 
     $this->actingAs($other)->get('/orders/'.$order->id)->assertForbidden();
+});
+
+test('checkout is blocked when a product in the cart is out of stock', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['price' => 100, 'in_stock' => false]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertHasErrors('stock');
+
+    expect(Order::count())->toBe(0)
+        ->and($user->cartItems()->count())->toBe(1);
+});
+
+test('checkout is blocked when any product in the cart is out of stock', function () {
+    $user = User::factory()->create();
+    $inStock = Product::factory()->available()->create(['price' => 100]);
+    $outOfStock = Product::factory()->create(['price' => 50, 'in_stock' => false]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $inStock->id, 'quantity' => 1]);
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $outOfStock->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertHasErrors('stock');
+
+    expect(Order::count())->toBe(0);
+});
+
+test('checkout is allowed when all products are in stock', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    expect(Order::count())->toBe(1);
+});
+
+test('cart disables checkout when a product is out of stock', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['price' => 100, 'in_stock' => false]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Cart::class)
+        ->assertSet('outOfStockItems', function ($items) use ($product) {
+            expect($items)->toHaveCount(1)
+                ->and($items->first()->product_id)->toBe($product->id);
+
+            return true;
+        })
+        ->assertSee('Some items in your cart are out of stock');
+});
+
+test('order service rejects a cart with an out of stock product', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['price' => 100, 'in_stock' => false]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    expect(fn () => app(OrderService::class)->createFromCart($user, [
+        'payment_method' => 'cod',
+        'receiver_name' => 'Rahul',
+        'receiver_phone' => '9876501234',
+        'address_line' => '12 Main Street',
+        'city' => 'Mumbai',
+        'state' => 'Maharashtra',
+        'pincode' => '400001',
+    ]))->toThrow(RuntimeException::class, 'Some items are out of stock');
+
+    expect(Order::count())->toBe(0)
+        ->and($user->cartItems()->count())->toBe(1);
+});
+
+test('order service allows in stock products', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    $order = app(OrderService::class)->createFromCart($user, [
+        'payment_method' => 'cod',
+        'receiver_name' => 'Rahul',
+        'receiver_phone' => '9876501234',
+        'address_line' => '12 Main Street',
+        'city' => 'Mumbai',
+        'state' => 'Maharashtra',
+        'pincode' => '400001',
+    ]);
+
+    expect(Order::count())->toBe(1);
 });
 
 test('order creation requires a non-empty cart', function () {

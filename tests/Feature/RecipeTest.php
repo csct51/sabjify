@@ -388,3 +388,25 @@ test('guest is redirected to login when adding a recipe product to cart', functi
         ->call('addToCart')
         ->assertRedirect(route('login'));
 });
+
+test('recipe product counter re-syncs when the cart-updated event fires', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
+
+    $user->cartItems()->create([
+        'product_id' => $mango->id,
+        'recipe_id' => $recipe->id,
+        'product_unit_id' => $mango->defaultUnit()->id,
+        'quantity' => 2,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeProduct::class, ['recipe' => $recipe, 'product' => $recipe->products()->first()])
+        ->set('inCart', false)
+        ->set('quantity', 1)
+        ->dispatch('cart-updated')
+        ->assertSet('inCart', true)
+        ->assertSet('quantity', 2);
+});

@@ -6,6 +6,9 @@
         <div class="flex items-start justify-between gap-2">
             <div>
                 <a href="{{ route('product.show', $item->product->slug) }}" wire:navigate class="font-medium text-stone-900 hover:text-brand-700">{{ $item->product->name }}</a>
+                @if (! $item->product->inStock())
+                    <span class="mt-0.5 inline-block rounded-md bg-red-50 text-red-600 text-[10px] font-semibold px-1.5 py-0.5">Out of stock</span>
+                @endif
                 <p class="text-xs text-stone-400 mt-0.5">{{ $item->unitName() }} · {{ \Illuminate\Support\Number::currency($item->unitPrice(), 'INR') }}</p>
             </div>
             <button type="button" wire:click="remove({{ $item->id }})" wire:loading.attr="disabled" wire:target="remove({{ $item->id }})" class="text-stone-400 hover:text-red-600 disabled:opacity-40" aria-label="Remove">

@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Recipe;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class RecipeProduct extends Component
@@ -26,18 +27,34 @@ class RecipeProduct extends Component
     {
         $this->unitId = $this->product->pivot?->product_unit_id;
 
-        if (auth('web')->check()) {
-            $cartItem = auth('web')->user()
-                ->cartItems()
-                ->where('product_id', $this->product->id)
-                ->where('recipe_id', $this->recipe->id)
-                ->first();
+        $this->syncCartState();
+    }
 
-            if ($cartItem) {
-                $this->inCart = true;
-                $this->quantity = $cartItem->quantity;
-            }
+    private function syncCartState(): void
+    {
+        if (! auth('web')->check()) {
+            return;
         }
+
+        $cartItem = auth('web')->user()
+            ->cartItems()
+            ->where('product_id', $this->product->id)
+            ->where('recipe_id', $this->recipe->id)
+            ->first();
+
+        if ($cartItem) {
+            $this->inCart = true;
+            $this->quantity = $cartItem->quantity;
+        } else {
+            $this->inCart = false;
+            $this->quantity = 1;
+        }
+    }
+
+    #[On('cart-updated')]
+    public function refreshCartState(): void
+    {
+        $this->syncCartState();
     }
 
     public function addToCart(): void

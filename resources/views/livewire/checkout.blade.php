@@ -168,6 +168,10 @@
                         <p class="mt-2 text-xs text-red-600 text-center">{{ $message }}</p>
                     @enderror
 
+                    @error('stock')
+                        <p class="mt-2 text-xs text-red-600 text-center">{{ $message }}</p>
+                    @enderror
+
                     @if ($this->paymentMethod === 'online')
                         <p class="mt-2 text-xs text-stone-400 text-center">You will be redirected to Razorpay to complete the payment. Your order is placed only after payment succeeds.</p>
                     @endif

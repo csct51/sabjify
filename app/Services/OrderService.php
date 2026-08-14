@@ -20,6 +20,16 @@ class OrderService
             throw new \RuntimeException('Your cart is empty.');
         }
 
+        $outOfStock = $cartItems
+            ->filter(fn ($item) => $item->product && ! $item->product->inStock())
+            ->map(fn ($item) => $item->product->name)
+            ->unique()
+            ->values();
+
+        if ($outOfStock->isNotEmpty()) {
+            throw new \RuntimeException('Some items are out of stock: '.$outOfStock->implode(', '));
+        }
+
         $subtotal = $cartItems->sum(fn ($item) => $item->total());
         $deliveryFee = $subtotal >= config('mart.free_delivery_threshold') ? 0 : (int) config('mart.delivery_fee');
 
