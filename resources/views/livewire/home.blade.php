@@ -63,11 +63,13 @@
                 <h2 class="text-2xl font-bold text-stone-900">Sabjify Baskets</h2>
                 <p class="mt-1 text-sm text-stone-500">Our signature daily baskets</p>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar">
                 @foreach ($this->sabjifyBaskets as $basket)
-                    <livewire:basket-card :basket="$basket" :key="'sabjify-'.$basket->id" />
+                    <div class="shrink-0 snap-start w-64 sm:w-72">
+                        <livewire:basket-card :basket="$basket" :key="'sabjify-'.$basket->id" />
+                    </div>
                 @endforeach
-                <a href="{{ route('baskets.index') }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
+                <a href="{{ route('baskets.index') }}" wire:navigate class="group shrink-0 snap-start w-64 sm:w-72 bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
                     <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
                         <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
                     </span>
@@ -83,11 +85,13 @@
                 <h2 class="text-2xl font-bold text-stone-900">Wellness Baskets</h2>
                 <p class="mt-1 text-sm text-stone-500">Curated for a healthier you</p>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar">
                 @foreach ($this->wellnessBaskets as $basket)
-                    <livewire:basket-card :basket="$basket" :key="'wellness-'.$basket->id" />
+                    <div class="shrink-0 snap-start w-64 sm:w-72">
+                        <livewire:basket-card :basket="$basket" :key="'wellness-'.$basket->id" />
+                    </div>
                 @endforeach
-                <a href="{{ route('baskets.index') }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
+                <a href="{{ route('baskets.index') }}" wire:navigate class="group shrink-0 snap-start w-64 sm:w-72 bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
                     <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
                         <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
                     </span>
