@@ -127,6 +127,9 @@
                                 <span class="flex items-center gap-2 text-stone-600 min-w-0">
                                     <span class="text-xs text-stone-400">×{{ $item->quantity }}</span>
                                     <span class="truncate">{{ $item->name() }}</span>
+                                    @if ($item->unitName())
+                                        <span class="text-xs text-stone-400 shrink-0">{{ $item->unitName() }}</span>
+                                    @endif
                                 </span>
                                 <span class="font-medium text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($item->unitPrice() * $item->quantity, 'INR') }}</span>
                             </div>

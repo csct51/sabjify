@@ -17,17 +17,16 @@
         </button>
         <div x-show="open" x-collapse class="divide-y divide-stone-100 border-t border-stone-200">
             @foreach ($item->basket->products as $product)
+                @php($pivotUnit = $product->units->firstWhere('id', $product->pivot?->product_unit_id))
                 <div class="flex items-center gap-3 px-4 py-2.5">
                     <div class="w-10 h-10 rounded-lg bg-stone-100 overflow-hidden shrink-0">
                         <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-stone-800 truncate">{{ $product->name }}</p>
-                        <p class="text-xs text-stone-400">{{ $product->pivot->unit ?: $product->unit }}</p>
+                        <p class="text-xs text-stone-400">{{ $pivotUnit?->unit ?? $product->units->first()?->unit ?? $product->unit }}</p>
                     </div>
-                    @if ($product->pivot->price !== null)
-                        <p class="text-sm font-medium text-stone-700">{{ \Illuminate\Support\Number::currency($product->pivot->price, 'INR') }}</p>
-                    @endif
+                    <p class="text-sm font-medium text-stone-700">{{ \Illuminate\Support\Number::currency($pivotUnit?->price ?? $product->units->first()?->price ?? $product->price, 'INR') }}</p>
                 </div>
             @endforeach
         </div>

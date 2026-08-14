@@ -8,8 +8,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $basket_id
  * @property int $product_id
- * @property string|null $unit
- * @property int|null $price
+ * @property int|null $product_unit_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

@@ -42,15 +42,15 @@ test('admin can add and remove a unit', function () {
 
 test('admin cannot add a duplicate unit', function () {
     $admin = Admin::factory()->create();
-    Unit::factory()->create(['name' => 'kg']);
+    Unit::factory()->create(['name' => '1 kg']);
 
     Livewire::actingAs($admin, 'admin')
         ->test(Units::class)
-        ->set('newUnit', 'kg')
+        ->set('newUnit', '1 kg')
         ->call('addUnit')
         ->assertHasErrors('newUnit');
 
-    expect(Unit::query()->where('name', 'kg')->count())->toBe(1);
+    expect(Unit::query()->where('name', '1 kg')->count())->toBe(1);
 });
 
 test('admin cannot remove a unit used by products', function () {

@@ -28,7 +28,7 @@ class ProductFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name),
             'description' => fake()->sentence(),
-            'unit' => fake()->randomElement(['kg', '500 g', '1 pc', 'dozen', 'bunch', '250 g']),
+            'unit' => fake()->randomElement(['1 kg', '500 g', '1 pc', 'dozen', 'bunch', '250 g']),
             'price' => $price,
             'mrp' => fake()->boolean(70) ? (int) ($price * 1.25) : null,
             'in_stock' => fake()->boolean(80),
@@ -66,7 +66,7 @@ class ProductFactory extends Factory
 
             $product->units()->where('sort_order', '>', 0)->delete();
 
-            $pool = ['500 g', '250 g', '125 g', '2 kg', '3 kg', '1 pc', 'dozen', 'bunch'];
+            $pool = ['500 g', '250 g', '2 kg', '3 kg', '1 pc', 'dozen', 'bunch'];
             $available = array_values(array_filter($pool, fn (string $unit) => $unit !== $product->unit));
 
             for ($i = 1; $i < $count; $i++) {

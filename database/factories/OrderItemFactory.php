@@ -26,7 +26,7 @@ class OrderItemFactory extends Factory
             'order_id' => Order::factory(),
             'product_id' => Product::factory(),
             'product_name' => fake()->words(2, true),
-            'unit' => fake()->randomElement(['kg', '500 g', '1 pc', 'dozen']),
+            'unit' => fake()->randomElement(['1 kg', '500 g', '1 pc', 'dozen']),
             'price' => $price,
             'quantity' => $quantity,
             'total' => $price * $quantity,

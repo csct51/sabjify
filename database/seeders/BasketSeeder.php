@@ -117,11 +117,7 @@ class BasketSeeder extends Seeder
                 $attributes
             );
 
-            $model->products()->sync(
-                $products->mapWithKeys(fn (Product $product) => [
-                    $product->id => ['unit' => $product->unit, 'price' => $product->price],
-                ])
-            );
+            $model->products()->sync($products->pluck('id'));
         }
     }
 }

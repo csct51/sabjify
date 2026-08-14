@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->string('unit')->default('kg');
+            $table->string('unit')->default('1 kg');
             $table->unsignedInteger('price');
             $table->unsignedInteger('mrp')->nullable();
             $table->unsignedInteger('stock')->default(0);

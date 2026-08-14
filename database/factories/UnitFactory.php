@@ -18,7 +18,7 @@ class UnitFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->unique()->randomElement(['kg', '500 g', '250 g', '125 g', '1 pc', '2 pcs', 'dozen', 'bunch']),
+            'name' => fake()->unique()->randomElement(['1 kg', '500 g', '250 g', '1 pc', 'dozen', 'bunch']),
             'sort_order' => 0,
         ];
     }

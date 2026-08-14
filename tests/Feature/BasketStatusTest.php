@@ -19,7 +19,7 @@ it('edit form can hide a basket via save', function () {
     $admin = Admin::factory()->create();
     $product = Product::factory()->create();
     $basket = Basket::factory()->create(['is_active' => true]);
-    $basket->products()->attach($product, ['unit' => '1 pcs', 'price' => 50]);
+    $basket->products()->attach($product);
 
     Livewire::actingAs($admin, 'admin')
         ->test(BasketForm::class, ['basket' => $basket])
@@ -34,7 +34,7 @@ it('edit form can re-activate a hidden basket via save', function () {
     $admin = Admin::factory()->create();
     $product = Product::factory()->create();
     $basket = Basket::factory()->create(['is_active' => false]);
-    $basket->products()->attach($product, ['unit' => '1 pcs', 'price' => 50]);
+    $basket->products()->attach($product);
 
     Livewire::actingAs($admin, 'admin')
         ->test(BasketForm::class, ['basket' => $basket])
@@ -49,7 +49,7 @@ it('renders the correct status option as selected for a hidden basket', function
     $admin = Admin::factory()->create();
     $product = Product::factory()->create();
     $basket = Basket::factory()->create(['name' => 'Hidden Basket', 'is_active' => false]);
-    $basket->products()->attach($product, ['unit' => '1 pcs', 'price' => 50]);
+    $basket->products()->attach($product);
 
     $html = Livewire::actingAs($admin, 'admin')
         ->test(BasketForm::class, ['basket' => $basket])
@@ -62,7 +62,7 @@ it('renders the correct status option as selected for an active basket', functio
     $admin = Admin::factory()->create();
     $product = Product::factory()->create();
     $basket = Basket::factory()->create(['name' => 'Active Basket', 'is_active' => true]);
-    $basket->products()->attach($product, ['unit' => '1 pcs', 'price' => 50]);
+    $basket->products()->attach($product);
 
     $html = Livewire::actingAs($admin, 'admin')
         ->test(BasketForm::class, ['basket' => $basket])

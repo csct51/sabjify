@@ -12,7 +12,7 @@ class UnitSeeder extends Seeder
      */
     public function run(): void
     {
-        $units = ['kg', '500 g', '250 g', '125 g', '1 pc', '2 pcs', 'dozen', 'bunch'];
+        $units = ['1 kg', '500 g', '250 g', '1 pc', 'dozen', 'bunch'];
 
         foreach ($units as $sortOrder => $name) {
             Unit::updateOrCreate(['name' => $name], ['sort_order' => $sortOrder]);

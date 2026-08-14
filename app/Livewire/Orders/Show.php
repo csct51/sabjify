@@ -24,7 +24,7 @@ class Show extends Component
     {
         abort_unless($this->order->user_id === auth('web')->id(), 403);
 
-        $this->order->load(['items.product', 'items.basket.products', 'user']);
+        $this->order->load(['items.product', 'items.basket.products.units', 'user']);
     }
 
     public function cancelOrder(): void

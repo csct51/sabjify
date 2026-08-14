@@ -13,9 +13,9 @@
                     <h2 class="text-lg font-semibold text-stone-900">Wellness Baskets</h2>
                     <span class="inline-flex items-center rounded-full bg-brand-50 text-brand-700 text-xs font-semibold px-2.5 py-0.5">{{ $wellnessBaskets->count() }}</span>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5" data-reveal>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 items-start" data-reveal>
                     @foreach ($wellnessBaskets as $basket)
-                        <x-basket-card :basket="$basket" />
+                        <livewire:basket-card :basket="$basket" :key="'wellness-'.$basket->id" />
                     @endforeach
                 </div>
             </section>
@@ -27,9 +27,9 @@
                     <h2 class="text-lg font-semibold text-stone-900">Sabjify Baskets</h2>
                     <span class="inline-flex items-center rounded-full bg-brand-50 text-brand-700 text-xs font-semibold px-2.5 py-0.5">{{ $sabjifyBaskets->count() }}</span>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5" data-reveal>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 items-start" data-reveal>
                     @foreach ($sabjifyBaskets as $basket)
-                        <x-basket-card :basket="$basket" />
+                        <livewire:basket-card :basket="$basket" :key="'sabjify-'.$basket->id" />
                     @endforeach
                 </div>
             </section>

@@ -37,8 +37,16 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-stone-700 mb-1">Basket Price <span class="text-red-500">*</span></label>
-                        <input wire:model="price" type="number" min="1" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                        <p class="mt-1 text-[11px] text-stone-400">The purchase price users will see and pay.</p>
+                        <input wire:model.live="price" type="number" min="1" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        @if ($productIds !== [])
+                            <p class="mt-1 text-[11px] text-stone-400">
+                                Calculated from selected products:
+                                <span class="font-medium text-stone-600">{{ \Illuminate\Support\Number::currency($this->calculatedPrice, 'INR') }}</span>
+                                @if ($priceManuallyEdited)
+                                    <button type="button" wire:click="applyCalculatedPrice" class="text-brand-600 hover:text-brand-700 font-semibold underline underline-offset-2">Use calculated</button>
+                                @endif
+                            </p>
+                        @endif
                         @error('price')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
@@ -106,17 +114,15 @@
                                                 <i data-lucide="x" class="w-4 h-4"></i>
                                             </button>
                                         </div>
-                                        <div class="mt-2 grid grid-cols-2 gap-3 pl-11">
-                                            <div>
-                                                <label class="block text-[11px] font-medium text-stone-500 mb-1">Basket unit <span class="text-stone-400">(packaging)</span></label>
-                                                <input wire:model="units.{{ $product->id }}" type="text" placeholder="e.g. 250g, 1 box" class="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                                @error('units.{{ $product->id }}')<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
-                                            </div>
-                                            <div>
-                                                <label class="block text-[11px] font-medium text-stone-500 mb-1">Basket price <span class="text-stone-400">(packaging)</span></label>
-                                                <input wire:model="prices.{{ $product->id }}" type="number" min="0" placeholder="e.g. 40" class="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                                @error('prices.{{ $product->id }}')<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
-                                            </div>
+                                        <div class="mt-2 pl-11">
+                                            <label class="block text-[11px] font-medium text-stone-500 mb-1">Unit used in this basket</label>
+                                            <select wire:model="productUnitIds.{{ $product->id }}" class="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                                                <option value="">Default unit</option>
+                                                @foreach ($product->units as $unit)
+                                                    <option value="{{ $unit->id }}">{{ $unit->unit }} — {{ \Illuminate\Support\Number::currency($unit->price, 'INR') }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('productUnitIds.'.$product->id)<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
                                         </div>
                                     </div>
                                 @empty
@@ -124,7 +130,7 @@
                                 @endforelse
                             </div>
                             <div class="px-3 py-2.5 border-t border-brand-100 bg-white/60">
-                                <p class="text-[11px] text-stone-400">Units and prices set here are only packaging notes shown as the basket contents. They do not change the shop price of these products.</p>
+                                <p class="text-[11px] text-stone-400">Pick a specific unit for each product in the basket. The basket price is calculated from the selected units; you can override it in the price field.</p>
                             </div>
                         </div>
                     </div>

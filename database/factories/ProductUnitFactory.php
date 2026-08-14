@@ -22,7 +22,7 @@ class ProductUnitFactory extends Factory
 
         return [
             'product_id' => Product::factory(),
-            'unit' => fake()->randomElement(['kg', '500 g', '1 pc', 'dozen', 'bunch', '250 g', '125 g']),
+            'unit' => fake()->randomElement(['1 kg', '500 g', '1 pc', 'dozen', 'bunch', '250 g']),
             'price' => $price,
             'mrp' => fake()->boolean(70) ? (int) ($price * 1.25) : null,
             'sort_order' => 0,

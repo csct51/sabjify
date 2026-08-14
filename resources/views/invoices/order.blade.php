@@ -92,8 +92,9 @@
                                 <div style="margin-left:16px; color:#57534e; font-size:11px;">
                                     <div style="font-weight:bold; margin-bottom:2px;">What's inside</div>
                                     @foreach ($item->basket->products as $product)
+                                        @php($pivotUnit = $product->units->firstWhere('id', $product->pivot?->product_unit_id))
                                         <div style="padding-left:8px;">
-                                            {{ $product->pivot->unit ?: $product->unit }} {{ $product->name }}@if ($product->pivot->price !== null) · {{ \Illuminate\Support\Number::currency($product->pivot->price, 'INR') }}@endif
+                                            {{ $pivotUnit?->unit ?? $product->units->first()?->unit ?? $product->unit }} {{ $product->name }} · {{ \Illuminate\Support\Number::currency($pivotUnit?->price ?? $product->units->first()?->price ?? $product->price, 'INR') }}
                                         </div>
                                     @endforeach
                                 </div>

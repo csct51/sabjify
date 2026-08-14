@@ -37,11 +37,8 @@ class BasketForm extends Component
     /** @var array<int, int> */
     public array $productIds = [];
 
-    /** @var array<int, string> */
-    public array $units = [];
-
-    /** @var array<int, int|string|null> */
-    public array $prices = [];
+    /** @var array<int, int|null> */
+    public array $productUnitIds = [];
 
     public string $productSearch = '';
 
@@ -50,6 +47,8 @@ class BasketForm extends Component
     public string $imageUrl = '';
 
     public bool $slugManuallyEdited = false;
+
+    public bool $priceManuallyEdited = false;
 
     public function mount(?Basket $basket = null): void
     {
@@ -64,13 +63,38 @@ class BasketForm extends Component
             $this->is_active = $basket->is_active ? '1' : '0';
             $this->sort_order = $basket->sort_order;
             $this->imageUrl = $basket->image && filter_var($basket->image, FILTER_VALIDATE_URL) !== false ? $basket->image : '';
+            $this->priceManuallyEdited = true;
 
-            foreach ($basket->products()->withPivot('unit', 'price')->get() as $product) {
+            foreach ($basket->products()->withPivot('product_unit_id')->get() as $product) {
                 $this->productIds[] = $product->id;
-                $this->units[$product->id] = $product->pivot->unit;
-                $this->prices[$product->id] = $product->pivot->price;
+                $this->productUnitIds[$product->id] = $product->pivot->product_unit_id;
             }
         }
+    }
+
+    public function updatedProductIds(): void
+    {
+        if (! $this->priceManuallyEdited) {
+            $this->price = $this->calculatedPrice;
+        }
+    }
+
+    public function updatedProductUnitIds(): void
+    {
+        if (! $this->priceManuallyEdited) {
+            $this->price = $this->calculatedPrice;
+        }
+    }
+
+    public function updatedPrice(): void
+    {
+        $this->priceManuallyEdited = true;
+    }
+
+    public function applyCalculatedPrice(): void
+    {
+        $this->price = $this->calculatedPrice;
+        $this->priceManuallyEdited = false;
     }
 
     public function updatedName(): void
@@ -121,7 +145,7 @@ class BasketForm extends Component
 
         return Product::active()
             ->whereIn('id', $this->productIds)
-            ->with('category')
+            ->with('category', 'units')
             ->orderBy('name')
             ->get();
     }
@@ -133,7 +157,25 @@ class BasketForm extends Component
             fn (int $id) => $id !== $productId
         ));
 
-        unset($this->units[$productId], $this->prices[$productId]);
+        unset($this->productUnitIds[$productId]);
+    }
+
+    #[Computed]
+    public function calculatedPrice(): int
+    {
+        $total = 0;
+
+        foreach ($this->selectedProducts() as $product) {
+            $unitId = $this->productUnitIds[$product->id] ?? null;
+
+            $unit = $unitId
+                ? $product->units->firstWhere('id', $unitId)
+                : $product->units->first();
+
+            $total += $unit?->price ?? $product->price;
+        }
+
+        return $total;
     }
 
     public function save(): void
@@ -150,8 +192,7 @@ class BasketForm extends Component
             'price' => ['required', 'integer', 'min:1'],
             'productIds' => ['required', 'array', 'min:1'],
             'productIds.*' => ['integer', 'exists:products,id'],
-            'units.*' => ['nullable', 'string', 'max:40'],
-            'prices.*' => ['nullable', 'integer', 'min:0'],
+            'productUnitIds.*' => ['nullable', 'integer', 'exists:product_units,id'],
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
@@ -180,8 +221,7 @@ class BasketForm extends Component
 
         foreach ($this->productIds as $productId) {
             $sync[$productId] = [
-                'unit' => ! empty($this->units[$productId]) ? $this->units[$productId] : null,
-                'price' => isset($this->prices[$productId]) && $this->prices[$productId] !== '' ? (int) $this->prices[$productId] : null,
+                'product_unit_id' => $this->productUnitIds[$productId] ?? null,
             ];
         }
 

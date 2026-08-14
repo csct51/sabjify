@@ -302,7 +302,7 @@ test('notification bell lists pending orders in the modal', function () {
 
 test('admin can update product unit prices', function () {
     $admin = Admin::factory()->create();
-    $product = Product::factory()->create(['unit' => 'kg']);
+    $product = Product::factory()->create(['unit' => '1 kg']);
     $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g', 'price' => 100, 'mrp' => 120]);
 
     Livewire::actingAs($admin, 'admin')
@@ -319,7 +319,7 @@ test('admin can update product unit prices', function () {
 
 test('admin can update price and clear mrp', function () {
     $admin = Admin::factory()->create();
-    $product = Product::factory()->create(['unit' => 'kg']);
+    $product = Product::factory()->create(['unit' => '1 kg']);
     $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g', 'price' => 100, 'mrp' => 120]);
 
     Livewire::actingAs($admin, 'admin')
@@ -336,7 +336,7 @@ test('admin can update price and clear mrp', function () {
 
 test('prices page rejects invalid price', function () {
     $admin = Admin::factory()->create();
-    $product = Product::factory()->create(['unit' => 'kg']);
+    $product = Product::factory()->create(['unit' => '1 kg']);
     $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g', 'price' => 100]);
 
     Livewire::actingAs($admin, 'admin')
@@ -350,8 +350,8 @@ test('prices page rejects invalid price', function () {
 
 test('prices page filters units by search', function () {
     $admin = Admin::factory()->create();
-    $product = Product::factory()->create(['name' => 'Fresh Mango', 'unit' => 'kg']);
-    $otherProduct = Product::factory()->create(['name' => 'Ripe Banana', 'unit' => 'kg']);
+    $product = Product::factory()->create(['name' => 'Fresh Mango', 'unit' => '1 kg']);
+    $otherProduct = Product::factory()->create(['name' => 'Ripe Banana', 'unit' => '1 kg']);
     $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g']);
     $otherUnit = ProductUnit::factory()->create(['product_id' => $otherProduct->id, 'unit' => '250 g']);
 
@@ -378,8 +378,8 @@ test('prices page filters units by category', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();
     $otherCategory = Category::factory()->create();
-    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => 'kg']);
-    $otherProduct = Product::factory()->create(['category_id' => $otherCategory->id, 'unit' => 'kg']);
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => '1 kg']);
+    $otherProduct = Product::factory()->create(['category_id' => $otherCategory->id, 'unit' => '1 kg']);
     $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g']);
     $otherUnit = ProductUnit::factory()->create(['product_id' => $otherProduct->id, 'unit' => '250 g']);
 

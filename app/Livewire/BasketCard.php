@@ -3,58 +3,33 @@
 namespace App\Livewire;
 
 use App\Models\Basket;
-use App\Models\Product;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Collection;
-use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-#[Layout('layouts.store')]
-class BasketShow extends Component
+class BasketCard extends Component
 {
+    #[Locked]
     public Basket $basket;
 
     public int $quantity = 1;
 
     public bool $inCart = false;
 
-    public ?string $cartError = null;
-
-    public function mount(Basket $basket): void
+    public function mount(): void
     {
-        abort_unless($basket->is_active, 404);
+        $this->basket->load('products:id,name');
 
-        $this->basket = $basket;
+        if (auth('web')->check()) {
+            $cartItem = auth('web')->user()
+                ->cartItems()
+                ->where('basket_id', $this->basket->id)
+                ->first();
 
-        $this->syncCartState();
-    }
-
-    /**
-     * @return Collection<int, Product>
-     */
-    #[Computed]
-    public function products(): Collection
-    {
-        return $this->basket->products()->with('category', 'units')->get();
-    }
-
-    private function syncCartState(): void
-    {
-        $this->inCart = false;
-        $this->quantity = 1;
-
-        if (! auth('web')->check()) {
-            return;
-        }
-
-        $cartItem = auth('web')->user()->cartItems()
-            ->where('basket_id', $this->basket->id)
-            ->first();
-
-        if ($cartItem) {
-            $this->inCart = true;
-            $this->quantity = $cartItem->quantity;
+            if ($cartItem) {
+                $this->inCart = true;
+                $this->quantity = $cartItem->quantity;
+            }
         }
     }
 
@@ -68,10 +43,11 @@ class BasketShow extends Component
 
         $cartItem = auth('web')->user()->cartItems()->firstOrNew(['basket_id' => $this->basket->id]);
         $cartItem->product_id = null;
-        $cartItem->quantity = $cartItem->quantity + 1;
+        $cartItem->quantity++;
         $cartItem->save();
 
-        $this->syncCartState();
+        $this->inCart = true;
+        $this->quantity = $cartItem->quantity;
 
         $this->dispatch('cart-updated');
     }
@@ -83,7 +59,7 @@ class BasketShow extends Component
             ->firstOrFail();
         $cartItem->increment('quantity');
 
-        $this->syncCartState();
+        $this->quantity = $cartItem->quantity;
 
         $this->dispatch('cart-updated');
     }
@@ -96,7 +72,8 @@ class BasketShow extends Component
 
         if ($cartItem->quantity <= 1) {
             $cartItem->delete();
-            $this->syncCartState();
+            $this->inCart = false;
+            $this->quantity = 1;
 
             $this->dispatch('cart-updated');
 
@@ -104,13 +81,13 @@ class BasketShow extends Component
         }
 
         $cartItem->decrement('quantity');
-        $this->syncCartState();
+        $this->quantity = $cartItem->quantity;
 
         $this->dispatch('cart-updated');
     }
 
     public function render(): View
     {
-        return view('livewire.basket-show');
+        return view('livewire.basket-card');
     }
 }

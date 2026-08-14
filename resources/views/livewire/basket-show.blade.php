@@ -24,21 +24,34 @@
                 <p class="mt-5 text-2xl font-bold text-stone-900">{{ \Illuminate\Support\Number::currency($basket->price, 'INR') }}</p>
                 <p class="text-xs text-stone-400 mt-1">One-time purchase price for this basket.</p>
 
-                <div class="mt-5 flex flex-wrap items-center gap-3">
-                    <button type="button" wire:click="addToCart" wire:loading.attr="disabled" wire:target="addToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
-                        <span wire:loading.remove wire:target="addToCart"><i data-lucide="shopping-cart" class="w-5 h-5"></i></span>
-                        <x-loading-spinner wire:loading wire:target="addToCart" class="w-4 h-4" />
-                        <span wire:loading.remove wire:target="addToCart">Add to Cart</span>
-                        <span wire:loading wire:target="addToCart">Adding...</span>
-                    </button>
-                    <a href="{{ route('cart') }}" wire:navigate class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
-                        View Cart →
-                    </a>
+                <div class="mt-5 hidden lg:flex items-center gap-3">
+                    @if ($inCart)
+                        <div class="flex items-center gap-1 bg-brand-600 text-white rounded-xl p-1">
+                            <button type="button" wire:click="decrement" wire:loading.attr="disabled" wire:target="decrement" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                            <span class="w-8 text-center text-lg font-semibold">
+                                <span wire:loading.remove wire:target="increment,decrement">{{ $quantity }}</span>
+                                <x-loading-spinner wire:loading wire:target="increment,decrement" class="w-4 h-4 mx-auto" />
+                            </span>
+                            <button type="button" wire:click="increment" wire:loading.attr="disabled" wire:target="increment" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Increase quantity"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                        </div>
+                        <a href="{{ route('cart') }}" wire:navigate class="inline-flex items-center gap-2 rounded-xl border border-brand-600 text-brand-600 font-semibold px-4 py-2.5 text-sm hover:bg-brand-50 transition">
+                            View Cart
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                    @else
+                        <button type="button" wire:click="addToCart" wire:loading.attr="disabled" wire:target="addToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
+                            <span wire:loading.remove.inline-flex wire:target="addToCart" class="inline-flex items-center gap-2">
+                                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                                Add to Cart
+                            </span>
+                            <span wire:loading.inline-flex wire:target="addToCart" class="inline-flex items-center gap-2">
+                                <x-loading-spinner class="w-4 h-4" />
+                                Adding...
+                            </span>
+                        </button>
+                    @endif
                 </div>
 
-                @if ($cartMessage)
-                    <div class="mt-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">{{ $cartMessage }}</div>
-                @endif
                 @if ($cartError)
                     <div class="mt-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ $cartError }}</div>
                 @endif
@@ -48,30 +61,50 @@
         @if ($this->products->isNotEmpty())
             <div class="mt-10 border-t border-stone-200 pt-8">
                 <h2 class="text-lg font-semibold text-stone-900 mb-1">What's inside</h2>
-                <p class="text-sm text-stone-500 mb-5">Contents and their indicative packaging. Individual product prices in the shop are unchanged.</p>
+                <p class="text-sm text-stone-500 mb-5">Each product priced at its own shop price and unit.</p>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
                     @foreach ($this->products as $product)
-                        <div class="bg-white rounded-2xl border border-stone-200 p-4">
+                        @php($pivotUnit = $product->units->firstWhere('id', $product->pivot?->product_unit_id))
+                        <div class="flex items-center gap-4 p-4">
                             <span class="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
                                 <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                             </span>
-                            <p class="mt-3 text-sm font-medium text-stone-800 truncate">{{ $product->name }}</p>
-                            <p class="text-xs text-stone-400">{{ $product->pivot->unit ?? $product->unit }}</p>
-                            @if ($product->pivot->price !== null)
-                                <p class="mt-1 text-sm font-semibold text-stone-900">{{ \Illuminate\Support\Number::currency($product->pivot->price, 'INR') }}</p>
-                            @endif
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-stone-800 truncate">{{ $product->name }}</p>
+                                <p class="text-xs text-stone-400">{{ $pivotUnit?->unit ?? $product->units->first()?->unit ?? $product->unit }}</p>
+                            </div>
+                            <p class="text-sm font-semibold text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($pivotUnit?->price ?? $product->units->first()?->price ?? $product->price, 'INR') }}</p>
                         </div>
                     @endforeach
                 </div>
 
-                <div class="mt-8 lg:hidden">
-                    <button type="button" wire:click="addToCart" wire:loading.attr="disabled" wire:target="addToCart" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
-                        <span wire:loading.remove wire:target="addToCart"><i data-lucide="shopping-cart" class="w-5 h-5"></i></span>
-                        <x-loading-spinner wire:loading wire:target="addToCart" class="w-4 h-4" />
-                        <span wire:loading.remove wire:target="addToCart">Add to Cart</span>
-                        <span wire:loading wire:target="addToCart">Adding...</span>
-                    </button>
+                <div class="mt-8 lg:hidden flex items-center gap-3">
+                    @if ($inCart)
+                        <div class="flex items-center gap-1 bg-brand-600 text-white rounded-xl p-1 shrink-0">
+                            <button type="button" wire:click="decrement" wire:loading.attr="disabled" wire:target="decrement" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                            <span class="w-8 text-center text-lg font-semibold">
+                                <span wire:loading.remove wire:target="increment,decrement">{{ $quantity }}</span>
+                                <x-loading-spinner wire:loading wire:target="increment,decrement" class="w-4 h-4 mx-auto" />
+                            </span>
+                            <button type="button" wire:click="increment" wire:loading.attr="disabled" wire:target="increment" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Increase quantity"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                        </div>
+                        <a href="{{ route('cart') }}" wire:navigate class="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-brand-600 text-brand-600 font-semibold px-4 py-3 text-sm hover:bg-brand-50 transition">
+                            View Cart
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                    @else
+                        <button type="button" wire:click="addToCart" wire:loading.attr="disabled" wire:target="addToCart" class="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
+                            <span wire:loading.remove.inline-flex wire:target="addToCart" class="inline-flex items-center gap-2">
+                                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                                Add to Cart
+                            </span>
+                            <span wire:loading.inline-flex wire:target="addToCart" class="inline-flex items-center gap-2">
+                                <x-loading-spinner class="w-4 h-4" />
+                                Adding...
+                            </span>
+                        </button>
+                    @endif
                 </div>
             </div>
         @endif

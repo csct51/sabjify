@@ -25,7 +25,7 @@ class OrderShow extends Component
     {
         abort_unless(auth('admin')->check(), 403);
 
-        $this->order->load(['items.product', 'items.basket.products', 'user']);
+        $this->order->load(['items.product', 'items.basket.products.units', 'user']);
 
         $this->status = $this->order->status;
         $this->paymentStatus = $this->order->payment_status;

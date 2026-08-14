@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\BasketForm;
 use App\Livewire\Admin\Baskets;
+use App\Livewire\BasketCard;
 use App\Livewire\BasketShow;
 use App\Livewire\Cart;
 use App\Models\Admin;
@@ -17,7 +18,7 @@ test('guest is redirected to admin login when accessing baskets', function () {
     $this->get('/admin/baskets')->assertRedirect(route('admin.login'));
 });
 
-test('admin can create a wellness basket with products, units and prices', function () {
+test('admin can create a wellness basket with products', function () {
     $admin = Admin::factory()->create();
     $mango = Product::factory()->create(['name' => 'Mango', 'price' => 120]);
     $mint = Product::factory()->create(['name' => 'Mint', 'price' => 40]);
@@ -29,8 +30,6 @@ test('admin can create a wellness basket with products, units and prices', funct
         ->set('type', Basket::TYPE_WELLNESS)
         ->set('price', 499)
         ->set('productIds', [$mango->id, $mint->id])
-        ->set('units', [$mango->id => '2 pcs', $mint->id => '1 bunch'])
-        ->set('prices', [$mango->id => 120, $mint->id => 40])
         ->call('save')
         ->assertRedirect(route('admin.baskets.index'));
 
@@ -39,16 +38,27 @@ test('admin can create a wellness basket with products, units and prices', funct
     expect($basket)->not->toBeNull();
     expect($basket->type)->toBe(Basket::TYPE_WELLNESS);
     expect($basket->price)->toBe(499);
+    expect($basket->products()->pluck('products.id')->all())->toEqualCanonicalizing([$mango->id, $mint->id]);
+});
 
-    $pivot = $basket->products()->find($mango->id)->pivot;
+test('admin can pick a specific product unit for each basket product', function () {
+    $admin = Admin::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango']);
+    $bigUnit = $mango->units()->create(['unit' => '1 kg', 'price' => 200, 'sort_order' => 2]);
 
-    expect($pivot->unit)->toBe('2 pcs');
-    expect($pivot->price)->toBe(120);
+    Livewire::actingAs($admin, 'admin')
+        ->test(BasketForm::class)
+        ->set('name', 'Unit Picked Basket')
+        ->set('type', Basket::TYPE_WELLNESS)
+        ->set('price', 499)
+        ->set('productIds', [$mango->id])
+        ->set('productUnitIds', [$mango->id => $bigUnit->id])
+        ->call('save')
+        ->assertRedirect(route('admin.baskets.index'));
 
-    $mintPivot = $basket->products()->find($mint->id)->pivot;
+    $basket = Basket::where('slug', 'unit-picked-basket')->first();
 
-    expect($mintPivot->unit)->toBe('1 bunch');
-    expect($mintPivot->price)->toBe(40);
+    expect($basket->products()->find($mango->id)->pivot->product_unit_id)->toBe($bigUnit->id);
 });
 
 test('admin can create a sabjify basket', function () {
@@ -67,31 +77,80 @@ test('admin can create a sabjify basket', function () {
     $this->assertDatabaseHas('baskets', ['slug' => 'daily-sabjify-basket', 'type' => Basket::TYPE_SABJIFY]);
 });
 
+test('basket price auto-calculates from selected products and their units', function () {
+    $admin = Admin::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'unit' => '1 kg', 'price' => 150]);
+    $mango->units()->create(['unit' => '2 kg', 'price' => 280, 'sort_order' => 1]);
+    $mint = Product::factory()->create(['name' => 'Mint', 'price' => 40]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(BasketForm::class)
+        ->set('name', 'Calculated Basket')
+        ->set('type', Basket::TYPE_WELLNESS)
+        ->set('productIds', [$mango->id, $mint->id])
+        ->assertSet('price', 190)
+        ->assertSet('priceManuallyEdited', false);
+
+    $bigUnit = $mango->units()->where('unit', '2 kg')->first();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(BasketForm::class)
+        ->set('name', 'Calculated Basket')
+        ->set('type', Basket::TYPE_WELLNESS)
+        ->set('productIds', [$mango->id, $mint->id])
+        ->set('productUnitIds', [$mango->id => $bigUnit->id])
+        ->assertSet('price', 320);
+});
+
+test('admin can manually override the calculated basket price', function () {
+    $admin = Admin::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'price' => 150]);
+    $mint = Product::factory()->create(['name' => 'Mint', 'price' => 40]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(BasketForm::class)
+        ->set('name', 'Manual Price Basket')
+        ->set('type', Basket::TYPE_WELLNESS)
+        ->set('price', 199)
+        ->set('productIds', [$mango->id, $mint->id])
+        ->assertSet('price', 199)
+        ->assertSet('priceManuallyEdited', true);
+});
+
+test('admin can revert to the calculated basket price', function () {
+    $admin = Admin::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'price' => 150]);
+    $mint = Product::factory()->create(['name' => 'Mint', 'price' => 40]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(BasketForm::class)
+        ->set('name', 'Reverted Basket')
+        ->set('type', Basket::TYPE_WELLNESS)
+        ->set('price', 199)
+        ->set('productIds', [$mango->id, $mint->id])
+        ->call('applyCalculatedPrice')
+        ->assertSet('price', 190)
+        ->assertSet('priceManuallyEdited', false);
+});
+
 test('admin can update a basket', function () {
     $admin = Admin::factory()->create();
     $oldProduct = Product::factory()->create();
     $newProduct = Product::factory()->create();
     $basket = Basket::factory()->create(['name' => 'Old Basket']);
-    $basket->products()->attach($oldProduct, ['unit' => '1 pcs', 'price' => 50]);
+    $basket->products()->attach($oldProduct);
 
     Livewire::actingAs($admin, 'admin')
         ->test(BasketForm::class, ['basket' => $basket])
         ->set('name', 'New Basket')
         ->set('price', 599)
         ->set('productIds', [$newProduct->id])
-        ->set('units', [$newProduct->id => '2 kg'])
-        ->set('prices', [$newProduct->id => 90])
         ->call('save')
         ->assertRedirect(route('admin.baskets.index'));
 
     expect($basket->fresh()->name)->toBe('New Basket');
     expect($basket->fresh()->price)->toBe(599);
     expect($basket->fresh()->products()->pluck('products.id')->all())->toEqualCanonicalizing([$newProduct->id]);
-
-    $pivot = $basket->fresh()->products()->find($newProduct->id)->pivot;
-
-    expect($pivot->unit)->toBe('2 kg');
-    expect($pivot->price)->toBe(90);
 });
 
 test('admin can toggle basket visibility', function () {
@@ -165,6 +224,7 @@ test('basket form requires a price', function () {
     Livewire::actingAs($admin, 'admin')
         ->test(BasketForm::class)
         ->set('name', 'Free Basket')
+        ->set('price', 0)
         ->set('productIds', [$product->id])
         ->call('save')
         ->assertHasErrors('price');
@@ -265,9 +325,9 @@ test('baskets index shows wellness and sabjify baskets in separate sections', fu
 
 test('order detail page shows basket contents', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->available()->create(['name' => 'Mango', 'price' => 100]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango', 'unit' => '1 pc', 'price' => 120]);
     $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
-    $basket->products()->attach($mango, ['unit' => '2 pcs', 'price' => 120]);
+    $basket->products()->attach($mango);
 
     CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 1]);
 
@@ -285,16 +345,16 @@ test('order detail page shows basket contents', function () {
         ->get(route('orders.show', $order))
         ->assertOk()
         ->assertSee('Mango')
-        ->assertSee('2 pcs')
+        ->assertSee('1 pc')
         ->assertSee('₹120');
 });
 
 test('admin order page shows basket contents', function () {
     $admin = Admin::factory()->create();
     $user = User::factory()->create();
-    $mango = Product::factory()->available()->create(['name' => 'Mango', 'price' => 100]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango', 'unit' => '1 pc', 'price' => 120]);
     $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
-    $basket->products()->attach($mango, ['unit' => '2 pcs', 'price' => 120]);
+    $basket->products()->attach($mango);
 
     CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 1]);
 
@@ -312,15 +372,15 @@ test('admin order page shows basket contents', function () {
         ->get(route('admin.orders.show', $order))
         ->assertOk()
         ->assertSee('Mango')
-        ->assertSee('2 pcs')
+        ->assertSee('1 pc')
         ->assertSee('₹120');
 });
 
 test('basket detail page shows name, price and inside products', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango']);
+    $mango = Product::factory()->create(['name' => 'Mango', 'unit' => '1 pc', 'price' => 120]);
     $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
-    $basket->products()->attach($mango, ['unit' => '2 pcs', 'price' => 120]);
+    $basket->products()->attach($mango);
 
     Livewire::actingAs($user)
         ->test(BasketShow::class, ['basket' => $basket])
@@ -329,8 +389,53 @@ test('basket detail page shows name, price and inside products', function () {
         ->assertSee('₹499')
         ->assertSee("What's inside", false)
         ->assertSee('Mango')
-        ->assertSee('2 pcs')
+        ->assertSee('1 pc')
         ->assertSee('₹120');
+});
+
+test('basket detail shows the selected unit and its price', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'unit' => '1 kg', 'price' => 150]);
+    $bigUnit = $mango->units()->create(['unit' => '2 kg', 'price' => 280, 'sort_order' => 2]);
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
+    $basket->products()->attach($mango, ['product_unit_id' => $bigUnit->id]);
+
+    Livewire::actingAs($user)
+        ->test(BasketShow::class, ['basket' => $basket])
+        ->assertOk()
+        ->assertSee('Mango')
+        ->assertSee('2 kg')
+        ->assertSee('₹280');
+});
+
+test('basket detail default unit resolves to the first product unit when base columns differ', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'unit' => '1 kg', 'price' => 150]);
+    $mango->units()->create(['unit' => '500 g', 'price' => 90, 'sort_order' => 0]);
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
+    $basket->products()->attach($mango);
+
+    Livewire::actingAs($user)
+        ->test(BasketShow::class, ['basket' => $basket])
+        ->assertOk()
+        ->assertSee('Mango')
+        ->assertSee('500 g')
+        ->assertSee('₹90');
+});
+
+test('basket detail falls back to base columns when a product has no units', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'unit' => '1 kg', 'price' => 150]);
+    $mango->units()->delete();
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost', 'price' => 499]);
+    $basket->products()->attach($mango);
+
+    Livewire::actingAs($user)
+        ->test(BasketShow::class, ['basket' => $basket])
+        ->assertOk()
+        ->assertSee('Mango')
+        ->assertSee('1 kg')
+        ->assertSee('₹150');
 });
 
 test('inactive baskets cannot be viewed on the store', function () {
@@ -358,7 +463,8 @@ test('authenticated user can add a basket as a single cart line item', function 
         ->test(BasketShow::class, ['basket' => $basket])
         ->call('addToCart')
         ->assertOk()
-        ->assertSet('cartMessage', '"Wellness Boost" added to your cart.');
+        ->assertSet('inCart', true)
+        ->assertSet('quantity', 1);
 
     $this->assertDatabaseHas('cart_items', [
         'user_id' => $user->id,
@@ -381,6 +487,54 @@ test('adding the same basket twice increments its quantity', function () {
 
     expect($item->fresh()->quantity)->toBe(2);
     $this->assertDatabaseCount('cart_items', 1);
+});
+
+test('basket detail increments the cart quantity from its counter', function () {
+    $user = User::factory()->create();
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost']);
+
+    $item = CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 2]);
+
+    Livewire::actingAs($user)
+        ->test(BasketShow::class, ['basket' => $basket])
+        ->assertSet('inCart', true)
+        ->assertSet('quantity', 2)
+        ->call('increment')
+        ->assertSet('quantity', 3)
+        ->assertDispatched('cart-updated');
+
+    expect($item->fresh()->quantity)->toBe(3);
+});
+
+test('basket detail decrements the cart quantity from its counter', function () {
+    $user = User::factory()->create();
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost']);
+
+    $item = CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 3]);
+
+    Livewire::actingAs($user)
+        ->test(BasketShow::class, ['basket' => $basket])
+        ->call('decrement')
+        ->assertSet('quantity', 2)
+        ->assertDispatched('cart-updated');
+
+    expect($item->fresh()->quantity)->toBe(2);
+});
+
+test('basket detail counter removes the basket when quantity reaches zero', function () {
+    $user = User::factory()->create();
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost']);
+
+    $item = CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(BasketShow::class, ['basket' => $basket])
+        ->call('decrement')
+        ->assertSet('inCart', false)
+        ->assertSet('quantity', 1)
+        ->assertDispatched('cart-updated');
+
+    $this->assertDatabaseMissing('cart_items', ['id' => $item->id]);
 });
 
 test('cart page shows basket line items with correct subtotal', function () {
@@ -487,4 +641,92 @@ test('basket order items survive cancellation', function () {
     app(OrderService::class)->cancel($order, 'not needed');
 
     expect($order->fresh()->status)->toBe(Order::STATUS_CANCELLED);
+});
+
+test('guest is redirected to login when adding a basket from its card', function () {
+    $basket = Basket::factory()->create();
+
+    Livewire::test(BasketCard::class, ['basket' => $basket])
+        ->call('addToCart')
+        ->assertRedirect(route('login'));
+});
+
+test('authenticated user can add a basket to cart from its card', function () {
+    $user = User::factory()->create();
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost']);
+
+    Livewire::actingAs($user)
+        ->test(BasketCard::class, ['basket' => $basket])
+        ->call('addToCart')
+        ->assertOk()
+        ->assertSet('inCart', true)
+        ->assertDispatched('cart-updated');
+
+    $this->assertDatabaseHas('cart_items', [
+        'user_id' => $user->id,
+        'basket_id' => $basket->id,
+        'product_id' => null,
+        'quantity' => 1,
+    ]);
+});
+
+test('basket card shows quantity counter when already in cart', function () {
+    $user = User::factory()->create();
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost']);
+
+    CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(BasketCard::class, ['basket' => $basket])
+        ->assertSet('inCart', true)
+        ->assertSet('quantity', 1)
+        ->assertSee('Wellness Boost')
+        ->assertSeeHtml('aria-label="Decrease quantity"')
+        ->assertSeeHtml('aria-label="Increase quantity"');
+});
+
+test('basket card counter increments the cart quantity', function () {
+    $user = User::factory()->create();
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost']);
+
+    $item = CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 2]);
+
+    Livewire::actingAs($user)
+        ->test(BasketCard::class, ['basket' => $basket])
+        ->call('increment')
+        ->assertSet('quantity', 3)
+        ->assertDispatched('cart-updated');
+
+    expect($item->fresh()->quantity)->toBe(3);
+});
+
+test('basket card counter decrements the cart quantity', function () {
+    $user = User::factory()->create();
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost']);
+
+    $item = CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 3]);
+
+    Livewire::actingAs($user)
+        ->test(BasketCard::class, ['basket' => $basket])
+        ->call('decrement')
+        ->assertSet('quantity', 2)
+        ->assertDispatched('cart-updated');
+
+    expect($item->fresh()->quantity)->toBe(2);
+});
+
+test('basket card counter removes the basket when quantity reaches zero', function () {
+    $user = User::factory()->create();
+    $basket = Basket::factory()->create(['name' => 'Wellness Boost']);
+
+    $item = CartItem::create(['user_id' => $user->id, 'basket_id' => $basket->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(BasketCard::class, ['basket' => $basket])
+        ->call('decrement')
+        ->assertSet('inCart', false)
+        ->assertSet('quantity', 1)
+        ->assertDispatched('cart-updated');
+
+    $this->assertDatabaseMissing('cart_items', ['id' => $item->id]);
 });
