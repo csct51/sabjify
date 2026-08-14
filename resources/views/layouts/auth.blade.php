@@ -11,8 +11,8 @@
     </head>
     <body class="bg-[#F7F8F5] text-stone-900 antialiased min-h-screen flex flex-col items-center justify-center px-4 py-10">
         <div class="w-full max-w-md">
-            <div class="flex flex-col items-center mb-6">
-                <x-logo class="w-full max-w-md h-48 rounded-3xl shadow-lg" object-fit="contain" icon="w-16 h-16" />
+            <div class="flex flex-col items-center mb-2">
+                <x-logo class="w-60 h-auto" object-fit="contain" icon="w-16 h-16" :boxed="false" />
             </div>
 
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
