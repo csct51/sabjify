@@ -40,6 +40,24 @@
                 @if ($cartError)
                     <div class="mt-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ $cartError }}</div>
                 @endif
+
+                <div class="mt-8 border-t border-stone-200 pt-6 grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="truck" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Free delivery</p>
+                        <p class="text-[11px] text-stone-400">Above {{ \Illuminate\Support\Number::currency(config('mart.free_delivery_threshold'), 'INR') }}</p>
+                    </div>
+                    <div>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="refresh-ccw" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Easy returns</p>
+                        <p class="text-[11px] text-stone-400">Within 24 hours</p>
+                    </div>
+                    <div>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shield-check" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Quality check</p>
+                        <p class="text-[11px] text-stone-400">Before dispatch</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -48,22 +66,9 @@
                 <h2 class="text-lg font-semibold text-stone-900 mb-3">Products in this recipe</h2>
                 <p class="text-sm text-stone-500 mb-5">{{ $this->products->count() }} products · all available in our shop</p>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" data-reveal>
+                <div class="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
                     @foreach ($this->products as $product)
-                        <a href="{{ route('product.show', $product) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 p-3 hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                            <div class="relative w-full aspect-square rounded-xl overflow-hidden">
-                                <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full {{ $product->imageFit() }} transition-transform duration-300 group-hover:scale-105">
-                            </div>
-                            <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 truncate">{{ $product->name }}</p>
-                            <p class="text-xs text-stone-400">{{ $product->category?->name }}</p>
-                            @php($pivotUnit = $product->units->firstWhere('id', $product->pivot?->product_unit_id))
-                            <p class="mt-1 text-sm font-semibold text-stone-900">
-                                {{ \Illuminate\Support\Number::currency($pivotUnit?->price ?? $product->minPrice(), 'INR') }}
-                                @if ($pivotUnit)
-                                    <span class="text-xs font-normal text-stone-400"> / {{ $pivotUnit->unit }}</span>
-                                @endif
-                            </p>
-                        </a>
+                        <livewire:recipe-product :recipe="$recipe" :product="$product" :key="'recipe-product-'.$product->id" />
                     @endforeach
                 </div>
 

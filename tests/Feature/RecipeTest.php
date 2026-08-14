@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\RecipeForm;
 use App\Livewire\Admin\Recipes;
+use App\Livewire\RecipeProduct;
 use App\Livewire\RecipeShow;
 use App\Models\Admin;
 use App\Models\Product;
@@ -282,4 +283,108 @@ test('inactive recipes cannot be viewed on the store', function () {
     $this->actingAs($user)
         ->get(route('recipes.show', $recipe))
         ->assertNotFound();
+});
+
+test('recipe detail page lists products with an add button', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeShow::class, ['recipe' => $recipe])
+        ->assertOk()
+        ->assertSee('Mango')
+        ->assertSee('Add');
+});
+
+test('recipe product add button adds that product to the cart', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeProduct::class, ['recipe' => $recipe, 'product' => $recipe->products()->first()])
+        ->call('addToCart')
+        ->assertOk()
+        ->assertSet('inCart', true)
+        ->assertSet('quantity', 1);
+
+    $this->assertDatabaseHas('cart_items', ['user_id' => $user->id, 'product_id' => $mango->id, 'recipe_id' => $recipe->id, 'quantity' => 1]);
+});
+
+test('recipe product counter shows existing cart quantity', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
+
+    $user->cartItems()->create([
+        'product_id' => $mango->id,
+        'recipe_id' => $recipe->id,
+        'product_unit_id' => $mango->defaultUnit()->id,
+        'quantity' => 3,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeProduct::class, ['recipe' => $recipe, 'product' => $recipe->products()->first()])
+        ->assertOk()
+        ->assertSet('inCart', true)
+        ->assertSet('quantity', 3);
+});
+
+test('recipe product counter can increment and decrement quantity', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
+
+    $cartItem = $user->cartItems()->create([
+        'product_id' => $mango->id,
+        'recipe_id' => $recipe->id,
+        'product_unit_id' => $mango->defaultUnit()->id,
+        'quantity' => 2,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeProduct::class, ['recipe' => $recipe, 'product' => $recipe->products()->first()])
+        ->call('increment')
+        ->assertSet('quantity', 3)
+        ->call('decrement')
+        ->assertSet('quantity', 2);
+
+    expect($cartItem->fresh()->quantity)->toBe(2);
+});
+
+test('recipe product decrement removes the item when quantity would drop below one', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
+
+    $user->cartItems()->create([
+        'product_id' => $mango->id,
+        'recipe_id' => $recipe->id,
+        'product_unit_id' => $mango->defaultUnit()->id,
+        'quantity' => 1,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeProduct::class, ['recipe' => $recipe, 'product' => $recipe->products()->first()])
+        ->call('decrement')
+        ->assertSet('inCart', false)
+        ->assertSet('quantity', 1);
+
+    $this->assertDatabaseMissing('cart_items', ['user_id' => $user->id, 'product_id' => $mango->id]);
+});
+
+test('guest is redirected to login when adding a recipe product to cart', function () {
+    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
+
+    Livewire::test(RecipeProduct::class, ['recipe' => $recipe, 'product' => $recipe->products()->first()])
+        ->call('addToCart')
+        ->assertRedirect(route('login'));
 });

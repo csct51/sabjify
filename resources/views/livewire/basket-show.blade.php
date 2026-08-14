@@ -55,6 +55,24 @@
                 @if ($cartError)
                     <div class="mt-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ $cartError }}</div>
                 @endif
+
+                <div class="mt-8 border-t border-stone-200 pt-6 grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="truck" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Free delivery</p>
+                        <p class="text-[11px] text-stone-400">Above {{ \Illuminate\Support\Number::currency(config('mart.free_delivery_threshold'), 'INR') }}</p>
+                    </div>
+                    <div>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="refresh-ccw" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Easy returns</p>
+                        <p class="text-[11px] text-stone-400">Within 24 hours</p>
+                    </div>
+                    <div>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shield-check" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Quality check</p>
+                        <p class="text-[11px] text-stone-400">Before dispatch</p>
+                    </div>
+                </div>
             </div>
         </div>
 
