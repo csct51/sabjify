@@ -63,7 +63,7 @@
                 <h2 class="text-2xl font-bold text-stone-900">Sabjify Baskets</h2>
                 <p class="mt-1 text-sm text-stone-500">Our signature daily baskets</p>
             </div>
-            <div class="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar">
+            <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
                 @foreach ($this->sabjifyBaskets as $basket)
                     <div class="shrink-0 snap-start w-64 sm:w-72">
                         <livewire:basket-card :basket="$basket" :key="'sabjify-'.$basket->id" />
@@ -85,7 +85,7 @@
                 <h2 class="text-2xl font-bold text-stone-900">Wellness Baskets</h2>
                 <p class="mt-1 text-sm text-stone-500">Curated for a healthier you</p>
             </div>
-            <div class="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar">
+            <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
                 @foreach ($this->wellnessBaskets as $basket)
                     <div class="shrink-0 snap-start w-64 sm:w-72">
                         <livewire:basket-card :basket="$basket" :key="'wellness-'.$basket->id" />

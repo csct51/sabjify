@@ -271,7 +271,7 @@ test('home page shows active baskets', function () {
         ->assertOk()
         ->assertSee('Wellness Baskets')
         ->assertSee('Wellness Boost')
-        ->assertSeeHtml('overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar');
+        ->assertSeeHtml('overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar');
 });
 
 test('home page shows wellness and sabjify baskets under separate headings', function () {
