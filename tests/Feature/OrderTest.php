@@ -6,6 +6,7 @@ use App\Livewire\Checkout;
 use App\Livewire\Orders\Show;
 use App\Models\Admin;
 use App\Models\CartItem;
+use App\Models\DeliveryLocation;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Setting;
@@ -169,6 +170,140 @@ test('checkout proceeds when cart meets the minimum order amount', function () {
     $product = Product::factory()->available()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 2]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    expect(Order::count())->toBe(1);
+});
+
+test('check deliverable reports whether a pin is inside an active delivery location', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    DeliveryLocation::factory()->create([
+        'latitude' => 19.076,
+        'longitude' => 72.8777,
+        'radius_km' => 5,
+        'is_active' => true,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->call('checkDeliverable', 19.076, 72.8777)
+        ->assertReturned(true)
+        ->call('checkDeliverable', 28.6139, 77.2090)
+        ->assertReturned(false);
+});
+
+test('checkout is blocked when the address is outside every active delivery location', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    DeliveryLocation::factory()->create([
+        'latitude' => 19.076,
+        'longitude' => 72.8777,
+        'radius_km' => 5,
+        'is_active' => true,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', 'Far Away Street')
+        ->set('city', 'Delhi')
+        ->set('state', 'Delhi')
+        ->set('pincode', '110001')
+        ->set('latitude', 28.6139)
+        ->set('longitude', 77.2090)
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertHasErrors('delivery');
+
+    expect(Order::count())->toBe(0);
+});
+
+test('checkout is blocked when a delivery location is active but the address has no coordinates', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    DeliveryLocation::factory()->create([
+        'latitude' => 19.076,
+        'longitude' => 72.8777,
+        'radius_km' => 5,
+        'is_active' => true,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertHasErrors('delivery');
+
+    expect(Order::count())->toBe(0);
+});
+
+test('checkout proceeds when the address is inside an active delivery location', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    DeliveryLocation::factory()->create([
+        'latitude' => 19.076,
+        'longitude' => 72.8777,
+        'radius_km' => 20,
+        'is_active' => true,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul Sharma')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('latitude', 19.076)
+        ->set('longitude', 72.8777)
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    expect(Order::count())->toBe(1);
+});
+
+test('checkout is unrestricted when no delivery locations are configured', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
 
     Livewire::actingAs($user)
         ->test(Checkout::class)

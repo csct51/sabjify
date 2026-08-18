@@ -2,7 +2,9 @@
 
 use App\Livewire\Profile\Addresses;
 use App\Models\Address;
+use App\Models\DeliveryLocation;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
 test('guest is redirected to login when visiting the saved addresses page', function () {
@@ -60,6 +62,87 @@ test('address requires a valid Indian phone and pincode', function () {
         ->set('pincode', '123')
         ->call('saveAddress')
         ->assertHasErrors(['receiverPhone', 'pincode']);
+});
+
+test('user can save an address with a pinned location', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(Addresses::class)
+        ->call('openAddressForm')
+        ->set('label', 'Home')
+        ->set('receiverName', 'Aarav Sharma')
+        ->set('receiverPhone', '9876543210')
+        ->set('addressLine', '12, MG Road')
+        ->set('city', 'Mumbai')
+        ->set('state', 'Maharashtra')
+        ->set('pincode', '400001')
+        ->set('latitude', 19.076)
+        ->set('longitude', 72.8777)
+        ->call('saveAddress')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('addresses', [
+        'user_id' => $user->id,
+        'latitude' => 19.076,
+        'longitude' => 72.8777,
+    ]);
+});
+
+test('pinning a location autofills the address fields via reverse geocoding', function () {
+    Http::fake([
+        '*nominatim.openstreetmap.org/reverse*' => Http::response([
+            'address' => [
+                'road' => 'MG Road',
+                'city' => 'Mumbai',
+                'state' => 'Maharashtra',
+                'postcode' => '400050',
+            ],
+        ]),
+    ]);
+
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(Addresses::class)
+        ->call('openAddressForm')
+        ->call('reverseGeocode', 19.0596, 72.8295)
+        ->assertSet('latitude', 19.0596)
+        ->assertSet('longitude', 72.8295)
+        ->assertSet('addressLine', 'MG Road')
+        ->assertSet('city', 'Mumbai')
+        ->assertSet('state', 'Maharashtra')
+        ->assertSet('pincode', '400050')
+        ->assertReturned(true);
+});
+
+test('check deliverable reports whether a pin is inside an active delivery location', function () {
+    DeliveryLocation::factory()->create([
+        'latitude' => 19.076,
+        'longitude' => 72.8777,
+        'radius_km' => 5,
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(Addresses::class)
+        ->call('checkDeliverable', 19.076, 72.8777)
+        ->assertReturned(true)
+        ->call('checkDeliverable', 28.6139, 77.2090)
+        ->assertReturned(false);
+});
+
+test('pinning a location sets the address coordinates', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(Addresses::class)
+        ->call('openAddressForm')
+        ->call('updateLocation', 21.1619, 79.0848)
+        ->assertSet('latitude', 21.1619)
+        ->assertSet('longitude', 79.0848);
 });
 
 test('user can edit an address', function () {

@@ -121,6 +121,19 @@
                         </div>
                     </div>
 
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-2">Delivery Location</label>
+                        <x-location-map
+                            :lat="$latitude"
+                            :lng="$longitude"
+                            lat-prop="latitude"
+                            lng-prop="longitude"
+                            :autofill="true"
+                        />
+                        @error('latitude') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        @error('longitude') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
                     <label class="flex items-center gap-2 text-sm text-stone-700">
                         <input type="checkbox" wire:model="isDefault" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500" />
                         Set as default address

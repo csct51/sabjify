@@ -31,4 +31,12 @@ class AddressFactory extends Factory
             'is_default' => false,
         ];
     }
+
+    public function withLocation(float $latitude, float $longitude): static
+    {
+        return $this->state(fn (): array => [
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+        ]);
+    }
 }

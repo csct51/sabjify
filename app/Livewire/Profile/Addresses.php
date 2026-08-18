@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Profile;
 
+use App\Livewire\Concerns\AutofillsAddressFromLocation;
+use App\Livewire\Concerns\ChecksDeliveryArea;
+use App\Livewire\Concerns\UpdatesLocationFromMap;
 use App\Models\Address;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,6 +17,10 @@ use Livewire\Component;
 #[Title('Saved Addresses')]
 class Addresses extends Component
 {
+    use AutofillsAddressFromLocation;
+    use ChecksDeliveryArea;
+    use UpdatesLocationFromMap;
+
     public string $addressMode = 'list';
 
     public ?int $editingAddressId = null;
@@ -33,6 +40,10 @@ class Addresses extends Component
     public string $state = '';
 
     public string $pincode = '';
+
+    public ?float $latitude = null;
+
+    public ?float $longitude = null;
 
     public bool $isDefault = false;
 
@@ -68,6 +79,8 @@ class Addresses extends Component
         $this->city = '';
         $this->state = '';
         $this->pincode = '';
+        $this->latitude = null;
+        $this->longitude = null;
         $this->isDefault = ! $this->addresses()->contains('is_default', true);
     }
 
@@ -85,6 +98,8 @@ class Addresses extends Component
         $this->city = $address->city;
         $this->state = $address->state;
         $this->pincode = $address->pincode;
+        $this->latitude = $address->latitude;
+        $this->longitude = $address->longitude;
         $this->isDefault = $address->is_default;
     }
 
@@ -106,6 +121,8 @@ class Addresses extends Component
             'city' => ['required', 'string', 'max:100'],
             'state' => ['required', 'string', 'max:100'],
             'pincode' => ['required', 'digits:6'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
         $data = [
@@ -117,6 +134,8 @@ class Addresses extends Component
             'city' => $validated['city'],
             'state' => $validated['state'],
             'pincode' => $validated['pincode'],
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
         ];
 
         if ($this->editingAddressId) {

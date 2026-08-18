@@ -25,4 +25,10 @@ return [
     ],
 
     'enabled_payment_methods' => ['cod', 'online'],
+
+    'nominatim_base_url' => env('NOMINATIM_BASE_URL', 'https://nominatim.openstreetmap.org'),
+
+    'map_default_lat' => env('MART_MAP_DEFAULT_LAT', 21.2514),
+
+    'map_default_lng' => env('MART_MAP_DEFAULT_LNG', 81.6296),
 ];

@@ -2,6 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AutofillsAddressFromLocation;
+use App\Livewire\Concerns\ChecksDeliveryArea;
+use App\Livewire\Concerns\UpdatesLocationFromMap;
 use App\Models\Address;
 use App\Models\CartItem;
 use App\Services\OrderService;
@@ -18,6 +21,10 @@ use Livewire\Component;
 #[Title('Checkout')]
 class Checkout extends Component
 {
+    use AutofillsAddressFromLocation;
+    use ChecksDeliveryArea;
+    use UpdatesLocationFromMap;
+
     public string $addressMode = 'existing';
 
     public ?int $addressId = null;
@@ -44,6 +51,10 @@ class Checkout extends Component
 
     public string $pincode = '';
 
+    public ?float $latitude = null;
+
+    public ?float $longitude = null;
+
     public function mount(): void
     {
         if (! in_array($this->paymentMethod, $this->enabledPaymentMethods(), true)) {
@@ -64,6 +75,8 @@ class Checkout extends Component
             $this->city = $default->city;
             $this->state = $default->state;
             $this->pincode = $default->pincode;
+            $this->latitude = $default->latitude;
+            $this->longitude = $default->longitude;
         } else {
             $this->addressMode = 'new';
             $this->receiverName = auth('web')->user()->name;
@@ -129,6 +142,47 @@ class Checkout extends Component
     {
         $this->addressId = $address->id;
         $this->addressMode = 'existing';
+        $this->latitude = $address->latitude;
+        $this->longitude = $address->longitude;
+    }
+
+    public function addNewAddress(): void
+    {
+        $this->addressMode = 'new';
+        $this->addressId = null;
+        $this->latitude = null;
+        $this->longitude = null;
+        $this->label = 'Home';
+        $this->receiverName = auth('web')->user()->name;
+        $this->receiverPhone = auth('web')->user()->phone;
+        $this->addressLine = '';
+        $this->landmark = '';
+        $this->city = '';
+        $this->state = '';
+        $this->pincode = '';
+    }
+
+    /**
+     * Confirm the target address is inside at least one active delivery
+     * location.
+     *
+     * @param  array<string, mixed>  $addressData
+     */
+    private function assertDeliverable(?float $latitude, ?float $longitude): void
+    {
+        if ($this->deliveryLocations()->isEmpty()) {
+            return;
+        }
+
+        if ($latitude === null || $longitude === null) {
+            $this->addError('delivery', 'Please set your delivery location on the map.');
+
+            return;
+        }
+
+        if (! $this->checkDeliverable($latitude, $longitude)) {
+            $this->addError('delivery', 'We don\'t deliver to this location yet.');
+        }
     }
 
     /**
@@ -167,6 +221,12 @@ class Checkout extends Component
             return;
         }
 
+        $this->assertDeliverable($this->latitude, $this->longitude);
+
+        if ($this->getErrorBag()->has('delivery')) {
+            return;
+        }
+
         $this->validate([
             'paymentMethod' => ['required', 'in:'.implode(',', $this->enabledPaymentMethods())],
             'notes' => ['nullable', 'string', 'max:500'],
@@ -182,6 +242,8 @@ class Checkout extends Component
                 'city' => ['required', 'string', 'max:100'],
                 'state' => ['required', 'string', 'max:100'],
                 'pincode' => ['required', 'digits:6'],
+                'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+                'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             ]);
 
             if ($this->saveAddress) {
@@ -194,6 +256,8 @@ class Checkout extends Component
                     'city' => $this->city,
                     'state' => $this->state,
                     'pincode' => $this->pincode,
+                    'latitude' => $this->latitude,
+                    'longitude' => $this->longitude,
                     'is_default' => ! $this->addresses()->contains('is_default', true),
                 ]);
             }

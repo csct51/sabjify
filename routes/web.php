@@ -10,6 +10,8 @@ use App\Livewire\Admin\CategoryForm as AdminCategoryForm;
 use App\Livewire\Admin\Customers as AdminCustomers;
 use App\Livewire\Admin\CustomerShow as AdminCustomerShow;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
+use App\Livewire\Admin\DeliveryLocationForm as AdminDeliveryLocationForm;
+use App\Livewire\Admin\DeliveryLocations as AdminDeliveryLocations;
 use App\Livewire\Admin\Orders as AdminOrders;
 use App\Livewire\Admin\OrderShow as AdminOrderShow;
 use App\Livewire\Admin\Password as AdminPassword;
@@ -99,6 +101,9 @@ Route::middleware(['auth:admin', 'admin'])->prefix('admin')->name('admin.')->gro
     Route::livewire('/customers/{user}', AdminCustomerShow::class)->name('customers.show');
     Route::livewire('/units', AdminUnits::class)->name('units');
     Route::livewire('/prices', AdminPrices::class)->name('prices');
+    Route::livewire('/delivery-locations', AdminDeliveryLocations::class)->name('delivery-locations.index');
+    Route::livewire('/delivery-locations/create', AdminDeliveryLocationForm::class)->name('delivery-locations.create');
+    Route::livewire('/delivery-locations/{deliveryLocation}/edit', AdminDeliveryLocationForm::class)->name('delivery-locations.edit');
     Route::livewire('/password', AdminPassword::class)->name('password');
     Route::livewire('/settings', AdminSettings::class)->name('settings');
 });

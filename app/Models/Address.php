@@ -20,11 +20,13 @@ use Illuminate\Support\Carbon;
  * @property string $city
  * @property string $state
  * @property string $pincode
+ * @property float|null $latitude
+ * @property float|null $longitude
  * @property bool $is_default
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'label', 'receiver_name', 'receiver_phone', 'address_line', 'landmark', 'city', 'state', 'pincode', 'is_default'])]
+#[Fillable(['user_id', 'label', 'receiver_name', 'receiver_phone', 'address_line', 'landmark', 'city', 'state', 'pincode', 'latitude', 'longitude', 'is_default'])]
 class Address extends Model
 {
     /** @use HasFactory<AddressFactory> */
@@ -38,6 +40,8 @@ class Address extends Model
     protected function casts(): array
     {
         return [
+            'latitude' => 'float',
+            'longitude' => 'float',
             'is_default' => 'boolean',
         ];
     }

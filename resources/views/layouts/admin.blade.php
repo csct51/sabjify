@@ -22,6 +22,7 @@
                     ['route' => 'admin.recipes.index', 'label' => 'Recipes', 'icon' => 'book-open'],
                     ['route' => 'admin.baskets.index', 'label' => 'Baskets', 'icon' => 'gift'],
                     ['route' => 'admin.customers.index', 'label' => 'Customers', 'icon' => 'users'],
+                    ['route' => 'admin.delivery-locations.index', 'label' => 'Delivery Locations', 'icon' => 'navigation'],
                 ];
             @endphp
 
