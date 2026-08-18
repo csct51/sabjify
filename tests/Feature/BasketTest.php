@@ -10,6 +10,7 @@ use App\Models\Basket;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductUnit;
 use App\Models\User;
 use App\Services\OrderService;
 use Livewire\Livewire;
@@ -272,6 +273,34 @@ test('home page shows active baskets', function () {
         ->assertSee('Wellness Baskets')
         ->assertSee('Wellness Boost')
         ->assertSeeHtml('overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar');
+});
+
+test('home page basket card dispatches the hover preview with product names and units', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['name' => 'Spinach', 'unit' => 'bunch']);
+    $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g', 'price' => 4000]);
+    $basket = Basket::factory()->create(['name' => 'Green Bundle']);
+    $basket->products()->attach($product, ['product_unit_id' => $unit->id]);
+
+    $this->actingAs($user)
+        ->get(route('home'))
+        ->assertOk()
+        ->assertSeeHtml('basket-preview:open')
+        ->assertSee('Green Bundle')
+        ->assertSee('Spinach')
+        ->assertSee('500 g');
+});
+
+test('home page renders the basket preview tooltip component', function () {
+    $user = User::factory()->create();
+    Basket::factory()->create(['name' => 'Wellness Boost', 'type' => Basket::TYPE_WELLNESS]);
+
+    $this->actingAs($user)
+        ->get(route('home'))
+        ->assertOk()
+        ->assertSeeHtml('basket-preview:open.window')
+        ->assertSeeHtml('role="tooltip"')
+        ->assertSeeHtml('View basket');
 });
 
 test('home page shows wellness and sabjify baskets under separate headings', function () {
@@ -730,4 +759,19 @@ test('basket card counter removes the basket when quantity reaches zero', functi
         ->assertDispatched('cart-updated');
 
     $this->assertDatabaseMissing('cart_items', ['id' => $item->id]);
+});
+
+test('basket card overlay items resolve the selected pivot unit', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['name' => 'Spinach', 'unit' => 'bunch']);
+    $unit = ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '500 g', 'price' => 4000]);
+    $basket = Basket::factory()->create(['name' => 'Green Bundle']);
+    $basket->products()->attach($product, ['product_unit_id' => $unit->id]);
+
+    Livewire::actingAs($user)
+        ->test(BasketCard::class, ['basket' => $basket])
+        ->call('overlayItems')
+        ->assertReturned([
+            ['name' => 'Spinach', 'unit' => '500 g'],
+        ]);
 });

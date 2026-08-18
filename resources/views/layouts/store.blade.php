@@ -23,6 +23,8 @@
 
         <x-confirm-modal />
 
+        <x-basket-preview />
+
         <livewire:product-unit-picker />
 
         <x-toast :initial-message="session('success')" initial-type="success" />

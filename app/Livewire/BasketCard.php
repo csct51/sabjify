@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Basket;
+use App\Models\Product;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -18,7 +19,7 @@ class BasketCard extends Component
 
     public function mount(): void
     {
-        $this->basket->load('products:id,name');
+        $this->basket->load(['products:id,name,unit', 'products.units']);
 
         if (auth('web')->check()) {
             $cartItem = auth('web')->user()
@@ -84,6 +85,26 @@ class BasketCard extends Component
         $this->quantity = $cartItem->quantity;
 
         $this->dispatch('cart-updated');
+    }
+
+    /**
+     * @return array<int, array{name: string, unit: string}>
+     */
+    public function overlayItems(): array
+    {
+        return $this->basket->products
+            ->map(function (Product $product): array {
+                $unit = $product->units->firstWhere('id', $product->pivot?->product_unit_id)?->unit
+                    ?? $product->units->first()?->unit
+                    ?? $product->unit;
+
+                return [
+                    'name' => $product->name,
+                    'unit' => $unit,
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     public function render(): View
