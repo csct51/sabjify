@@ -94,9 +94,9 @@
 
         <ul class="max-h-64 overflow-y-auto py-1">
             <template x-for="item in items" :key="item.name">
-                <li class="px-4 py-1.5 text-sm text-stone-700">
-                    <span class="block truncate" x-text="item.name"></span>
-                    <span class="block text-xs text-stone-400" x-text="item.unit"></span>
+                <li class="px-4 py-1.5 flex items-baseline justify-between gap-2 text-sm">
+                    <span class="text-stone-700 truncate" x-text="item.name"></span>
+                    <span class="text-xs text-stone-400 shrink-0" x-text="item.unit"></span>
                 </li>
             </template>
         </ul>

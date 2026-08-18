@@ -66,7 +66,7 @@
             <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
                 @foreach ($this->sabjifyBaskets as $basket)
                     <div class="shrink-0 snap-start w-64 sm:w-72">
-                        <livewire:basket-card :basket="$basket" :key="'sabjify-'.$basket->id" />
+                        <livewire:basket-card :basket="$basket" :show-items="true" :key="'sabjify-'.$basket->id" />
                     </div>
                 @endforeach
                 <a href="{{ route('baskets.index') }}" wire:navigate class="group shrink-0 snap-start w-64 sm:w-72 bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">

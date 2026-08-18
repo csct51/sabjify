@@ -303,6 +303,59 @@ test('home page renders the basket preview tooltip component', function () {
         ->assertSeeHtml('View basket');
 });
 
+test('home page sabjify basket card lists items with units and a full-width view button', function () {
+    $user = User::factory()->create();
+    $tomato = Product::factory()->create(['name' => 'Tomato', 'unit' => '1 kg']);
+    $unit = ProductUnit::factory()->create(['product_id' => $tomato->id, 'unit' => '500 g', 'price' => 4000]);
+    $basket = Basket::factory()->create(['name' => 'Daily Sabjify', 'type' => Basket::TYPE_SABJIFY]);
+    $basket->products()->attach($tomato, ['product_unit_id' => $unit->id]);
+
+    $this->actingAs($user)
+        ->get(route('home'))
+        ->assertOk()
+        ->assertSee('Daily Sabjify')
+        ->assertSee('Tomato')
+        ->assertSee('500 g')
+        ->assertSeeHtml('>View</a>');
+});
+
+test('home page sabjify basket card shows how many items remain beyond the five shown', function () {
+    $user = User::factory()->create();
+    $products = Product::factory()->count(6)->create();
+    $basket = Basket::factory()->create(['name' => 'Big Sabjify', 'type' => Basket::TYPE_SABJIFY]);
+    $basket->products()->attach($products->pluck('id'));
+
+    $this->actingAs($user)
+        ->get(route('home'))
+        ->assertOk()
+        ->assertSee('Big Sabjify')
+        ->assertSee('+1 more');
+});
+
+test('sabjify basket card in showItems mode shows a view button instead of add to cart', function () {
+    $user = User::factory()->create();
+    $tomato = Product::factory()->create(['name' => 'Tomato', 'unit' => '1 kg']);
+    $basket = Basket::factory()->create(['name' => 'Daily Sabjify', 'type' => Basket::TYPE_SABJIFY]);
+    $basket->products()->attach($tomato);
+
+    Livewire::actingAs($user)
+        ->test(BasketCard::class, ['basket' => $basket, 'showItems' => true])
+        ->assertSee('Tomato')
+        ->assertSee('1 kg')
+        ->assertSeeHtml('>View</a>')
+        ->assertDontSee('Add');
+});
+
+test('basket card previewItems limits the shown items to five', function () {
+    $basket = Basket::factory()->create();
+    $products = Product::factory()->count(6)->create();
+    $basket->products()->attach($products->pluck('id'));
+
+    $card = Livewire::test(BasketCard::class, ['basket' => $basket]);
+
+    expect($card->instance()->previewItems())->toHaveCount(5);
+});
+
 test('home page shows wellness and sabjify baskets under separate headings', function () {
     $user = User::factory()->create();
     Basket::factory()->create(['name' => 'Wellness Boost', 'type' => Basket::TYPE_WELLNESS]);

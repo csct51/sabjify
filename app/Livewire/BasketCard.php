@@ -17,6 +17,8 @@ class BasketCard extends Component
 
     public bool $inCart = false;
 
+    public bool $showItems = false;
+
     public function mount(): void
     {
         $this->basket->load(['products:id,name,unit', 'products.units']);
@@ -93,18 +95,34 @@ class BasketCard extends Component
     public function overlayItems(): array
     {
         return $this->basket->products
-            ->map(function (Product $product): array {
-                $unit = $product->units->firstWhere('id', $product->pivot?->product_unit_id)?->unit
-                    ?? $product->units->first()?->unit
-                    ?? $product->unit;
-
-                return [
-                    'name' => $product->name,
-                    'unit' => $unit,
-                ];
-            })
+            ->map(fn (Product $product): array => [
+                'name' => $product->name,
+                'unit' => $this->resolveUnitName($product),
+            ])
             ->values()
             ->all();
+    }
+
+    /**
+     * @return array<int, array{name: string, unit: string}>
+     */
+    public function previewItems(): array
+    {
+        return $this->basket->products
+            ->take(5)
+            ->map(fn (Product $product): array => [
+                'name' => $product->name,
+                'unit' => $this->resolveUnitName($product),
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function resolveUnitName(Product $product): string
+    {
+        return $product->units->firstWhere('id', $product->pivot?->product_unit_id)?->unit
+            ?? $product->units->first()?->unit
+            ?? $product->unit;
     }
 
     public function render(): View
