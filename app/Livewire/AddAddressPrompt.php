@@ -1,29 +1,28 @@
 <?php
 
-namespace App\Livewire\Profile;
+namespace App\Livewire;
 
 use App\Livewire\Concerns\AutofillsAddressFromLocation;
 use App\Livewire\Concerns\ChecksDeliveryArea;
-use App\Livewire\Concerns\UpdatesLocationFromMap;
 use App\Models\Address;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
-#[Layout('layouts.store')]
-#[Title('Saved Addresses')]
-class Addresses extends Component
+class AddAddressPrompt extends Component
 {
     use AutofillsAddressFromLocation;
     use ChecksDeliveryArea;
-    use UpdatesLocationFromMap;
 
-    public string $addressMode = 'list';
+    public bool $show = false;
 
-    public ?int $editingAddressId = null;
+    public bool $dismissable = false;
+
+    public string $view = 'select';
+
+    public ?int $selectedAddressId = null;
 
     public string $label = 'Home';
 
@@ -45,14 +44,44 @@ class Addresses extends Component
 
     public ?float $longitude = null;
 
-    public bool $isDefault = false;
-
     public function mount(): void
     {
         $user = auth('web')->user();
 
+        if (! $user || session()->get('address_prompt_completed')) {
+            return;
+        }
+
+        $this->show = true;
         $this->receiverName = $user->name;
         $this->receiverPhone = $user->phone;
+        $this->selectedAddressId = $user->addresses()->latest()->value('id');
+    }
+
+    #[On('open-address-prompt')]
+    public function openFromHeader(): void
+    {
+        $user = auth('web')->user();
+
+        if (! $user) {
+            return;
+        }
+
+        $this->show = true;
+        $this->dismissable = true;
+        $this->view = 'select';
+        $this->resetValidation();
+        $this->receiverName = $user->name;
+        $this->receiverPhone = $user->phone;
+        $this->selectedAddressId = $user->addresses()->where('is_default', true)->value('id')
+            ?? $user->addresses()->latest()->value('id');
+    }
+
+    public function dismiss(): void
+    {
+        $this->show = false;
+        $this->dismissable = false;
+        $this->resetValidation();
     }
 
     /**
@@ -64,13 +93,44 @@ class Addresses extends Component
         return auth('web')->user()->addresses()->latest()->get();
     }
 
-    public function openAddressForm(): void
+    public function selectAddress(int $addressId): void
     {
-        $this->addressMode = 'form';
-        $this->editingAddressId = null;
+        auth('web')->user()->addresses()->findOrFail($addressId);
 
+        $this->selectedAddressId = $addressId;
+        $this->resetValidation('selection');
+    }
+
+    public function confirmSelection(): void
+    {
         $user = auth('web')->user();
 
+        $this->resetValidation('selection');
+
+        if ($this->selectedAddressId === null) {
+            $this->addError('selection', 'Please select an address or add a new one.');
+
+            return;
+        }
+
+        $address = $user->addresses()->findOrFail($this->selectedAddressId);
+
+        $this->makeDefault($address);
+
+        $this->show = false;
+        session()->put('address_prompt_completed', true);
+
+        $this->dispatch('address-updated');
+
+        $this->dispatch('toast', message: 'Delivery address selected.');
+    }
+
+    public function openAddForm(): void
+    {
+        $user = auth('web')->user();
+
+        $this->view = 'form';
+        $this->resetValidation();
         $this->label = 'Home';
         $this->receiverName = $user->name;
         $this->receiverPhone = $user->phone;
@@ -81,32 +141,11 @@ class Addresses extends Component
         $this->pincode = '';
         $this->latitude = null;
         $this->longitude = null;
-        $this->isDefault = ! $this->addresses()->contains('is_default', true);
     }
 
-    public function editAddress(Address $address): void
+    public function backToSelect(): void
     {
-        abort_unless($address->user_id === auth('web')->id(), 403);
-
-        $this->addressMode = 'form';
-        $this->editingAddressId = $address->id;
-        $this->label = $address->label;
-        $this->receiverName = $address->receiver_name;
-        $this->receiverPhone = $address->receiver_phone;
-        $this->addressLine = $address->address_line;
-        $this->landmark = $address->landmark ?? '';
-        $this->city = $address->city;
-        $this->state = $address->state;
-        $this->pincode = $address->pincode;
-        $this->latitude = $address->latitude;
-        $this->longitude = $address->longitude;
-        $this->isDefault = $address->is_default;
-    }
-
-    public function cancelAddressForm(): void
-    {
-        $this->addressMode = 'list';
-        $this->editingAddressId = null;
+        $this->view = 'select';
         $this->resetValidation();
     }
 
@@ -125,7 +164,7 @@ class Addresses extends Component
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
-        $data = [
+        $address = auth('web')->user()->addresses()->create([
             'label' => $validated['label'],
             'receiver_name' => $validated['receiverName'],
             'receiver_phone' => $validated['receiverPhone'],
@@ -136,57 +175,22 @@ class Addresses extends Component
             'pincode' => $validated['pincode'],
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
-        ];
-
-        if ($this->editingAddressId) {
-            $address = auth('web')->user()->addresses()->findOrFail($this->editingAddressId);
-
-            $address->update([...$data, 'is_default' => $this->isDefault]);
-
-            if ($this->isDefault) {
-                $this->makeDefault($address);
-            }
-        } else {
-            $address = auth('web')->user()->addresses()->create([...$data, 'is_default' => $this->isDefault]);
-
-            if ($this->isDefault) {
-                $this->makeDefault($address);
-            }
-        }
-
-        $this->addressMode = 'list';
-        $this->editingAddressId = null;
-        $this->dispatch('address-updated');
-        $this->dispatch('toast', message: $this->isDefault ? 'Address saved and set as default.' : 'Address saved.');
-    }
-
-    public function setDefaultAddress(Address $address): void
-    {
-        abort_unless($address->user_id === auth('web')->id(), 403);
+            'is_default' => true,
+        ]);
 
         $this->makeDefault($address);
 
-        $this->dispatch('address-updated');
-        $this->dispatch('toast', message: 'Default address updated.');
-    }
-
-    public function deleteAddress(Address $address): void
-    {
-        abort_unless($address->user_id === auth('web')->id(), 403);
-
-        $address->delete();
-
-        if (auth('web')->user()->addresses()->where('is_default', true)->doesntExist()) {
-            auth('web')->user()->addresses()->latest()->first()?->update(['is_default' => true]);
-        }
+        $this->show = false;
+        session()->put('address_prompt_completed', true);
 
         $this->dispatch('address-updated');
-        $this->dispatch('toast', message: 'Address deleted.');
+
+        $this->dispatch('toast', message: 'Address saved and set as default.');
     }
 
     public function render(): View
     {
-        return view('livewire.profile.addresses');
+        return view('livewire.add-address-prompt');
     }
 
     private function makeDefault(Address $address): void

@@ -77,6 +77,15 @@
                 @if ($order->notes)
                     <p class="mt-3 text-sm rounded-xl bg-stone-50 border border-stone-200 px-3 py-2 text-stone-600"><span class="font-medium">Notes:</span> {{ $order->notes }}</p>
                 @endif
+                @if ($order->latitude && $order->longitude)
+                    <x-location-map
+                        :lat="$order->latitude"
+                        :lng="$order->longitude"
+                        :routes="$coveringRoutes"
+                        height="h-96"
+                        readonly
+                    />
+                @endif
             </div>
         </div>
 

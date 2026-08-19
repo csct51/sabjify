@@ -87,6 +87,8 @@ class PhoneLogin extends Component
 
         session()->regenerate();
 
+        session()->forget('address_prompt_completed');
+
         $this->redirect(route('home'), navigate: true);
     }
 

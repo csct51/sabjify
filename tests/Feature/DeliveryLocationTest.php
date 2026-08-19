@@ -110,6 +110,14 @@ test('admin can delete a delivery location', function () {
     expect(DeliveryLocation::find($location->id))->toBeNull();
 });
 
+test('delivery location form defaults the radius to 1 km', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(DeliveryLocationForm::class)
+        ->assertSet('radiusKm', 1.0);
+});
+
 test('delivery location requires valid coordinates and radius', function () {
     $admin = Admin::factory()->create();
 
@@ -126,4 +134,38 @@ test('delivery location requires valid coordinates and radius', function () {
             'longitude' => 'between',
             'radiusKm' => 'gt',
         ]);
+});
+
+test('delivery location add form shows existing active zones on the map', function () {
+    $admin = Admin::factory()->create();
+    DeliveryLocation::factory()->create(['name' => 'Mumbai Central', 'latitude' => 19.076, 'longitude' => 72.8777, 'radius_km' => 8, 'is_active' => true]);
+    DeliveryLocation::factory()->create(['name' => 'Inactive Zone', 'latitude' => 18.5204, 'longitude' => 73.8567, 'radius_km' => 10, 'is_active' => false]);
+
+    $html = Livewire::actingAs($admin, 'admin')
+        ->test(DeliveryLocationForm::class)
+        ->html();
+
+    preg_match('/data-config="([^"]*)"/', $html, $matches);
+
+    $config = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
+
+    expect(array_column($config['existingAreas'], 'name'))->toContain('Mumbai Central')
+        ->not->toContain('Inactive Zone');
+});
+
+test('delivery location edit form excludes the current zone from existing areas on the map', function () {
+    $admin = Admin::factory()->create();
+    $location = DeliveryLocation::factory()->create(['name' => 'Mumbai Central', 'latitude' => 19.076, 'longitude' => 72.8777, 'radius_km' => 8]);
+    DeliveryLocation::factory()->create(['name' => 'Andheri', 'latitude' => 19.1136, 'longitude' => 72.8697, 'radius_km' => 5]);
+
+    $html = Livewire::actingAs($admin, 'admin')
+        ->test(DeliveryLocationForm::class, ['deliveryLocation' => $location])
+        ->html();
+
+    preg_match('/data-config="([^"]*)"/', $html, $matches);
+
+    $config = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
+
+    expect(array_column($config['existingAreas'], 'name'))->toContain('Andheri')
+        ->not->toContain('Mumbai Central');
 });

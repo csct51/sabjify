@@ -44,7 +44,7 @@ test('admin can create a wellness basket with products', function () {
 
 test('admin can pick a specific product unit for each basket product', function () {
     $admin = Admin::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango']);
+    $mango = Product::factory()->create(['name' => 'Mango', 'unit' => '500 g']);
     $bigUnit = $mango->units()->create(['unit' => '1 kg', 'price' => 200, 'sort_order' => 2]);
 
     Livewire::actingAs($admin, 'admin')

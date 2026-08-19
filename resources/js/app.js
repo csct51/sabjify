@@ -201,6 +201,13 @@ const mapPinIconRed = L.divIcon({
     iconAnchor: [0, 0],
 });
 
+const mapStoreIcon = L.divIcon({
+    className: '',
+    html: '<span class="flex items-center justify-center w-10 h-10 -ml-5 -mt-10 rounded-full bg-stone-900 text-white shadow-lg ring-4 ring-white"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/></svg></span>',
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+});
+
 function mapComponentWire(element) {
     const root = element.closest('[wire\\:id]');
 
@@ -264,6 +271,88 @@ function initializeMap(element) {
                 interactive: false,
             }).addTo(map);
         });
+    }
+
+    if (Array.isArray(config.existingAreas) && config.existingAreas.length > 0) {
+        config.existingAreas.forEach((area) => {
+            const circle = L.circle([area.lat, area.lng], {
+                radius: area.radiusKm * 1000,
+                color: '#d97706',
+                weight: 1.5,
+                dashArray: '6 6',
+                fillColor: '#f59e0b',
+                fillOpacity: 0.15,
+                interactive: false,
+            }).addTo(map);
+
+            if (area.name) {
+                circle.bindTooltip(area.name, { permanent: true, direction: 'center', className: 'delivery-zone-tooltip' }).openTooltip();
+            }
+        });
+    }
+
+    if (config.readonly) {
+        if (config.pin) {
+            L.marker([config.lat, config.lng], { icon: mapPinIcon, interactive: false }).addTo(map);
+        }
+
+        const routes = Array.isArray(config.routes) ? config.routes : [];
+
+        if (routes.length > 0) {
+            const bounds = config.pin ? [[config.lat, config.lng]] : [];
+
+            routes.forEach((route) => {
+                const [fromLat, fromLng] = route.from;
+                const [toLat, toLng] = route.to;
+
+                L.marker([fromLat, fromLng], { icon: mapStoreIcon, interactive: false }).addTo(map);
+                bounds.push([fromLat, fromLng]);
+
+                if (route.radiusKm > 0) {
+                    L.circle([fromLat, fromLng], {
+                        radius: route.radiusKm * 1000,
+                        color: '#d97706',
+                        weight: 1.5,
+                        dashArray: '6 6',
+                        fillColor: '#f59e0b',
+                        fillOpacity: 0.15,
+                        interactive: false,
+                    }).addTo(map);
+                }
+
+                const drawFallback = () => {
+                    L.polyline([[fromLat, fromLng], [toLat, toLng]], {
+                        color: '#0f766e',
+                        weight: 2,
+                        dashArray: '6 6',
+                        interactive: false,
+                    }).addTo(map);
+                };
+
+                fetch(`https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        const coordinates = data?.routes?.[0]?.geometry?.coordinates;
+
+                        if (data?.code !== 'Ok' || ! Array.isArray(coordinates)) {
+                            drawFallback();
+
+                            return;
+                        }
+
+                        const latlngs = coordinates.map(([lng, lat]) => [lat, lng]);
+
+                        L.polyline(latlngs, { color: '#0f766e', weight: 4, interactive: false }).addTo(map);
+
+                        map.fitBounds([...bounds, ...latlngs], { padding: [24, 24] });
+                    })
+                    .catch(drawFallback);
+            });
+
+            map.fitBounds(bounds, { padding: [24, 24] });
+        }
+
+        return;
     }
 
     let currentLatLng = null;
@@ -355,8 +444,12 @@ function initializeMap(element) {
             marker.setLatLng(latlng);
         }
 
-        if (circle) {
-            circle.setLatLng(latlng);
+        if (config.radius) {
+            if (! circle) {
+                circle = L.circle(latlng, { radius: config.radius * 1000 }).addTo(map);
+            } else {
+                circle.setLatLng(latlng);
+            }
         }
     };
 
@@ -368,7 +461,7 @@ function initializeMap(element) {
         }
     }
 
-    if (config.radius) {
+    if (config.radius && config.pin) {
         circle = L.circle([config.lat, config.lng], { radius: config.radius * 1000 }).addTo(map);
     }
 

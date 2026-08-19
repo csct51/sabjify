@@ -5,6 +5,15 @@
                 <img src="{{ asset('logo.svg') }}" alt="Sabjify" class="h-16 w-auto">
             </a>
 
+            @auth
+                @if ($defaultAddress)
+                    <button type="button" wire:click="openAddressPrompt" class="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-600 hover:border-brand-500 hover:text-brand-600 transition ml-2 min-w-0 max-w-[40vw] sm:max-w-[60vw] lg:max-w-none">
+                        <i data-lucide="map-pin" class="w-4 h-4 shrink-0"></i>
+                        <span class="truncate">{{ $defaultAddress->address_line }}{{ $defaultAddress->landmark ? ', '.$defaultAddress->landmark : '' }}, {{ $defaultAddress->city }}, {{ $defaultAddress->state }} - {{ $defaultAddress->pincode }}</span>
+                    </button>
+                @endif
+            @endauth
+
             <div class="flex items-center">
                 <a href="{{ route('search') }}" wire:navigate aria-label="Search" class="inline-flex items-center justify-center w-10 h-10 rounded-full text-stone-600 hover:bg-stone-100 transition">
                     <i data-lucide="search" class="w-5 h-5"></i>

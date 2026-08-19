@@ -49,6 +49,8 @@ class OrderService
                 'city' => $data['city'],
                 'state' => $data['state'],
                 'pincode' => $data['pincode'],
+                'latitude' => $data['latitude'] ?? null,
+                'longitude' => $data['longitude'] ?? null,
                 'label' => $data['label'] ?? null,
                 'notes' => $data['notes'] ?? null,
             ]);

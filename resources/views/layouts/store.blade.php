@@ -23,6 +23,8 @@
 
         <x-confirm-modal />
 
+        <livewire:add-address-prompt />
+
         <x-basket-preview />
 
         <livewire:product-unit-picker />

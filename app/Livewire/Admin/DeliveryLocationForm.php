@@ -40,7 +40,11 @@ class DeliveryLocationForm extends Component
             $this->radiusKm = $deliveryLocation->radius_km;
             $this->is_active = $deliveryLocation->is_active ? '1' : '0';
             $this->sort_order = $deliveryLocation->sort_order;
+
+            return;
         }
+
+        $this->radiusKm = 1;
     }
 
     public function save(): void

@@ -269,6 +269,8 @@ class Checkout extends Component
                 'city' => $this->city,
                 'state' => $this->state,
                 'pincode' => $this->pincode,
+                'latitude' => $this->latitude,
+                'longitude' => $this->longitude,
                 'label' => $this->label,
                 'notes' => $this->notes ?: null,
             ];
@@ -282,6 +284,8 @@ class Checkout extends Component
                 'city' => $address->city,
                 'state' => $address->state,
                 'pincode' => $address->pincode,
+                'latitude' => $address->latitude,
+                'longitude' => $address->longitude,
                 'label' => $address->label,
                 'notes' => $this->notes ?: null,
             ];

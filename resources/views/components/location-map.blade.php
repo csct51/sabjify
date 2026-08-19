@@ -4,9 +4,13 @@
     'radiusProp' => null,
     'lat' => null,
     'lng' => null,
+    'routes' => [],
     'radiusKm' => null,
     'height' => 'h-64',
     'autofill' => false,
+    'readonly' => false,
+    'existingAreas' => false,
+    'excludeAreaId' => null,
 ])
 
 @php
@@ -17,21 +21,36 @@
     $centerLat = $lat !== null ? (float) $lat : $defaultLat;
     $centerLng = $lng !== null ? (float) $lng : $defaultLng;
     $initialRadius = $radiusKm !== null ? (float) $radiusKm : 0.0;
-    $deliveryAreas = $autofill
+    $deliveryAreas = $autofill && ! $readonly
         ? DeliveryLocation::active()->get()->map(fn (DeliveryLocation $location): array => [
             'lat' => (float) $location->latitude,
             'lng' => (float) $location->longitude,
             'radiusKm' => (float) $location->radius_km,
         ])->values()->all()
         : [];
+    $existingAreas = $existingAreas && ! $readonly
+        ? DeliveryLocation::active()
+            ->when($excludeAreaId !== null, fn ($query) => $query->whereKeyNot($excludeAreaId))
+            ->get()
+            ->map(fn (DeliveryLocation $location): array => [
+                'lat' => (float) $location->latitude,
+                'lng' => (float) $location->longitude,
+                'radiusKm' => (float) $location->radius_km,
+                'name' => $location->name,
+            ])->values()->all()
+        : [];
+    $routeItems = $readonly ? $routes : [];
     $mapConfig = [
         'lat' => $centerLat,
         'lng' => $centerLng,
         'zoom' => $lat !== null ? 15 : 11,
         'radius' => $radiusProp !== null ? $initialRadius : null,
         'pin' => $lat !== null && $lng !== null,
-        'autofill' => $autofill,
+        'autofill' => $autofill && ! $readonly,
         'deliveryAreas' => $deliveryAreas,
+        'existingAreas' => $existingAreas,
+        'readonly' => $readonly,
+        'routes' => $routeItems,
     ];
 @endphp
 
@@ -58,5 +77,7 @@
         </div>
     @endif
 
-    <p class="mt-1.5 text-xs text-stone-400">@if ($autofill) Drop the pin on your delivery location and the address fields will be filled in automatically. @else Click the map or drag the pin to set the center of this delivery zone. @endif</p>
+    @if (! $readonly)
+        <p class="mt-1.5 text-xs text-stone-400">@if ($autofill) Drop the pin on your delivery location and the address fields will be filled in automatically. @else Click the map or drag the pin to set the center of this delivery zone. @endif</p>
+    @endif
 </div>

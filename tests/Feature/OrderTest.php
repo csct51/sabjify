@@ -4,6 +4,7 @@ use App\Livewire\Admin\OrderShow;
 use App\Livewire\Cart;
 use App\Livewire\Checkout;
 use App\Livewire\Orders\Show;
+use App\Models\Address;
 use App\Models\Admin;
 use App\Models\CartItem;
 use App\Models\DeliveryLocation;
@@ -296,7 +297,11 @@ test('checkout proceeds when the address is inside an active delivery location',
         ->call('placeOrder')
         ->assertRedirect();
 
-    expect(Order::count())->toBe(1);
+    $order = Order::first();
+
+    expect(Order::count())->toBe(1)
+        ->and($order->latitude)->toBe(19.076)
+        ->and($order->longitude)->toBe(72.8777);
 });
 
 test('checkout is unrestricted when no delivery locations are configured', function () {
@@ -319,6 +324,33 @@ test('checkout is unrestricted when no delivery locations are configured', funct
         ->assertRedirect();
 
     expect(Order::count())->toBe(1);
+});
+
+test('checkout persists coordinates when using a saved address', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    $address = Address::factory()->create([
+        'user_id' => $user->id,
+        'is_default' => true,
+        'latitude' => 19.076,
+        'longitude' => 72.8777,
+    ]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->call('selectAddress', $address)
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    $order = Order::first();
+
+    expect($order->receiver_name)->toBe($address->receiver_name)
+        ->and($order->latitude)->toBe(19.076)
+        ->and($order->longitude)->toBe(72.8777);
 });
 
 test('cart disables checkout when below the minimum order amount', function () {
@@ -576,6 +608,71 @@ test('admin sees payment details for a paid online order', function () {
         ->assertSee('UPI')
         ->assertSee('test@upi')
         ->assertSee('pay_rzp_456');
+});
+
+test('admin sees a location map with a store route when the order has coordinates', function () {
+    $order = Order::factory()->create([
+        'latitude' => 19.076,
+        'longitude' => 72.8777,
+    ]);
+
+    $storeLat = (float) config('mart.map_default_lat');
+    $storeLng = (float) config('mart.map_default_lng');
+
+    Livewire::actingAs(Admin::factory()->create(), 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->assertSeeHtml('data-leaflet-map')
+        ->assertSee((string) $storeLat)
+        ->assertSee((string) $storeLng)
+        ->assertSee('19.076')
+        ->assertSee('72.8777');
+});
+
+test('admin order page omits the location map when the order has no coordinates', function () {
+    $order = Order::factory()->create();
+
+    Livewire::actingAs(Admin::factory()->create(), 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->assertDontSeeHtml('data-leaflet-map');
+});
+
+test('admin order map draws routes from every covering delivery location', function () {
+    DeliveryLocation::factory()->create(['name' => 'Zone A', 'latitude' => 19.0, 'longitude' => 72.8, 'radius_km' => 15, 'is_active' => true]);
+    DeliveryLocation::factory()->create(['name' => 'Zone B', 'latitude' => 18.5, 'longitude' => 73.0, 'radius_km' => 100, 'is_active' => true]);
+    DeliveryLocation::factory()->create(['name' => 'Far Zone', 'latitude' => 28.6, 'longitude' => 77.2, 'radius_km' => 1, 'is_active' => true]);
+
+    $order = Order::factory()->create(['latitude' => 19.076, 'longitude' => 72.8777]);
+
+    $html = Livewire::actingAs(Admin::factory()->create(), 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->html();
+
+    preg_match('/data-config="([^"]*)"/', $html, $matches);
+
+    $config = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
+
+    expect($config['routes'])->toHaveCount(2);
+    expect(array_column($config['routes'], 'name'))->toContain('Zone A')
+        ->toContain('Zone B')
+        ->not->toContain('Far Zone')
+        ->not->toContain('Store');
+});
+
+test('admin order map falls back to a store route when no zone covers the order', function () {
+    $order = Order::factory()->create(['latitude' => 28.6139, 'longitude' => 77.2090]);
+
+    DeliveryLocation::factory()->create(['name' => 'Mumbai', 'latitude' => 19.076, 'longitude' => 72.8777, 'radius_km' => 5, 'is_active' => true]);
+
+    $html = Livewire::actingAs(Admin::factory()->create(), 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->html();
+
+    preg_match('/data-config="([^"]*)"/', $html, $matches);
+
+    $config = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
+
+    expect($config['routes'])->toHaveCount(1);
+    expect(array_column($config['routes'], 'name'))->toContain('Store');
 });
 
 test('customer must provide a reason to cancel', function () {
