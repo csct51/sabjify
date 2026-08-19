@@ -202,13 +202,24 @@
 
     @script
         <script>
+            let razorpayInstance = null;
+
             Livewire.on('razorpay-open', (payload) => {
+                if (razorpayInstance) {
+                    return;
+                }
+
                 openRazorpay(payload);
             });
 
             async function openRazorpay(payload) {
                 if (typeof window.Razorpay !== 'function') {
-                    await loadRazorpayScript();
+                    try {
+                        await loadRazorpayScript();
+                    } catch (error) {
+                        alert('Razorpay failed to load. Please refresh and try again.');
+                        return;
+                    }
                 }
 
                 if (typeof window.Razorpay !== 'function') {
@@ -254,15 +265,22 @@
 
                 try {
                     const razorpay = new window.Razorpay(options);
+                    razorpayInstance = razorpay;
+
+                    razorpay.on('modal:close', () => {
+                        razorpayInstance = null;
+                    });
+
                     razorpay.open();
                 } catch (error) {
+                    razorpayInstance = null;
                     console.error('Razorpay checkout failed', error);
                     alert('The payment window could not be opened. Please try again.');
                 }
             }
 
             function loadRazorpayScript() {
-                return new Promise((resolve) => {
+                return new Promise((resolve, reject) => {
                     const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
 
                     if (existing) {
@@ -273,7 +291,7 @@
                     const script = document.createElement('script');
                     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
                     script.onload = () => resolve();
-                    script.onerror = () => resolve();
+                    script.onerror = () => reject(new Error('Razorpay checkout.js failed to load.'));
                     document.head.appendChild(script);
                 });
             }
