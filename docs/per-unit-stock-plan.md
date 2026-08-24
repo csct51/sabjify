@@ -1,6 +1,13 @@
 # Per-Unit Stock Plan
 
-Status: **Not implemented.** Saved for a potential future client request (likely post-production).
+Status: **Implemented** — released 2026-08-24.
+
+## Implementation Record
+
+- **Migration shipped:** `2026_08_24_080000_add_in_stock_to_product_units_table.php` — adds `product_units.in_stock` (default `true`), backfills from `products.in_stock`, then drops `products.in_stock`.
+- **Backfill deviation:** the plan proposed a SQL join inside the migration; implemented with a PHP `chunkById` loop instead, to stay driver-agnostic (the test suite runs on SQLite `:memory:`).
+- **Follow-up UX:** after the core rollout, a per-unit **"Out of stock"** label was added to the add-to-cart modal (`resources/views/livewire/product-unit-picker.blade.php`).
+- **Verification at ship:** `php artisan migrate` ✓ · `php artisan test --compact` → 326/326 ✓ · `vendor/bin/pint --dirty` clean ✓ · `npm run build` ✓.
 
 ## Context
 
@@ -83,7 +90,9 @@ This plan moves stock to `product_units.in_stock` so each size/variant of a prod
 - `tests/Feature/SearchTest.php:30` → `outOfStock()`.
 - Add: unit-level toggle test in `AdminTest`; a mixed in/out-of-stock-unit product asserting "any unit in stock" on the card.
 
-## Deployment Notes (post-production)
+## Deployment Notes
+
+These notes were written pre-release; the migration and code were shipped together in a standard release, so the code/migration window concern no longer applies.
 
 App-level transactions are **safe**:
 

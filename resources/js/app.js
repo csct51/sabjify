@@ -435,20 +435,20 @@ function initializeMap(element) {
     };
 
     const placeMarker = (latlng) => {
-        currentLatLng = latlng;
+        currentLatLng = L.latLng(latlng);
 
         if (! marker) {
-            marker = L.marker(latlng, { icon: mapPinIcon, draggable: true }).addTo(map);
+            marker = L.marker(currentLatLng, { icon: mapPinIcon, draggable: true }).addTo(map);
             marker.on('dragend', emit);
         } else {
-            marker.setLatLng(latlng);
+            marker.setLatLng(currentLatLng);
         }
 
         if (config.radius) {
             if (! circle) {
-                circle = L.circle(latlng, { radius: config.radius * 1000 }).addTo(map);
+                circle = L.circle(currentLatLng, { radius: config.radius * 1000 }).addTo(map);
             } else {
-                circle.setLatLng(latlng);
+                circle.setLatLng(currentLatLng);
             }
         }
     };

@@ -35,12 +35,6 @@ class Addresses extends Component
 
     public string $landmark = '';
 
-    public string $city = '';
-
-    public string $state = '';
-
-    public string $pincode = '';
-
     public ?float $latitude = null;
 
     public ?float $longitude = null;
@@ -76,9 +70,6 @@ class Addresses extends Component
         $this->receiverPhone = $user->phone;
         $this->addressLine = '';
         $this->landmark = '';
-        $this->city = '';
-        $this->state = '';
-        $this->pincode = '';
         $this->latitude = null;
         $this->longitude = null;
         $this->isDefault = ! $this->addresses()->contains('is_default', true);
@@ -95,9 +86,6 @@ class Addresses extends Component
         $this->receiverPhone = $address->receiver_phone;
         $this->addressLine = $address->address_line;
         $this->landmark = $address->landmark ?? '';
-        $this->city = $address->city;
-        $this->state = $address->state;
-        $this->pincode = $address->pincode;
         $this->latitude = $address->latitude;
         $this->longitude = $address->longitude;
         $this->isDefault = $address->is_default;
@@ -118,9 +106,6 @@ class Addresses extends Component
             'receiverPhone' => ['required', 'regex:/^[6-9]\d{9}$/'],
             'addressLine' => ['required', 'string', 'max:255'],
             'landmark' => ['nullable', 'string', 'max:100'],
-            'city' => ['required', 'string', 'max:100'],
-            'state' => ['required', 'string', 'max:100'],
-            'pincode' => ['required', 'digits:6'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
@@ -131,9 +116,6 @@ class Addresses extends Component
             'receiver_phone' => $validated['receiverPhone'],
             'address_line' => $validated['addressLine'],
             'landmark' => $validated['landmark'] ?: null,
-            'city' => $validated['city'],
-            'state' => $validated['state'],
-            'pincode' => $validated['pincode'],
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
         ];
@@ -147,7 +129,13 @@ class Addresses extends Component
                 $this->makeDefault($address);
             }
         } else {
-            $address = auth('web')->user()->addresses()->create([...$data, 'is_default' => $this->isDefault]);
+            $address = auth('web')->user()->addresses()->create([
+                ...$data,
+                'city' => 'Raipur',
+                'state' => 'Chhattisgarh',
+                'pincode' => 0,
+                'is_default' => $this->isDefault,
+            ]);
 
             if ($this->isDefault) {
                 $this->makeDefault($address);

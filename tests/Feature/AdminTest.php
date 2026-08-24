@@ -391,6 +391,7 @@ test('prices page toggles unit stock', function () {
     $admin = Admin::factory()->create();
     $product = Product::factory()->create();
     $unit = $product->units()->first();
+    $unit->update(['in_stock' => true]);
 
     Livewire::actingAs($admin, 'admin')
         ->test(Prices::class)

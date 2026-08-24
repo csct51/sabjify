@@ -34,12 +34,6 @@ class AddAddressPrompt extends Component
 
     public string $landmark = '';
 
-    public string $city = '';
-
-    public string $state = '';
-
-    public string $pincode = '';
-
     public ?float $latitude = null;
 
     public ?float $longitude = null;
@@ -128,9 +122,6 @@ class AddAddressPrompt extends Component
         $this->receiverPhone = $user->phone;
         $this->addressLine = '';
         $this->landmark = '';
-        $this->city = '';
-        $this->state = '';
-        $this->pincode = '';
         $this->latitude = null;
         $this->longitude = null;
     }
@@ -149,9 +140,6 @@ class AddAddressPrompt extends Component
             'receiverPhone' => ['required', 'regex:/^[6-9]\d{9}$/'],
             'addressLine' => ['required', 'string', 'max:255'],
             'landmark' => ['nullable', 'string', 'max:100'],
-            'city' => ['required', 'string', 'max:100'],
-            'state' => ['required', 'string', 'max:100'],
-            'pincode' => ['required', 'digits:6'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
@@ -162,9 +150,9 @@ class AddAddressPrompt extends Component
             'receiver_phone' => $validated['receiverPhone'],
             'address_line' => $validated['addressLine'],
             'landmark' => $validated['landmark'] ?: null,
-            'city' => $validated['city'],
-            'state' => $validated['state'],
-            'pincode' => $validated['pincode'],
+            'city' => 'Raipur',
+            'state' => 'Chhattisgarh',
+            'pincode' => 0,
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
             'is_default' => true,

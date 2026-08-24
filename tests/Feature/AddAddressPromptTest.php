@@ -118,9 +118,6 @@ test('user can add their first address from the prompt', function () {
         ->set('receiverName', 'Aarav Sharma')
         ->set('receiverPhone', '9876543210')
         ->set('addressLine', '12, MG Road')
-        ->set('city', 'Mumbai')
-        ->set('state', 'Maharashtra')
-        ->set('pincode', '400001')
         ->set('latitude', 19.076)
         ->set('longitude', 72.8777)
         ->call('saveAddress')
@@ -133,6 +130,9 @@ test('user can add their first address from the prompt', function () {
         'user_id' => $user->id,
         'label' => 'Home',
         'receiver_name' => 'Aarav Sharma',
+        'city' => 'Raipur',
+        'state' => 'Chhattisgarh',
+        'pincode' => '0',
         'is_default' => true,
         'latitude' => 19.076,
         'longitude' => 72.8777,
@@ -148,9 +148,8 @@ test('prompt validates the address fields', function () {
         ->call('openAddForm')
         ->set('receiverName', '')
         ->set('receiverPhone', '12345')
-        ->set('pincode', '123')
         ->call('saveAddress')
-        ->assertHasErrors(['receiverName', 'receiverPhone', 'addressLine', 'city', 'state', 'pincode'])
+        ->assertHasErrors(['receiverName', 'receiverPhone', 'addressLine'])
         ->assertSet('show', true);
 });
 

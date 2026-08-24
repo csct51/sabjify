@@ -80,7 +80,7 @@ class ProductFactory extends Factory
                     'unit' => $available[$i % count($available)],
                     'price' => (int) ceil($basePrice * (1 + $i * 0.5)),
                     'mrp' => null,
-                    'in_stock' => fake()->boolean(80),
+                    'in_stock' => true,
                     'sort_order' => $i,
                 ]);
             }

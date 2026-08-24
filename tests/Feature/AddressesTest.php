@@ -4,7 +4,6 @@ use App\Livewire\Profile\Addresses;
 use App\Models\Address;
 use App\Models\DeliveryLocation;
 use App\Models\User;
-use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
 test('guest is redirected to login when visiting the saved addresses page', function () {
@@ -41,9 +40,6 @@ test('user can add a saved address', function () {
         ->set('receiverName', 'Aarav Sharma')
         ->set('receiverPhone', '9876543210')
         ->set('addressLine', '12, MG Road')
-        ->set('city', 'Mumbai')
-        ->set('state', 'Maharashtra')
-        ->set('pincode', '400001')
         ->set('isDefault', true)
         ->call('saveAddress')
         ->assertHasNoErrors()
@@ -53,11 +49,14 @@ test('user can add a saved address', function () {
         'user_id' => $user->id,
         'label' => 'Home',
         'address_line' => '12, MG Road',
+        'city' => 'Raipur',
+        'state' => 'Chhattisgarh',
+        'pincode' => '0',
         'is_default' => true,
     ]);
 });
 
-test('address requires a valid Indian phone and pincode', function () {
+test('address requires a valid Indian phone', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
@@ -67,11 +66,8 @@ test('address requires a valid Indian phone and pincode', function () {
         ->set('receiverName', 'Aarav Sharma')
         ->set('receiverPhone', '12345')
         ->set('addressLine', '12, MG Road')
-        ->set('city', 'Mumbai')
-        ->set('state', 'Maharashtra')
-        ->set('pincode', '123')
         ->call('saveAddress')
-        ->assertHasErrors(['receiverPhone', 'pincode']);
+        ->assertHasErrors(['receiverPhone']);
 });
 
 test('user can save an address with a pinned location', function () {
@@ -84,9 +80,6 @@ test('user can save an address with a pinned location', function () {
         ->set('receiverName', 'Aarav Sharma')
         ->set('receiverPhone', '9876543210')
         ->set('addressLine', '12, MG Road')
-        ->set('city', 'Mumbai')
-        ->set('state', 'Maharashtra')
-        ->set('pincode', '400001')
         ->set('latitude', 19.076)
         ->set('longitude', 72.8777)
         ->call('saveAddress')
@@ -99,18 +92,7 @@ test('user can save an address with a pinned location', function () {
     ]);
 });
 
-test('pinning a location autofills the address fields via reverse geocoding', function () {
-    Http::fake([
-        '*nominatim.openstreetmap.org/reverse*' => Http::response([
-            'address' => [
-                'road' => 'MG Road',
-                'city' => 'Mumbai',
-                'state' => 'Maharashtra',
-                'postcode' => '400050',
-            ],
-        ]),
-    ]);
-
+test('pinning a location records coordinates and checks deliverability', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
@@ -119,10 +101,7 @@ test('pinning a location autofills the address fields via reverse geocoding', fu
         ->call('reverseGeocode', 19.0596, 72.8295)
         ->assertSet('latitude', 19.0596)
         ->assertSet('longitude', 72.8295)
-        ->assertSet('addressLine', 'MG Road')
-        ->assertSet('city', 'Mumbai')
-        ->assertSet('state', 'Maharashtra')
-        ->assertSet('pincode', '400050')
+        ->assertSet('addressLine', '')
         ->assertReturned(true);
 });
 
@@ -158,20 +137,20 @@ test('pinning a location sets the address coordinates', function () {
 test('user can edit an address', function () {
     $user = User::factory()->create();
     $address = Address::factory()->create(['user_id' => $user->id]);
+    $originalCity = $address->city;
 
     Livewire::actingAs($user)
         ->test(Addresses::class)
         ->call('editAddress', $address)
         ->assertSet('editingAddressId', $address->id)
         ->set('addressLine', '88, Linking Road')
-        ->set('city', 'Pune')
         ->call('saveAddress')
         ->assertHasNoErrors()
         ->assertSet('editingAddressId', null);
 
     expect($address->fresh())
         ->address_line->toBe('88, Linking Road')
-        ->city->toBe('Pune');
+        ->city->toBe($originalCity);
 });
 
 test('user can delete an address', function () {
