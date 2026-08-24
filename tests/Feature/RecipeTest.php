@@ -233,8 +233,8 @@ test('recipe detail page shows linked products', function () {
 
 test('add all to cart adds every in-stock product from the recipe', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
-    $mint = Product::factory()->create(['name' => 'Mint', 'in_stock' => true]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
+    $mint = Product::factory()->available()->create(['name' => 'Mint']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id], $mint->id => ['product_unit_id' => $mint->defaultUnit()->id]]);
 
@@ -250,8 +250,8 @@ test('add all to cart adds every in-stock product from the recipe', function () 
 
 test('add all to cart skips out-of-stock products and reports them', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
-    $mint = Product::factory()->create(['name' => 'Mint', 'in_stock' => false]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
+    $mint = Product::factory()->outOfStock()->create(['name' => 'Mint']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id], $mint->id => ['product_unit_id' => $mint->defaultUnit()->id]]);
 
@@ -267,7 +267,7 @@ test('add all to cart skips out-of-stock products and reports them', function ()
 });
 
 test('guest is redirected to login when adding recipe to cart', function () {
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
 
@@ -287,7 +287,7 @@ test('inactive recipes cannot be viewed on the store', function () {
 
 test('recipe detail page lists products with an add button', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
 
@@ -300,7 +300,7 @@ test('recipe detail page lists products with an add button', function () {
 
 test('recipe product add button adds that product to the cart', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
 
@@ -316,7 +316,7 @@ test('recipe product add button adds that product to the cart', function () {
 
 test('recipe product counter shows existing cart quantity', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
 
@@ -336,7 +336,7 @@ test('recipe product counter shows existing cart quantity', function () {
 
 test('recipe product counter can increment and decrement quantity', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
 
@@ -359,7 +359,7 @@ test('recipe product counter can increment and decrement quantity', function () 
 
 test('recipe product decrement removes the item when quantity would drop below one', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
 
@@ -380,7 +380,7 @@ test('recipe product decrement removes the item when quantity would drop below o
 });
 
 test('guest is redirected to login when adding a recipe product to cart', function () {
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
 
@@ -391,7 +391,7 @@ test('guest is redirected to login when adding a recipe product to cart', functi
 
 test('recipe product counter re-syncs when the cart-updated event fires', function () {
     $user = User::factory()->create();
-    $mango = Product::factory()->create(['name' => 'Mango', 'in_stock' => true]);
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
     $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
 

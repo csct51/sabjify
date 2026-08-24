@@ -24,11 +24,14 @@
                         @forelse ($this->product->units as $unit)
                             <label
                                 wire:key="unit-option-{{ $unit->id }}"
-                                class="relative flex flex-col items-center justify-center gap-0.5 aspect-square rounded-lg border cursor-pointer transition {{ $this->selectedUnitId === $unit->id ? 'border-brand-600 bg-brand-50 ring-2 ring-brand-100' : 'border-stone-200 hover:border-brand-300' }}"
+                                class="relative flex flex-col items-center justify-center gap-0.5 aspect-square rounded-lg border cursor-pointer transition {{ $this->selectedUnitId === $unit->id ? 'border-brand-600 bg-brand-50 ring-2 ring-brand-100' : 'border-stone-200 hover:border-brand-300' }} {{ $unit->in_stock ? '' : 'opacity-60 cursor-not-allowed' }}"
                             >
-                                <input type="radio" name="unit-option" value="{{ $unit->id }}" wire:model="selectedUnitId" wire:change="selectUnit({{ $unit->id }})" class="sr-only" {{ $this->selectedUnitId === $unit->id ? 'checked' : '' }}>
+                                <input type="radio" name="unit-option" value="{{ $unit->id }}" wire:model="selectedUnitId" wire:change="selectUnit({{ $unit->id }})" class="sr-only" {{ $this->selectedUnitId === $unit->id ? 'checked' : '' }} {{ $unit->in_stock ? '' : 'disabled' }}>
                                 <span class="text-xs font-semibold text-stone-900 leading-tight text-center px-1">{{ $unit->unit }}</span>
                                 <span class="text-[11px] font-medium {{ $this->selectedUnitId === $unit->id ? 'text-brand-700' : 'text-stone-500' }}">{{ \Illuminate\Support\Number::currency($unit->price, 'INR') }}</span>
+                                @unless ($unit->in_stock)
+                                    <span class="text-[10px] font-normal leading-tight text-red-500">Out of stock</span>
+                                @endunless
                                 <span class="absolute top-1 right-1 flex items-center justify-center w-4 h-4 rounded-full border {{ $this->selectedUnitId === $unit->id ? 'border-brand-600' : 'border-stone-300' }}">
                                     @if ($this->selectedUnitId === $unit->id)
                                         <span class="w-2 h-2 rounded-full bg-brand-600"></span>

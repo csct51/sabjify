@@ -79,15 +79,15 @@
                                 <td class="px-4 py-3 text-center">
                                     <button
                                         type="button"
-                                        wire:click="toggleStock({{ $unit->product_id }})"
+                                        wire:click="toggleUnitStock({{ $unit->id }})"
                                         wire:loading.attr="disabled"
-                                        wire:target="toggleStock({{ $unit->product_id }})"
-                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-50 {{ $unit->product?->in_stock ? 'bg-brand-600' : 'bg-stone-300' }}"
+                                        wire:target="toggleUnitStock({{ $unit->id }})"
+                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-50 {{ $unit->in_stock ? 'bg-brand-600' : 'bg-stone-300' }}"
                                         role="switch"
-                                        aria-checked="{{ $unit->product?->in_stock ? 'true' : 'false' }}"
-                                        aria-label="Toggle stock for {{ $unit->product?->name }}"
+                                        aria-checked="{{ $unit->in_stock ? 'true' : 'false' }}"
+                                        aria-label="Toggle stock for {{ $unit->product?->name }} ({{ $unit->unit }})"
                                     >
-                                        <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition {{ $unit->product?->in_stock ? 'translate-x-[22px]' : 'translate-x-0.5' }}"></span>
+                                        <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition {{ $unit->in_stock ? 'translate-x-[22px]' : 'translate-x-0.5' }}"></span>
                                     </button>
                                 </td>
                             </tr>

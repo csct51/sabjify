@@ -146,21 +146,46 @@ test('product slug is auto-generated from the name', function () {
     $this->assertDatabaseHas('products', ['name' => 'Fresh Mango', 'slug' => 'fresh-mango']);
 });
 
-test('admin can update product stock', function () {
+test('admin can update product unit stock', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();
     $product = Product::factory()->create(['category_id' => $category->id]);
 
     Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class, ['product' => $product])
-        ->set('in_stock', false)
         ->set('unitRows', [
-            ['unit' => '1 kg', 'price' => '50', 'mrp' => null],
+            ['unit' => '1 kg', 'price' => '50', 'mrp' => null, 'in_stock' => false],
         ])
         ->call('save')
         ->assertRedirect(route('admin.products.index'));
 
-    expect($product->fresh()->in_stock)->toBeFalse();
+    expect($product->fresh()->units()->where('in_stock', false)->exists())->toBeTrue();
+});
+
+test('admin toggling one unit out of stock keeps product in stock if another unit is in stock', function () {
+    $admin = Admin::factory()->create();
+    $product = Product::factory()->create();
+    $product->units()->delete();
+    $product->units()->saveMany([
+        ProductUnit::factory()->make(['unit' => '1 kg', 'in_stock' => true]),
+        ProductUnit::factory()->make(['unit' => '500 g', 'in_stock' => true]),
+    ]);
+
+    $outUnit = $product->units()->where('unit', '500 g')->first();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Prices::class)
+        ->call('toggleUnitStock', $outUnit)
+        ->assertDispatched('toast', function ($eventName, $params) use ($product, $outUnit) {
+            $message = $params['message'] ?? '';
+
+            return str_contains($message, $product->name)
+                && str_contains($message, $outUnit->unit)
+                && str_contains($message, 'out of stock');
+        });
+
+    expect($outUnit->fresh()->in_stock)->toBeFalse()
+        ->and($product->fresh()->inStock())->toBeTrue();
 });
 
 test('admin can update an order status', function () {
@@ -362,16 +387,23 @@ test('prices page filters units by search', function () {
         ->assertDontSee($otherUnit->unit);
 });
 
-test('prices page toggles product stock', function () {
+test('prices page toggles unit stock', function () {
     $admin = Admin::factory()->create();
-    $product = Product::factory()->create(['in_stock' => true]);
+    $product = Product::factory()->create();
+    $unit = $product->units()->first();
 
     Livewire::actingAs($admin, 'admin')
         ->test(Prices::class)
-        ->call('toggleStock', $product)
-        ->assertDispatched('toast', message: "\"{$product->name}\" is now out of stock.");
+        ->call('toggleUnitStock', $unit)
+        ->assertDispatched('toast', function ($eventName, $params) use ($product, $unit) {
+            $message = $params['message'] ?? '';
 
-    expect($product->fresh()->in_stock)->toBeFalse();
+            return str_contains($message, $product->name)
+                && str_contains($message, $unit->unit)
+                && str_contains($message, 'out of stock');
+        });
+
+    expect($unit->fresh()->in_stock)->toBeFalse();
 });
 
 test('prices page filters units by category', function () {

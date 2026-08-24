@@ -31,7 +31,6 @@ class ProductFactory extends Factory
             'unit' => fake()->randomElement(['1 kg', '500 g', '1 pc', 'dozen', 'bunch', '250 g']),
             'price' => $price,
             'mrp' => fake()->boolean(70) ? (int) ($price * 1.25) : null,
-            'in_stock' => fake()->boolean(80),
             'image' => null,
             'is_active' => true,
             'is_featured' => fake()->boolean(30),
@@ -46,6 +45,7 @@ class ProductFactory extends Factory
                 'unit' => $product->unit,
                 'price' => $product->price,
                 'mrp' => $product->mrp,
+                'in_stock' => fake()->boolean(80),
                 'sort_order' => 0,
             ]);
         });
@@ -53,10 +53,16 @@ class ProductFactory extends Factory
 
     public function available(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_active' => true,
-            'in_stock' => true,
-        ]);
+        return $this->afterCreating(function (Product $product) {
+            $product->units()->update(['in_stock' => true]);
+        });
+    }
+
+    public function outOfStock(): static
+    {
+        return $this->afterCreating(function (Product $product) {
+            $product->units()->update(['in_stock' => false]);
+        });
     }
 
     public function withUnits(int $count): static
@@ -74,6 +80,7 @@ class ProductFactory extends Factory
                     'unit' => $available[$i % count($available)],
                     'price' => (int) ceil($basePrice * (1 + $i * 0.5)),
                     'mrp' => null,
+                    'in_stock' => fake()->boolean(80),
                     'sort_order' => $i,
                 ]);
             }

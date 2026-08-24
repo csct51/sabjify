@@ -27,7 +27,7 @@ test('search shows matching products', function () {
 test('search shows out of stock products with a label', function () {
     $category = Category::factory()->create();
     Product::factory()->create(['name' => 'Fresh Apple', 'category_id' => $category->id]);
-    Product::factory()->create(['name' => 'Out of Stock Apple', 'category_id' => $category->id, 'in_stock' => false]);
+    Product::factory()->outOfStock()->create(['name' => 'Out of Stock Apple', 'category_id' => $category->id]);
 
     Livewire::test(Search::class)
         ->set('search', 'apple')

@@ -25,7 +25,7 @@ class Cart extends Component
             return;
         }
 
-        if (! $item->product || ! $item->product->inStock()) {
+        if (! $item->product || ! ($item->productUnit?->in_stock ?? $item->product->inStock())) {
             return;
         }
 
@@ -138,7 +138,7 @@ class Cart extends Component
     public function outOfStockItems(): Collection
     {
         return $this->cartItems()
-            ->filter(fn (CartItem $item) => $item->product && ! $item->product->inStock())
+            ->filter(fn (CartItem $item) => $item->product && ! ($item->productUnit?->in_stock ?? $item->product->inStock()))
             ->values();
     }
 

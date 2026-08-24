@@ -65,6 +65,14 @@ class RecipeProduct extends Component
             return;
         }
 
+        $unit = $this->product->units->firstWhere('id', $this->unitId);
+
+        if (! ($unit?->in_stock ?? $this->product->inStock())) {
+            $this->addError('stock', 'This product is out of stock.');
+
+            return;
+        }
+
         $cartItem = auth('web')->user()->cartItems()->firstOrNew([
             'product_id' => $this->product->id,
             'recipe_id' => $this->recipe->id,

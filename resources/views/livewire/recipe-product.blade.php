@@ -14,7 +14,7 @@
 
     <p class="text-sm font-semibold text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($displayPrice, 'INR') }}</p>
 
-    @if ($product->inStock())
+    @if ($pivotUnit?->in_stock ?? $product->inStock())
         @if ($inCart)
             <div class="flex items-center gap-1 bg-brand-600 text-white rounded-lg p-1 shrink-0">
                 <button type="button" wire:click="decrement" wire:loading.attr="disabled" wire:target="decrement" class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-3 h-3"></i></button>

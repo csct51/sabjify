@@ -23,7 +23,6 @@ use Illuminate\Support\Str;
  * @property string $unit
  * @property int $price
  * @property int|null $mrp
- * @property bool $in_stock
  * @property string|null $image
  * @property bool $is_active
  * @property bool $is_featured
@@ -33,7 +32,7 @@ use Illuminate\Support\Str;
  * @property-read Collection<int, ProductUnit> $units
  * @property-read BasketProduct $pivot
  */
-#[Fillable(['category_id', 'name', 'slug', 'description', 'unit', 'price', 'mrp', 'in_stock', 'image', 'is_active', 'is_featured', 'sort_order'])]
+#[Fillable(['category_id', 'name', 'slug', 'description', 'unit', 'price', 'mrp', 'image', 'is_active', 'is_featured', 'sort_order'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -47,7 +46,6 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'in_stock' => 'boolean',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
         ];
@@ -94,7 +92,9 @@ class Product extends Model
 
     public function inStock(): bool
     {
-        return $this->in_stock;
+        return $this->relationLoaded('units')
+            ? $this->units->contains(fn (ProductUnit $unit) => $unit->in_stock)
+            : $this->units()->where('in_stock', true)->exists();
     }
 
     public function imageUrl(): ?string
@@ -171,6 +171,6 @@ class Product extends Model
      */
     public function scopeAvailable(Builder $query): Builder
     {
-        return $query->where('is_active', true)->where('in_stock', true);
+        return $query->where('is_active', true)->whereHas('units', fn ($q) => $q->where('in_stock', true));
     }
 }

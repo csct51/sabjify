@@ -21,7 +21,7 @@ class OrderService
         }
 
         $outOfStock = $cartItems
-            ->filter(fn ($item) => $item->product && ! $item->product->inStock())
+            ->filter(fn ($item) => $item->product && ! ($item->productUnit?->in_stock ?? $item->product->inStock()))
             ->map(fn ($item) => $item->product->name)
             ->unique()
             ->values();

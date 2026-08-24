@@ -47,7 +47,9 @@ class RecipeShow extends Component
         $skipped = [];
 
         foreach ($this->products() as $product) {
-            if (! $product->inStock()) {
+            $pivotUnit = $product->units->firstWhere('id', $product->pivot?->product_unit_id);
+
+            if (! ($pivotUnit?->in_stock ?? $product->inStock())) {
                 $skipped[] = $product->name;
 
                 continue;

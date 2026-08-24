@@ -55,7 +55,7 @@ class Dashboard extends Component
     public function outOfStockProducts(): Collection
     {
         return Product::with('category')
-            ->where('in_stock', false)
+            ->whereDoesntHave('units', fn ($query) => $query->where('in_stock', true))
             ->orderByDesc('updated_at')
             ->limit(6)
             ->get();

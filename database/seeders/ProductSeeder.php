@@ -53,7 +53,6 @@ class ProductSeeder extends Seeder
                     'unit' => $product['unit'],
                     'price' => $product['price'],
                     'mrp' => $product['mrp'],
-                    'in_stock' => $product['in_stock'],
                     'is_active' => true,
                     'is_featured' => $product['featured'],
                     'image' => $product['image'],
@@ -66,6 +65,7 @@ class ProductSeeder extends Seeder
                 [
                     'price' => $product['price'],
                     'mrp' => $product['mrp'],
+                    'in_stock' => $product['in_stock'],
                     'sort_order' => 0,
                 ]
             );

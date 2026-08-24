@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Category;
-use App\Models\Product;
 use App\Models\ProductUnit;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -76,11 +75,13 @@ class Prices extends Component
             ->get();
     }
 
-    public function toggleStock(Product $product): void
+    public function toggleUnitStock(ProductUnit $unit): void
     {
-        $product->update(['in_stock' => ! $product->in_stock]);
+        $unit->update(['in_stock' => ! $unit->in_stock]);
 
-        $this->dispatch('toast', message: $product->fresh()->in_stock ? "\"{$product->name}\" is now in stock." : "\"{$product->name}\" is now out of stock.");
+        $name = $unit->product?->name ?? 'Product';
+
+        $this->dispatch('toast', message: $unit->in_stock ? "\"{$name}\" ({$unit->unit}) is now in stock." : "\"{$name}\" ({$unit->unit}) is now out of stock.");
     }
 
     public function save(): void

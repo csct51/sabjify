@@ -75,6 +75,10 @@
                                     @error('unitRows.'.$index.'.mrp')<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
                                 </div>
                             </div>
+                            <label class="mt-2 inline-flex items-center gap-2 text-xs font-medium text-stone-600">
+                                <input wire:model="unitRows.{{ $index }}.in_stock" type="checkbox" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
+                                In stock <span class="text-stone-400">(available to customers)</span>
+                            </label>
                             @if (count($unitRows) > 1)
                                 <button type="button" wire:click="removeUnitRow({{ $index }})" class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -86,11 +90,6 @@
 
                     @error('unitRows')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
-
-                <label class="flex items-center gap-2 text-sm text-stone-700">
-                    <input wire:model="in_stock" type="checkbox" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
-                    In stock <span class="text-stone-400 text-xs">(available to customers)</span>
-                </label>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>

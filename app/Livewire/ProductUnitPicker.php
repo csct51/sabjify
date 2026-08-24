@@ -70,8 +70,9 @@ class ProductUnitPicker extends Component
         }
 
         $product = $this->product();
+        $unit = $this->selectedUnit();
 
-        if (! $product?->inStock()) {
+        if (! ($unit?->in_stock ?? $product?->inStock())) {
             $this->addError('stock', 'This product is out of stock.');
 
             return;

@@ -72,7 +72,7 @@ class ProductDetail extends Component
     public function relatedProducts(): Collection
     {
         return Product::available()
-            ->with('category')
+            ->with(['category', 'units'])
             ->where('category_id', $this->product->category_id)
             ->whereKeyNot($this->product->id)
             ->inRandomOrder()
@@ -144,7 +144,9 @@ class ProductDetail extends Component
 
     private function ensureStock(): void
     {
-        if (! $this->product->inStock()) {
+        $inStock = $this->selectedUnit()?->in_stock ?? $this->product->inStock();
+
+        if (! $inStock) {
             $this->addError('stock', 'This product is out of stock.');
 
             return;

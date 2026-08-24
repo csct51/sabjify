@@ -729,7 +729,7 @@ test('user cannot view another users order', function () {
 
 test('checkout is blocked when a product in the cart is out of stock', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 100, 'in_stock' => false]);
+    $product = Product::factory()->outOfStock()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
 
@@ -753,7 +753,7 @@ test('checkout is blocked when a product in the cart is out of stock', function 
 test('checkout is blocked when any product in the cart is out of stock', function () {
     $user = User::factory()->create();
     $inStock = Product::factory()->available()->create(['price' => 100]);
-    $outOfStock = Product::factory()->create(['price' => 50, 'in_stock' => false]);
+    $outOfStock = Product::factory()->outOfStock()->create(['price' => 50]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $inStock->id, 'quantity' => 1]);
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $outOfStock->id, 'quantity' => 1]);
@@ -798,7 +798,7 @@ test('checkout is allowed when all products are in stock', function () {
 
 test('cart disables checkout when a product is out of stock', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 100, 'in_stock' => false]);
+    $product = Product::factory()->outOfStock()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
 
@@ -815,7 +815,7 @@ test('cart disables checkout when a product is out of stock', function () {
 
 test('order service rejects a cart with an out of stock product', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['price' => 100, 'in_stock' => false]);
+    $product = Product::factory()->outOfStock()->create(['price' => 100]);
 
     CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
 

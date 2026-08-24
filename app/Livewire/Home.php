@@ -37,7 +37,7 @@ class Home extends Component
     public function featuredProducts(): Collection
     {
         return Product::active()
-            ->with('category')
+            ->with(['category', 'units'])
             ->featured()
             ->orderBy('sort_order')
             ->get();

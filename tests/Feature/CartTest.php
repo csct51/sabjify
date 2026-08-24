@@ -91,6 +91,18 @@ test('unit picker opens and lists available units', function () {
         ->assertSee('Select a size');
 });
 
+test('unit picker shows out of stock label for unavailable units', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->withUnits(3)->create();
+    $outUnit = $product->units->sortBy('sort_order')->skip(1)->first();
+    $outUnit->update(['in_stock' => false]);
+
+    Livewire::actingAs($user)
+        ->test(ProductUnitPicker::class)
+        ->call('open', $product->id)
+        ->assertSee('Out of stock');
+});
+
 test('unit picker selects a unit and adds the chosen quantity to the cart', function () {
     $user = User::factory()->create();
     $product = Product::factory()->available()->withUnits(3)->create();

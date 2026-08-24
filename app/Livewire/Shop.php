@@ -75,7 +75,7 @@ class Shop extends Component
     public function render(): View
     {
         $products = Product::active()
-            ->with('category')
+            ->with(['category', 'units'])
             ->when($this->category, function ($query) {
                 $query->whereHas('category', fn ($q) => $q->where('slug', $this->category));
             })
