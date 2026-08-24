@@ -82,20 +82,28 @@
         @if ($this->products->isNotEmpty())
             <div class="mt-10 border-t border-stone-200 pt-8">
                 <h2 class="text-lg font-semibold text-stone-900 mb-1">What's inside</h2>
-                <p class="text-sm text-stone-500 mb-5">Each product priced at its own shop price and unit.</p>
+                <p class="text-sm text-stone-500 mb-5">Each item is shown with the unit and price included in this basket.</p>
 
                 <div class="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
                     @foreach ($this->products as $product)
-                        @php($pivotUnit = $product->units->firstWhere('id', $product->pivot?->product_unit_id))
+                        @php($pivotUnitId = $product->pivot?->product_unit_id)
+                        @php($displayUnit = $product->pivot?->unit
+                            ?? ($pivotUnitId ? $product->units->firstWhere('id', $pivotUnitId)?->unit : null)
+                            ?? $product->units->first()?->unit
+                            ?? $product->unit)
+                        @php($displayPrice = $product->pivot?->price
+                            ?? ($pivotUnitId ? $product->units->firstWhere('id', $pivotUnitId)?->price : null)
+                            ?? $product->units->first()?->price
+                            ?? $product->price)
                         <div class="flex items-center gap-4 p-4">
                             <span class="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
                                 <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                             </span>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-stone-800 truncate">{{ $product->name }}</p>
-                                <p class="text-xs text-stone-400">{{ $pivotUnit?->unit ?? $product->units->first()?->unit ?? $product->unit }}</p>
+                                <p class="text-xs text-stone-400">{{ $displayUnit }}</p>
                             </div>
-                            <p class="text-sm font-semibold text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($pivotUnit?->price ?? $product->units->first()?->price ?? $product->price, 'INR') }}</p>
+                            <p class="text-sm font-semibold text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($displayPrice, 'INR') }}</p>
                         </div>
                     @endforeach
                 </div>

@@ -86,3 +86,74 @@ test('basket show page hides the discount when there is no mrp', function () {
     Livewire::test(BasketShow::class, ['basket' => $basket])
         ->assertDontSee('% OFF');
 });
+
+test('admin basket form stores custom unit and price for a product', function () {
+    $product = Product::factory()->create();
+
+    Livewire::test(BasketForm::class)
+        ->set('name', 'Custom Basket')
+        ->set('slug', 'custom-basket')
+        ->set('type', Basket::TYPE_SABJIFY)
+        ->set('price', 199)
+        ->set('productIds', [$product->id])
+        ->set('productCustomUnits.'.$product->id, '2 pcs')
+        ->set('productCustomPrices.'.$product->id, 199)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $basket = Basket::where('slug', 'custom-basket')->first();
+    $pivot = $basket->products()->withPivot('unit', 'price')->first()->pivot;
+
+    expect($pivot->unit)->toBe('2 pcs')
+        ->and($pivot->price)->toBe(199);
+});
+
+test('custom unit and price are displayed on the basket show page', function () {
+    $product = Product::factory()->create();
+    $basket = Basket::factory()->create([
+        'name' => 'Custom Display',
+        'slug' => 'custom-display',
+        'is_active' => true,
+    ]);
+    $basket->products()->attach($product->id, [
+        'unit' => '2 pcs',
+        'price' => 199,
+        'product_unit_id' => null,
+    ]);
+
+    Livewire::test(BasketShow::class, ['basket' => $basket])
+        ->assertSee('2 pcs')
+        ->assertSee(Number::currency(199, 'INR'));
+});
+
+test('custom price feeds the calculated basket total', function () {
+    $product = Product::factory()->create(['price' => 100]);
+
+    $component = Livewire::test(BasketForm::class)
+        ->set('name', 'Calc Basket')
+        ->set('slug', 'calc-basket')
+        ->set('type', Basket::TYPE_SABJIFY)
+        ->set('productIds', [$product->id])
+        ->set('productCustomPrices.'.$product->id, 199);
+
+    expect($component->calculatedPrice)->toBe(199);
+});
+
+test('admin form pre-populates custom unit and price when editing', function () {
+    $product = Product::factory()->create();
+    $basket = Basket::factory()->create([
+        'name' => 'Edit Basket',
+        'slug' => 'edit-basket',
+        'type' => Basket::TYPE_SABJIFY,
+    ]);
+    $basket->products()->attach($product->id, [
+        'unit' => '3 pcs',
+        'price' => 150,
+        'product_unit_id' => null,
+    ]);
+
+    $component = Livewire::test(BasketForm::class, ['basket' => $basket]);
+
+    expect($component->get('productCustomUnits')[$product->id])->toBe('3 pcs')
+        ->and($component->get('productCustomPrices')[$product->id])->toBe(150);
+});

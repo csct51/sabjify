@@ -120,7 +120,8 @@ class BasketCard extends Component
 
     private function resolveUnitName(Product $product): string
     {
-        return $product->units->firstWhere('id', $product->pivot?->product_unit_id)?->unit
+        return $product->pivot?->unit
+            ?? $product->units->firstWhere('id', $product->pivot?->product_unit_id)?->unit
             ?? $product->units->first()?->unit
             ?? $product->unit;
     }

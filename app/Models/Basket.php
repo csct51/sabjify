@@ -69,7 +69,7 @@ class Basket extends Model
     {
         return $this->belongsToMany(Product::class, 'basket_product')
             ->using(BasketProduct::class)
-            ->withPivot('product_unit_id')
+            ->withPivot('product_unit_id', 'unit', 'price')
             ->withTimestamps();
     }
 

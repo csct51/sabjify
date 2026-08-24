@@ -42,6 +42,12 @@ class BasketForm extends Component
     /** @var array<int, int|null> */
     public array $productUnitIds = [];
 
+    /** @var array<int, string|null> */
+    public array $productCustomUnits = [];
+
+    /** @var array<int, int|null> */
+    public array $productCustomPrices = [];
+
     public string $productSearch = '';
 
     public ?TemporaryUploadedFile $image = null;
@@ -68,9 +74,11 @@ class BasketForm extends Component
             $this->imageUrl = $basket->image && filter_var($basket->image, FILTER_VALIDATE_URL) !== false ? $basket->image : '';
             $this->priceManuallyEdited = true;
 
-            foreach ($basket->products()->withPivot('product_unit_id')->get() as $product) {
+            foreach ($basket->products()->withPivot('product_unit_id', 'unit', 'price')->get() as $product) {
                 $this->productIds[] = $product->id;
                 $this->productUnitIds[$product->id] = $product->pivot->product_unit_id;
+                $this->productCustomUnits[$product->id] = $product->pivot->unit;
+                $this->productCustomPrices[$product->id] = $product->pivot->price;
             }
         }
     }
@@ -83,6 +91,13 @@ class BasketForm extends Component
     }
 
     public function updatedProductUnitIds(): void
+    {
+        if (! $this->priceManuallyEdited) {
+            $this->price = $this->calculatedPrice;
+        }
+    }
+
+    public function updatedProductCustomPrices(): void
     {
         if (! $this->priceManuallyEdited) {
             $this->price = $this->calculatedPrice;
@@ -161,6 +176,8 @@ class BasketForm extends Component
         ));
 
         unset($this->productUnitIds[$productId]);
+        unset($this->productCustomUnits[$productId]);
+        unset($this->productCustomPrices[$productId]);
     }
 
     #[Computed]
@@ -169,6 +186,14 @@ class BasketForm extends Component
         $total = 0;
 
         foreach ($this->selectedProducts() as $product) {
+            $customPrice = $this->productCustomPrices[$product->id] ?? null;
+
+            if ($customPrice !== null && $customPrice !== '') {
+                $total += (int) $customPrice;
+
+                continue;
+            }
+
             $unitId = $this->productUnitIds[$product->id] ?? null;
 
             $unit = $unitId
@@ -197,6 +222,8 @@ class BasketForm extends Component
             'productIds' => ['required', 'array', 'min:1'],
             'productIds.*' => ['integer', 'exists:products,id'],
             'productUnitIds.*' => ['nullable', 'integer', 'exists:product_units,id'],
+            'productCustomUnits.*' => ['nullable', 'string', 'max:50'],
+            'productCustomPrices.*' => ['nullable', 'integer', 'min:1'],
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
@@ -224,9 +251,27 @@ class BasketForm extends Component
 
         $sync = [];
 
+        $selected = $this->selectedProducts()->keyBy('id');
+
         foreach ($this->productIds as $productId) {
+            $product = $selected[$productId];
+
+            $unitId = $this->productUnitIds[$productId] ?? null;
+
+            $unit = $unitId
+                ? $product->units->firstWhere('id', $unitId)
+                : $product->units->first();
+
+            $customUnit = $this->productCustomUnits[$productId] ?? null;
+            $customUnit = $customUnit !== null && $customUnit !== '' ? $customUnit : null;
+
+            $customPrice = $this->productCustomPrices[$productId] ?? null;
+            $customPrice = $customPrice !== null && $customPrice !== '' ? (int) $customPrice : null;
+
             $sync[$productId] = [
-                'product_unit_id' => $this->productUnitIds[$productId] ?? null,
+                'product_unit_id' => $unitId,
+                'unit' => $customUnit ?? $unit?->unit ?? $product->unit,
+                'price' => $customPrice ?? $unit?->price ?? $product->price,
             ];
         }
 

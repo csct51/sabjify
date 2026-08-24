@@ -129,6 +129,20 @@
                                                 @endforeach
                                             </select>
                                             @error('productUnitIds.'.$product->id)<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
+
+                                            <div class="mt-2 grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <label class="block text-[11px] font-medium text-stone-500 mb-1">Custom unit <span class="text-stone-400">(optional)</span></label>
+                                                    <input type="text" wire:model.live="productCustomUnits.{{ $product->id }}" placeholder="e.g. 500 g" class="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                                                    @error('productCustomUnits.'.$product->id)<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[11px] font-medium text-stone-500 mb-1">Custom price <span class="text-stone-400">(optional)</span></label>
+                                                    <input type="number" min="1" wire:model.live="productCustomPrices.{{ $product->id }}" placeholder="Override price" class="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                                                    @error('productCustomPrices.'.$product->id)<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
+                                                </div>
+                                            </div>
+                                            <p class="mt-1.5 text-[11px] text-stone-400">Leave the custom fields blank to use the selected unit's unit &amp; price. A custom value overrides the selected unit.</p>
                                         </div>
                                     </div>
                                 @empty
@@ -136,7 +150,7 @@
                                 @endforelse
                             </div>
                             <div class="px-3 py-2.5 border-t border-brand-100 bg-white/60">
-                                <p class="text-[11px] text-stone-400">Pick a specific unit for each product in the basket. The basket price is calculated from the selected units; you can override it in the price field.</p>
+                                <p class="text-[11px] text-stone-400">Pick a specific unit for each product, or set a custom unit &amp; price. The basket price is calculated from each product's effective price; you can override it in the price field.</p>
                             </div>
                         </div>
                     </div>
