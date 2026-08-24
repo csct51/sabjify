@@ -228,7 +228,7 @@ test('recipe detail page shows linked products', function () {
         ->assertOk()
         ->assertSee('Mango Salad')
         ->assertSee('Mango')
-        ->assertSee('Products in this recipe');
+        ->assertSee('Ingredients');
 });
 
 test('add all to cart adds every in-stock product from the recipe', function () {
@@ -296,6 +296,69 @@ test('recipe detail page lists products with an add button', function () {
         ->assertOk()
         ->assertSee('Mango')
         ->assertSee('Add');
+});
+
+test('steps are cast to an array on the recipe model', function () {
+    $recipe = Recipe::factory()->make(['steps' => ['First step', 'Second step']]);
+
+    expect($recipe->steps)->toBe(['First step', 'Second step']);
+});
+
+test('admin recipe form persists steps as an ordered array', function () {
+    $admin = Admin::factory()->create();
+    $mango = Product::factory()->create(['name' => 'Mango']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(RecipeForm::class)
+        ->set('title', 'Fresh Mango Salad')
+        ->set('slug', 'fresh-mango-salad')
+        ->set('productIds', [$mango->id])
+        ->set('stepsText', "Wash the mango.\nChop it up.\nServe chilled.")
+        ->call('save')
+        ->assertRedirect(route('admin.recipes.index'));
+
+    $recipe = Recipe::where('slug', 'fresh-mango-salad')->first();
+
+    expect($recipe->steps)->toBe(['Wash the mango.', 'Chop it up.', 'Serve chilled.']);
+});
+
+test('admin recipe form prefills steps text when editing', function () {
+    $admin = Admin::factory()->create();
+    $recipe = Recipe::factory()->create([
+        'title' => 'Mango Salad',
+        'steps' => ['Step one', 'Step two'],
+    ]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(RecipeForm::class, ['recipe' => $recipe])
+        ->assertSet('stepsText', "Step one\nStep two");
+});
+
+test('recipe detail page shows the how to make steps when present', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
+    $recipe = Recipe::factory()->create([
+        'title' => 'Mango Salad',
+        'steps' => ['Wash the mango.', 'Chop it up.', 'Serve chilled.'],
+    ]);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id]]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeShow::class, ['recipe' => $recipe])
+        ->assertOk()
+        ->assertSee('How to make')
+        ->assertSee('Wash the mango.')
+        ->assertSee('Ingredients');
+});
+
+test('recipe detail page hides the how to make section when there are no steps', function () {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad', 'steps' => null]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeShow::class, ['recipe' => $recipe])
+        ->assertOk()
+        ->assertDontSee('How to make');
 });
 
 test('recipe product add button adds that product to the cart', function () {

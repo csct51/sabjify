@@ -26,6 +26,8 @@ class RecipeForm extends Component
 
     public string $description = '';
 
+    public string $stepsText = '';
+
     /** @var array<int, int> */
     public array $productIds = [];
 
@@ -52,6 +54,7 @@ class RecipeForm extends Component
             $this->title = $recipe->title;
             $this->slug = $recipe->slug;
             $this->description = $recipe->description ?? '';
+            $this->stepsText = $recipe->steps ? implode("\n", $recipe->steps) : '';
             $this->productIds = $recipe->products()->pluck('products.id')->all();
 
             foreach ($recipe->products()->withPivot('product_unit_id')->get() as $product) {
@@ -74,6 +77,20 @@ class RecipeForm extends Component
     public function updatedSlug(): void
     {
         $this->slugManuallyEdited = true;
+    }
+
+    /**
+     * @return array<int, string>|null
+     */
+    public function resolvedSteps(): ?array
+    {
+        $steps = collect(explode("\n", $this->stepsText))
+            ->map(fn ($step) => trim((string) $step))
+            ->filter()
+            ->values()
+            ->all();
+
+        return $steps === [] ? null : $steps;
     }
 
     #[Computed]
@@ -137,6 +154,7 @@ class RecipeForm extends Component
             'title' => ['required', 'string', 'max:120'],
             'slug' => ['required', 'string', 'max:140', 'unique:recipes,slug,'.($this->recipe->id ?? 'NULL')],
             'description' => ['nullable', 'string', 'max:1000'],
+            'stepsText' => ['nullable', 'string', 'max:5000'],
             'productIds' => ['required', 'array', 'min:1'],
             'productIds.*' => ['integer', 'exists:products,id'],
             'productUnitIds.*' => ['nullable', 'integer', 'exists:product_units,id'],
@@ -150,6 +168,7 @@ class RecipeForm extends Component
             'title' => $this->title,
             'slug' => $this->slug,
             'description' => $this->description !== '' ? $this->description : null,
+            'steps' => $this->resolvedSteps(),
             'is_active' => $this->is_active === '1',
             'sort_order' => $this->sort_order,
         ];

@@ -3,7 +3,7 @@
         <nav class="text-sm text-stone-400 mb-6 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
             <a href="{{ route('home') }}" wire:navigate class="hover:text-brand-600">Home</a>
             <span>/</span>
-            <span class="text-stone-600 font-medium">Recipes</span>
+            <a href="{{ route('recipes.index') }}" wire:navigate class="hover:text-brand-600">Recipes</a>
             <span>/</span>
             <span class="text-stone-600 font-medium">{{ $recipe->title }}</span>
         </nav>
@@ -14,14 +14,19 @@
             </div>
 
             <div>
-                <h1 class="text-3xl font-bold text-stone-900">{{ $recipe->title }}</h1>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold px-3 py-1">
+                    <i data-lucide="utensils" class="w-3.5 h-3.5"></i>
+                    Recipe
+                </span>
+
+                <h1 class="mt-3 text-3xl font-bold text-stone-900">{{ $recipe->title }}</h1>
 
                 @if ($recipe->description)
                     <p class="mt-3 text-stone-600 leading-relaxed">{{ $recipe->description }}</p>
                 @endif
 
                 @if ($this->products->isNotEmpty())
-                    <div class="mt-5 hidden lg:flex flex-wrap items-center gap-3">
+                    <div class="mt-5 flex flex-wrap items-center gap-3">
                         <button type="button" wire:click="addAllToCart" wire:loading.attr="disabled" wire:target="addAllToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
                             <span wire:loading.remove wire:target="addAllToCart"><i data-lucide="shopping-cart" class="w-5 h-5"></i></span>
                             <x-loading-spinner wire:loading wire:target="addAllToCart" class="w-4 h-4" />
@@ -41,30 +46,54 @@
                     <div class="mt-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ $cartError }}</div>
                 @endif
 
-                <div class="mt-8 border-t border-stone-200 pt-6 grid grid-cols-3 gap-4 text-center">
-                    <div>
-                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="truck" class="w-5 h-5"></i></span>
-                        <p class="text-xs font-medium text-stone-700 mt-2">Free delivery</p>
-                        <p class="text-[11px] text-stone-400">Above {{ \Illuminate\Support\Number::currency(config('mart.free_delivery_threshold'), 'INR') }}</p>
+                <div class="mt-8 flex flex-wrap gap-3">
+                    <div class="flex items-center gap-2 rounded-xl bg-white border border-stone-200 px-4 py-2.5">
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="list-checks" class="w-4 h-4"></i></span>
+                        <div>
+                            <p class="text-sm font-semibold text-stone-800">{{ $this->products->count() }}</p>
+                            <p class="text-[11px] text-stone-400">ingredients</p>
+                        </div>
                     </div>
-                    <div>
-                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="refresh-ccw" class="w-5 h-5"></i></span>
-                        <p class="text-xs font-medium text-stone-700 mt-2">Easy returns</p>
-                        <p class="text-[11px] text-stone-400">Within 24 hours</p>
+                    <div class="flex items-center gap-2 rounded-xl bg-white border border-stone-200 px-4 py-2.5">
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="utensils" class="w-4 h-4"></i></span>
+                        <div>
+                            <p class="text-sm font-semibold text-stone-800">{{ count($recipe->steps ?? []) }}</p>
+                            <p class="text-[11px] text-stone-400">steps</p>
+                        </div>
                     </div>
-                    <div>
-                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shield-check" class="w-5 h-5"></i></span>
-                        <p class="text-xs font-medium text-stone-700 mt-2">Quality check</p>
-                        <p class="text-[11px] text-stone-400">Before dispatch</p>
+                    <div class="flex items-center gap-2 rounded-xl bg-white border border-stone-200 px-4 py-2.5">
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="timer" class="w-4 h-4"></i></span>
+                        <div>
+                            <p class="text-sm font-semibold text-stone-800">Fresh</p>
+                            <p class="text-[11px] text-stone-400">farm to table</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        @if (! empty($recipe->steps))
+            <div class="mt-12 border-t border-stone-200 pt-8">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-brand-600 text-white"><i data-lucide="chef-hat" class="w-5 h-5"></i></span>
+                    <h2 class="text-xl font-bold text-stone-900">How to make</h2>
+                </div>
+
+                <ol class="mt-6 space-y-4">
+                    @foreach ($recipe->steps as $index => $step)
+                        <li class="flex items-start gap-4">
+                            <span class="flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-brand-600 text-white font-semibold">{{ $index + 1 }}</span>
+                            <p class="flex-1 pt-1.5 text-stone-700 leading-relaxed">{{ $step }}</p>
+                        </li>
+                    @endforeach
+                </ol>
+            </div>
+        @endif
+
         @if ($this->products->isNotEmpty())
             <div class="mt-10 border-t border-stone-200 pt-8">
-                <h2 class="text-lg font-semibold text-stone-900 mb-3">Products in this recipe</h2>
-                <p class="text-sm text-stone-500 mb-5">{{ $this->products->count() }} products · all available in our shop</p>
+                <h2 class="text-lg font-semibold text-stone-900 mb-1">Ingredients</h2>
+                <p class="text-sm text-stone-500 mb-5">{{ $this->products->count() }} items · everything you need, available in our shop</p>
 
                 <div class="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
                     @foreach ($this->products as $product)

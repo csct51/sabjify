@@ -17,12 +17,13 @@ use Illuminate\Support\Facades\Storage;
  * @property string $slug
  * @property string|null $description
  * @property string|null $image
+ * @property array|null $steps
  * @property bool $is_active
  * @property int $sort_order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'slug', 'description', 'image', 'is_active', 'sort_order'])]
+#[Fillable(['title', 'slug', 'description', 'image', 'steps', 'is_active', 'sort_order'])]
 class Recipe extends Model
 {
     /** @use HasFactory<RecipeFactory> */
@@ -37,6 +38,7 @@ class Recipe extends Model
     {
         return [
             'is_active' => 'boolean',
+            'steps' => 'array',
         ];
     }
 

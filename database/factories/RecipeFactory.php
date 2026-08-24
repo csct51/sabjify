@@ -26,6 +26,7 @@ class RecipeFactory extends Factory
             'slug' => Str::slug($title),
             'description' => fake()->paragraph(),
             'image' => null,
+            'steps' => null,
             'is_active' => true,
             'sort_order' => fake()->numberBetween(0, 20),
         ];

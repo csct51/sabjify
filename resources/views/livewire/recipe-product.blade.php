@@ -3,8 +3,11 @@
     @php($displayUnit = $pivotUnit?->unit ?? $product->units->first()?->unit ?? $product->unit)
     @php($displayPrice = $pivotUnit?->price ?? $product->units->first()?->price ?? $product->price)
 
-    <span class="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
+    <span class="relative flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
         <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+        <span class="absolute -left-1 -top-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand-600 text-white ring-2 ring-white">
+            <i data-lucide="check" class="w-3 h-3"></i>
+        </span>
     </span>
 
     <div class="flex-1 min-w-0">
