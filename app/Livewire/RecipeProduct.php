@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Models\ProductUnit;
 use App\Models\Recipe;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
@@ -65,7 +66,9 @@ class RecipeProduct extends Component
             return;
         }
 
-        $unit = $this->product->units->firstWhere('id', $this->unitId);
+        $unitId = $this->validatedUnitId($this->unitId);
+
+        $unit = $this->product->units->firstWhere('id', $unitId);
 
         if (! ($unit?->in_stock ?? $this->product->inStock())) {
             $this->addError('stock', 'This product is out of stock.');
@@ -76,8 +79,9 @@ class RecipeProduct extends Component
         $cartItem = auth('web')->user()->cartItems()->firstOrNew([
             'product_id' => $this->product->id,
             'recipe_id' => $this->recipe->id,
+            'product_unit_id' => $unitId,
         ]);
-        $cartItem->product_unit_id = $this->unitId;
+        $cartItem->product_unit_id = $unitId;
         $cartItem->quantity++;
         $cartItem->save();
 
@@ -85,6 +89,19 @@ class RecipeProduct extends Component
         $this->quantity = $cartItem->quantity;
 
         $this->dispatch('cart-updated');
+    }
+
+    private function validatedUnitId(?int $unitId): ?int
+    {
+        if ($unitId === null) {
+            return null;
+        }
+
+        if (! ProductUnit::where('product_id', $this->product->id)->where('id', $unitId)->exists()) {
+            return $this->product->defaultUnit()?->id;
+        }
+
+        return $unitId;
     }
 
     public function increment(): void

@@ -45,6 +45,11 @@ class OtpService
         return true;
     }
 
+    public function invalidateCodes(string $phone): void
+    {
+        $this->invalidatePreviousCodes($phone);
+    }
+
     private function invalidatePreviousCodes(string $phone): void
     {
         OtpCode::where('phone', $phone)

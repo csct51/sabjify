@@ -34,7 +34,7 @@ class ProductDetail extends Component
 
     public function selectUnit(int $unitId): void
     {
-        $this->unitId = $unitId;
+        $this->unitId = $this->validatedUnitId($unitId);
         $this->resetErrorBag();
         $this->syncCartState();
     }
@@ -90,7 +90,7 @@ class ProductDetail extends Component
 
         $this->ensureStock();
 
-        $unitId = $this->unitId ?? $this->product->defaultUnit()?->id;
+        $unitId = $this->validatedUnitId($this->unitId ?? $this->product->defaultUnit()?->id);
 
         $cartItem = auth('web')->user()->cartItems()->firstOrNew([
             'product_id' => $this->product->id,
@@ -109,9 +109,11 @@ class ProductDetail extends Component
     {
         $this->ensureStock();
 
+        $unitId = $this->validatedUnitId($this->unitId);
+
         $cartItem = auth('web')->user()->cartItems()
             ->where('product_id', $this->product->id)
-            ->where('product_unit_id', $this->unitId)
+            ->where('product_unit_id', $unitId)
             ->firstOrFail();
         $cartItem->increment('quantity');
 
@@ -122,9 +124,11 @@ class ProductDetail extends Component
 
     public function decrement(): void
     {
+        $unitId = $this->validatedUnitId($this->unitId);
+
         $cartItem = auth('web')->user()->cartItems()
             ->where('product_id', $this->product->id)
-            ->where('product_unit_id', $this->unitId)
+            ->where('product_unit_id', $unitId)
             ->firstOrFail();
 
         if ($cartItem->quantity <= 1) {
@@ -140,6 +144,19 @@ class ProductDetail extends Component
         $this->syncCartState();
 
         $this->dispatch('cart-updated');
+    }
+
+    private function validatedUnitId(?int $unitId): ?int
+    {
+        if ($unitId === null) {
+            return null;
+        }
+
+        if (! ProductUnit::where('product_id', $this->product->id)->where('id', $unitId)->exists()) {
+            return $this->product->defaultUnit()?->id;
+        }
+
+        return $unitId;
     }
 
     private function ensureStock(): void

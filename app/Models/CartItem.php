@@ -73,7 +73,12 @@ class CartItem extends Model
             return $this->basket->name;
         }
 
-        return $this->product->name;
+        return $this->product?->name ?? 'Removed item';
+    }
+
+    public function isOrphaned(): bool
+    {
+        return ! $this->basket && ! $this->product;
     }
 
     public function unitName(): ?string

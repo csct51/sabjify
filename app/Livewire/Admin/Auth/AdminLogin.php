@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Auth;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -23,11 +24,22 @@ class AdminLogin extends Component
             'password' => ['required', 'string'],
         ]);
 
+        $key = 'admin-login:'.strtolower($this->username).'|'.request()->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $this->addError('username', 'Too many login attempts. Try again in '.RateLimiter::availableIn($key).' seconds.');
+
+            return;
+        }
+
         if (! Auth::guard('admin')->attempt($this->only('username', 'password'), true)) {
+            RateLimiter::hit($key, 60);
             $this->addError('username', 'These credentials do not match our records.');
 
             return;
         }
+
+        RateLimiter::clear($key);
 
         session()->regenerate();
 

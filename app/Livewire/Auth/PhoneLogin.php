@@ -6,6 +6,7 @@ use App\Models\OtpCode;
 use App\Models\User;
 use App\Services\OtpService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -33,7 +34,17 @@ class PhoneLogin extends Component
     {
         $this->validate(['phone' => ['required', 'regex:/^[6-9]\d{9}$/']]);
 
+        $sendKey = 'otp-send:'.$this->phone;
+
+        if (RateLimiter::tooManyAttempts($sendKey, 5)) {
+            $this->addError('phone', 'Too many OTP requests. Please try again in '.RateLimiter::availableIn($sendKey).' seconds.');
+
+            return;
+        }
+
         app(OtpService::class)->send($this->phone);
+
+        RateLimiter::hit($sendKey, 60);
 
         $this->isNewUser = ! User::where('phone', $this->phone)->exists();
         $this->isInactive = User::where('phone', $this->phone)->where('is_active', false)->exists();
@@ -64,13 +75,25 @@ class PhoneLogin extends Component
 
         $this->validate($rules);
 
+        $verifyKey = 'otp-verify:'.$this->phone;
+
+        if (RateLimiter::tooManyAttempts($verifyKey, 5)) {
+            app(OtpService::class)->invalidateCodes($this->phone);
+            $this->addError('otp', 'Too many incorrect attempts. Please request a new OTP.');
+
+            return;
+        }
+
         $otpService = app(OtpService::class);
 
         if (! $otpService->verify($this->phone, $this->otp)) {
+            RateLimiter::hit($verifyKey, 60);
             $this->addError('otp', 'Invalid or expired OTP. Please try again.');
 
             return;
         }
+
+        RateLimiter::clear($verifyKey);
 
         $user = User::where('phone', $this->phone)->first();
 

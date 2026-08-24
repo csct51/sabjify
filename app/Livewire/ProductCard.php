@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Models\ProductUnit;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -44,7 +45,7 @@ class ProductCard extends Component
 
         $this->ensureStock();
 
-        $unitId = $unitId ?? $this->unitId ?? $this->product->defaultUnit()?->id;
+        $unitId = $this->validatedUnitId($unitId ?? $this->unitId ?? $this->product->defaultUnit()?->id);
 
         $cartItem = auth('web')->user()->cartItems()->firstOrNew([
             'product_id' => $this->product->id,
@@ -64,15 +65,30 @@ class ProductCard extends Component
     {
         $this->ensureStock();
 
+        $unitId = $this->validatedUnitId($this->unitId);
+
         $cartItem = auth('web')->user()->cartItems()
             ->where('product_id', $this->product->id)
-            ->where('product_unit_id', $this->unitId)
+            ->where('product_unit_id', $unitId)
             ->firstOrFail();
         $cartItem->increment('quantity');
 
         $this->quantity = $cartItem->quantity;
 
         $this->dispatch('cart-updated');
+    }
+
+    private function validatedUnitId(?int $unitId): ?int
+    {
+        if ($unitId === null) {
+            return null;
+        }
+
+        if (! ProductUnit::where('product_id', $this->product->id)->where('id', $unitId)->exists()) {
+            return $this->product->defaultUnit()?->id;
+        }
+
+        return $unitId;
     }
 
     public function decrement(): void

@@ -63,6 +63,20 @@ test('admin login rejects invalid credentials', function () {
     expect(auth('admin')->check())->toBeFalse();
 });
 
+test('admin login is rate limited after repeated failures', function () {
+    Admin::factory()->create(['username' => 'ratelimit', 'password' => 'password']);
+
+    $last = null;
+    for ($i = 0; $i < 6; $i++) {
+        $last = Livewire::test(AdminLogin::class)
+            ->set('username', 'ratelimit')
+            ->set('password', 'wrong')
+            ->call('login');
+    }
+
+    $last->assertHasErrors('username');
+});
+
 test('admin can create a category', function () {
     $admin = Admin::factory()->create();
 
@@ -194,11 +208,37 @@ test('admin can update an order status', function () {
 
     Livewire::actingAs($admin, 'admin')
         ->test(OrderShow::class, ['order' => $order])
-        ->set('status', 'out_for_delivery')
+        ->set('status', 'confirmed')
         ->call('updateStatus')
         ->assertDispatched('toast', message: 'Order status updated.');
 
-    expect($order->fresh()->status)->toBe('out_for_delivery');
+    expect($order->fresh()->status)->toBe('confirmed');
+});
+
+test('admin cannot skip order status steps', function () {
+    $admin = Admin::factory()->create();
+    $order = Order::factory()->create(['status' => 'pending']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->set('status', 'delivered')
+        ->call('updateStatus')
+        ->assertHasErrors('status');
+
+    expect($order->fresh()->status)->toBe('pending');
+});
+
+test('admin cannot mark cash on delivery orders as refunded', function () {
+    $admin = Admin::factory()->create();
+    $order = Order::factory()->create(['status' => 'pending', 'payment_method' => 'cod', 'payment_status' => 'pending']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->set('paymentStatus', 'refunded')
+        ->call('updatePaymentStatus')
+        ->assertHasErrors('paymentStatus');
+
+    expect($order->fresh()->payment_status)->toBe('pending');
 });
 
 test('admin can toggle product visibility', function () {

@@ -15,6 +15,7 @@ class OrderService
     public function createFromCart(User $user, array $data): Order
     {
         $cartItems = $user->cartItems()->with('product', 'productUnit', 'basket')->get();
+        $cartItems = $cartItems->filter(fn ($item) => $item->basket || $item->product);
 
         if ($cartItems->isEmpty()) {
             throw new \RuntimeException('Your cart is empty.');

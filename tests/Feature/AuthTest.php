@@ -150,3 +150,33 @@ test('user can log out from profile', function () {
     expect(auth()->check())->toBeFalse()
         ->and(auth('web')->check())->toBeFalse();
 });
+
+test('otp requests are rate limited', function () {
+    $phone = '9811111111';
+
+    $last = null;
+    for ($i = 0; $i < 6; $i++) {
+        $last = Livewire::test(PhoneLogin::class)
+            ->set('phone', $phone)
+            ->call('sendOtp');
+    }
+
+    $last->assertHasErrors('phone');
+    expect(OtpCode::where('phone', $phone)->count())->toBeLessThan(6);
+});
+
+test('otp verification attempts are rate limited', function () {
+    $phone = '9822222222';
+
+    Livewire::test(PhoneLogin::class)->set('phone', $phone)->call('sendOtp');
+
+    $last = null;
+    for ($i = 0; $i < 6; $i++) {
+        $last = Livewire::test(PhoneLogin::class)
+            ->set('phone', $phone)
+            ->set('otp', '000000')
+            ->call('verifyOtp');
+    }
+
+    $last->assertHasErrors('otp');
+});

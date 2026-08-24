@@ -37,6 +37,15 @@ class OrderShow extends Component
     {
         $this->validate(['status' => ['required', 'in:'.implode(',', array_keys(Order::STATUSES))]]);
 
+        $from = $this->order->status;
+        $to = $this->status;
+
+        if ($from !== $to && ! in_array($to, $this->allowedTransitions()[$from] ?? [], true)) {
+            $this->addError('status', 'Invalid status transition from '.$from.'.');
+
+            return;
+        }
+
         $data = ['status' => $this->status];
 
         if ($this->status === Order::STATUS_DELIVERED) {
@@ -53,12 +62,27 @@ class OrderShow extends Component
     {
         abort_unless($this->order->payment_method === 'cod', 403);
 
-        $this->validate(['paymentStatus' => ['required', 'in:pending,paid,refunded']]);
+        $this->validate(['paymentStatus' => ['required', 'in:pending,paid']]);
 
         $this->order->update(['payment_status' => $this->paymentStatus]);
         $this->order->refresh();
 
         $this->dispatch('toast', message: 'Payment status updated.');
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    private function allowedTransitions(): array
+    {
+        return [
+            Order::STATUS_PENDING => [Order::STATUS_CONFIRMED, Order::STATUS_CANCELLED],
+            Order::STATUS_CONFIRMED => [Order::STATUS_PACKING, Order::STATUS_CANCELLED],
+            Order::STATUS_PACKING => [Order::STATUS_OUT_FOR_DELIVERY, Order::STATUS_CANCELLED],
+            Order::STATUS_OUT_FOR_DELIVERY => [Order::STATUS_DELIVERED, Order::STATUS_CANCELLED],
+            Order::STATUS_DELIVERED => [],
+            Order::STATUS_CANCELLED => [],
+        ];
     }
 
     public function cancelOrder(): void

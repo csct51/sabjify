@@ -18,6 +18,10 @@ class Cart extends Component
 {
     public function increment(CartItem $item): void
     {
+        $item = auth('web')->user()->cartItems()->find($item->id);
+
+        abort_if($item === null, 404);
+
         if ($item->basket) {
             $item->increment('quantity');
             $this->dispatch('cart-updated');
@@ -36,6 +40,10 @@ class Cart extends Component
 
     public function decrement(CartItem $item): void
     {
+        $item = auth('web')->user()->cartItems()->find($item->id);
+
+        abort_if($item === null, 404);
+
         if ($item->quantity <= 1) {
             $this->remove($item);
 

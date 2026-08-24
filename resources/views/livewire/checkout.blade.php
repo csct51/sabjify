@@ -40,6 +40,22 @@
                             <button type="button" wire:click="addNewAddress" class="text-sm font-semibold text-brand-600 hover:text-brand-700 {{ $this->addressMode === 'new' ? 'underline' : '' }}">
                                 + Add new address
                             </button>
+
+                            @if ($this->addressMode === 'existing' && ($this->latitude === null || $this->longitude === null))
+                                <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                                    <p class="text-sm text-amber-700 mb-2">This address needs a delivery location. Tap the map to set it.</p>
+                                    <x-location-map
+                                        :lat="$latitude"
+                                        :lng="$longitude"
+                                        lat-prop="latitude"
+                                        lng-prop="longitude"
+                                        :autofill="true"
+                                        geolocate
+                                    />
+                                    @error('latitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                    @error('longitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
+                            @endif
                         @endif
 
                         @if ($this->addressMode === 'new')

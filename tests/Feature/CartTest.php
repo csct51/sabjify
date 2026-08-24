@@ -217,6 +217,54 @@ test('cart cannot be modified by another user', function () {
     expect(CartItem::find($item->id))->not->toBeNull();
 });
 
+test('cart increment is scoped to the authenticated user', function () {
+    $owner = User::factory()->create();
+    $other = User::factory()->create();
+    $product = Product::factory()->available()->create();
+
+    $item = CartItem::factory()->create(['user_id' => $owner->id, 'product_id' => $product->id, 'quantity' => 2]);
+
+    Livewire::actingAs($other)
+        ->test(Cart::class)
+        ->call('increment', $item)
+        ->assertNotFound();
+
+    expect($item->fresh()->quantity)->toBe(2);
+});
+
+test('cart decrement is scoped to the authenticated user', function () {
+    $owner = User::factory()->create();
+    $other = User::factory()->create();
+    $product = Product::factory()->available()->create();
+
+    $item = CartItem::factory()->create(['user_id' => $owner->id, 'product_id' => $product->id, 'quantity' => 2]);
+
+    Livewire::actingAs($other)
+        ->test(Cart::class)
+        ->call('decrement', $item)
+        ->assertNotFound();
+
+    expect($item->fresh()->quantity)->toBe(2);
+});
+
+test('product card ignores a unit id that does not belong to the product', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->withUnits(1)->create();
+    $otherProduct = Product::factory()->available()->withUnits(1)->create();
+    $foreignUnit = $otherProduct->units->first();
+
+    Livewire::actingAs($user)
+        ->test(ProductCard::class, ['product' => $product])
+        ->call('addToCart', $foreignUnit->id)
+        ->assertSet('inCart', true);
+
+    $this->assertDatabaseHas('cart_items', [
+        'user_id' => $user->id,
+        'product_id' => $product->id,
+        'product_unit_id' => $product->defaultUnit()->id,
+    ]);
+});
+
 test('cart page shows subtotal and free delivery above threshold', function () {
     $user = User::factory()->create();
     $product = Product::factory()->available()->create(['price' => 600]);

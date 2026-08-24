@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DeliveryLocation;
 use App\Models\Order;
 use App\Services\OrderService;
 use App\Services\RazorpayService;
+use App\Support\Geo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -47,6 +49,14 @@ class PaymentController extends Controller
             Log::warning('Invalid Razorpay signature.', ['order_id' => $order->id]);
 
             return response()->json(['success' => false, 'message' => 'Payment could not be verified.'], 422);
+        }
+
+        $capturedAmount = $this->paymentDetails($validated['razorpay_payment_id'])['amount'] ?? null;
+
+        if ($capturedAmount !== null && $capturedAmount !== $order->total * 100) {
+            Log::warning('Razorpay captured amount mismatch.', ['order_id' => $order->id, 'expected' => $order->total * 100, 'captured' => $capturedAmount]);
+
+            return response()->json(['success' => false, 'message' => 'Payment amount could not be verified.'], 422);
         }
 
         $order->update([
@@ -99,8 +109,43 @@ class PaymentController extends Controller
 
         $user = auth('web')->user();
 
-        if ($user->cartItems()->count() === 0) {
+        $cartItems = $user->cartItems()->with('product', 'productUnit', 'basket')->get();
+        $cartItems = $cartItems->filter(fn ($item) => $item->basket || $item->product);
+
+        if ($cartItems->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'Your cart is empty.'], 422);
+        }
+
+        $subtotal = $cartItems->sum(fn ($item) => $item->total());
+        $deliveryFee = $subtotal === 0 ? 0 : ($subtotal >= (int) config('mart.free_delivery_threshold') ? 0 : (int) config('mart.delivery_fee'));
+        $total = $subtotal + $deliveryFee;
+
+        $expectedAmount = $payload['amount'] ?? null;
+        if ($expectedAmount !== null && $expectedAmount !== $total * 100) {
+            return response()->json(['success' => false, 'message' => 'Your cart changed during payment. Please try again.'], 422);
+        }
+
+        $capturedAmount = $this->paymentDetails($validated['razorpay_payment_id'])['amount'] ?? null;
+        if ($capturedAmount !== null && $capturedAmount !== $total * 100) {
+            Log::warning('Razorpay captured amount mismatch during checkout.', ['user_id' => $user->id, 'expected' => $total * 100, 'captured' => $capturedAmount]);
+
+            return response()->json(['success' => false, 'message' => 'Payment amount could not be verified.'], 422);
+        }
+
+        $minimum = (int) config('mart.minimum_order_amount');
+        if ($minimum > 0 && $subtotal < $minimum) {
+            return response()->json(['success' => false, 'message' => 'Your order is below the minimum order amount.'], 422);
+        }
+
+        $latitude = $payload['address']['latitude'] ?? null;
+        $longitude = $payload['address']['longitude'] ?? null;
+
+        if ($latitude === null || $longitude === null) {
+            return response()->json(['success' => false, 'message' => 'Delivery location is missing.'], 422);
+        }
+
+        if (! $this->isDeliverable((float) $latitude, (float) $longitude)) {
+            return response()->json(['success' => false, 'message' => 'We don\'t deliver to this location yet.'], 422);
         }
 
         $data = $payload['address'];
@@ -144,5 +189,18 @@ class PaymentController extends Controller
 
             return null;
         }
+    }
+
+    private function isDeliverable(float $latitude, float $longitude): bool
+    {
+        $locations = DeliveryLocation::active()->get();
+
+        if ($locations->isEmpty()) {
+            return true;
+        }
+
+        return $locations->contains(
+            fn (DeliveryLocation $location): bool => Geo::distanceKm($latitude, $longitude, (float) $location->latitude, (float) $location->longitude) <= (float) $location->radius_km,
+        );
     }
 }

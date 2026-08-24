@@ -327,6 +327,7 @@ class Checkout extends Component
         session()->put('pending_payment_'.$razorpayOrderId, [
             'user_id' => $user->id,
             'address' => $addressData,
+            'amount' => $this->total() * 100,
         ]);
 
         $this->dispatch('razorpay-open',
