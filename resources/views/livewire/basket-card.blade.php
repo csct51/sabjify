@@ -34,6 +34,10 @@
     <div class="p-4 pb-0">
         <a href="{{ route('baskets.show', $basket) }}" wire:navigate class="relative block aspect-[4/3] overflow-hidden rounded-xl">
             <img src="{{ $basket->displayImageUrl() }}" alt="{{ $basket->name }}" class="absolute inset-0 w-full h-full {{ $basket->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+
+            @if ($basket->discountPercent() > 0)
+                <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">{{ $basket->discountPercent() }}% OFF</span>
+            @endif
         </a>
     </div>
 
@@ -56,6 +60,9 @@
         @endif
 
         <div class="mt-auto pt-3">
+            @if ($basket->discountPercent() > 0 && $basket->mrp)
+                <p class="text-xs text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($basket->mrp, 'INR') }}</p>
+            @endif
             <p class="font-semibold text-stone-900 min-w-0 mb-2">{{ \Illuminate\Support\Number::currency($basket->price, 'INR') }}</p>
 
             @if ($showItems)

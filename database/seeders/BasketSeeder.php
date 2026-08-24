@@ -63,6 +63,7 @@ class BasketSeeder extends Seeder
                 'description' => 'The everyday essentials — fresh daily staples to keep your kitchen stocked.',
                 'products' => ['tomato', 'onion', 'potato', 'carrot', 'spinach-palak', 'cucumber', 'coriander', 'curry-leaves'],
                 'price' => 299,
+                'mrp' => 359,
             ],
             [
                 'name' => 'Smart Basket',
@@ -71,6 +72,7 @@ class BasketSeeder extends Seeder
                 'image' => 'https://images.unsplash.com/photo-1543168256-418811576931?q=80&w=600&auto=format&fit=crop',
                 'products' => ['tomato', 'onion', 'potato', 'carrot', 'cucumber', 'capsicum-mix', 'banana-robusta', 'sweet-orange', 'ginger', 'mint-leaves'],
                 'price' => 499,
+                'mrp' => 599,
             ],
             [
                 'name' => 'Premium Basket',
@@ -79,6 +81,7 @@ class BasketSeeder extends Seeder
                 'image' => 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=600&auto=format&fit=crop',
                 'products' => ['fresh-apple', 'avocado', 'kiwi', 'blueberry', 'seedless-grapes', 'sweet-orange', 'watermelon', 'lettuce-iceberg', 'capsicum-mix', 'tomato'],
                 'price' => 799,
+                'mrp' => 959,
             ],
             [
                 'name' => 'Complete Basket',
@@ -87,6 +90,7 @@ class BasketSeeder extends Seeder
                 'image' => 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop',
                 'products' => ['fresh-apple', 'banana-robusta', 'avocado', 'kiwi', 'blueberry', 'seedless-grapes', 'sweet-orange', 'watermelon', 'tomato', 'onion', 'potato', 'carrot', 'spinach-palak', 'cucumber'],
                 'price' => 999,
+                'mrp' => 1199,
             ],
         ];
 
@@ -104,6 +108,7 @@ class BasketSeeder extends Seeder
                 'type' => $basket['type'],
                 'description' => $basket['description'],
                 'price' => $basketPrice,
+                'mrp' => $basket['mrp'] ?? null,
                 'is_active' => true,
                 'sort_order' => $index,
             ];

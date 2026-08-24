@@ -21,7 +21,10 @@
                     <p class="mt-3 text-stone-600">{{ $basket->description }}</p>
                 @endif
 
-                <p class="mt-5 text-2xl font-bold text-stone-900">{{ \Illuminate\Support\Number::currency($basket->price, 'INR') }}</p>
+                @if ($basket->discountPercent() > 0 && $basket->mrp)
+                    <p class="mt-5 text-lg text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($basket->mrp, 'INR') }}</p>
+                @endif
+                <p class="text-2xl font-bold text-stone-900 {{ $basket->discountPercent() > 0 ? 'mt-1' : 'mt-5' }}">{{ \Illuminate\Support\Number::currency($basket->price, 'INR') }}</p>
                 <p class="text-xs text-stone-400 mt-1">One-time purchase price for this basket.</p>
 
                 <div class="mt-5 hidden lg:flex items-center gap-3">

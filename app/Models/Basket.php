@@ -20,12 +20,13 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $description
  * @property string|null $image
  * @property int $price
+ * @property int|null $mrp
  * @property bool $is_active
  * @property int $sort_order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'slug', 'type', 'description', 'image', 'price', 'is_active', 'sort_order'])]
+#[Fillable(['name', 'slug', 'type', 'description', 'image', 'price', 'mrp', 'is_active', 'sort_order'])]
 class Basket extends Model
 {
     /** @use HasFactory<BasketFactory> */
@@ -50,6 +51,15 @@ class Basket extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function discountPercent(): int
+    {
+        if (! $this->mrp || $this->mrp <= $this->price) {
+            return 0;
+        }
+
+        return (int) round((($this->mrp - $this->price) / $this->mrp) * 100);
     }
 
     /**

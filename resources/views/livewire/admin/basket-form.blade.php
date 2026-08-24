@@ -25,7 +25,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-stone-700 mb-1">Type <span class="text-red-500">*</span></label>
                         <select wire:model="type" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
@@ -48,6 +48,12 @@
                             </p>
                         @endif
                         @error('price')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-1">MRP <span class="text-stone-400">(optional)</span></label>
+                        <input wire:model="mrp" type="number" min="1" placeholder="e.g. 599" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        <p class="mt-1 text-[11px] text-stone-400">Strike-through list price. Leave blank if no discount.</p>
+                        @error('mrp')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
 

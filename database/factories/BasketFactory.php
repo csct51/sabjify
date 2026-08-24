@@ -28,6 +28,7 @@ class BasketFactory extends Factory
             'description' => fake()->sentence(),
             'image' => null,
             'price' => fake()->numberBetween(199, 1499),
+            'mrp' => null,
             'is_active' => true,
             'sort_order' => fake()->numberBetween(0, 20),
         ];

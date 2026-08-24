@@ -30,6 +30,8 @@ class BasketForm extends Component
 
     public int $price = 0;
 
+    public ?int $mrp = null;
+
     public string $is_active = '1';
 
     public int $sort_order = 0;
@@ -60,6 +62,7 @@ class BasketForm extends Component
             $this->type = $basket->type;
             $this->description = $basket->description ?? '';
             $this->price = $basket->price;
+            $this->mrp = $basket->mrp;
             $this->is_active = $basket->is_active ? '1' : '0';
             $this->sort_order = $basket->sort_order;
             $this->imageUrl = $basket->image && filter_var($basket->image, FILTER_VALIDATE_URL) !== false ? $basket->image : '';
@@ -190,6 +193,7 @@ class BasketForm extends Component
             'type' => ['required', 'in:'.implode(',', array_keys(Basket::TYPES))],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'integer', 'min:1'],
+            'mrp' => ['nullable', 'integer', 'min:1'],
             'productIds' => ['required', 'array', 'min:1'],
             'productIds.*' => ['integer', 'exists:products,id'],
             'productUnitIds.*' => ['nullable', 'integer', 'exists:product_units,id'],
@@ -205,6 +209,7 @@ class BasketForm extends Component
             'type' => $this->type,
             'description' => $this->description !== '' ? $this->description : null,
             'price' => $this->price,
+            'mrp' => $this->mrp === null || $this->mrp === '' ? null : (int) $this->mrp,
             'is_active' => $this->is_active === '1',
             'sort_order' => $this->sort_order,
         ];
