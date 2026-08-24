@@ -6,6 +6,7 @@ use App\Livewire\Admin\CategoryForm;
 use App\Livewire\Admin\Customers;
 use App\Livewire\Admin\CustomerShow;
 use App\Livewire\Admin\NotificationBell;
+use App\Livewire\Admin\Orders;
 use App\Livewire\Admin\OrderShow;
 use App\Livewire\Admin\Prices;
 use App\Livewire\Admin\ProductForm;
@@ -213,6 +214,28 @@ test('admin can update an order status', function () {
         ->assertDispatched('toast', message: 'Order status updated.');
 
     expect($order->fresh()->status)->toBe('confirmed');
+});
+
+test('admin orders list is paginated instead of loading everything', function () {
+    $admin = Admin::factory()->create();
+    Order::factory()->count(25)->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Orders::class)
+        ->assertSee('25 orders')
+        ->assertSee('Next');
+});
+
+test('admin orders filter resets the page', function () {
+    $admin = Admin::factory()->create();
+    Order::factory()->count(3)->create(['status' => 'pending']);
+    Order::factory()->count(2)->create(['status' => 'delivered']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Orders::class)
+        ->call('filter', 'pending')
+        ->assertSet('status', 'pending')
+        ->assertSee('3 orders');
 });
 
 test('admin cannot skip order status steps', function () {

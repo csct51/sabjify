@@ -40,6 +40,7 @@ class Home extends Component
             ->with(['category', 'units'])
             ->featured()
             ->orderBy('sort_order')
+            ->limit(12)
             ->get();
     }
 

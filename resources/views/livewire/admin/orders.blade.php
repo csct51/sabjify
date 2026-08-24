@@ -1,7 +1,7 @@
 <div>
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-            <p class="text-sm text-stone-400 mb-1">{{ $orders->count() }} orders</p>
+            <p class="text-sm text-stone-400 mb-1">{{ $orders->total() }} orders</p>
             <h2 class="text-lg font-semibold text-stone-900">Manage Orders</h2>
         </div>
     </div>
@@ -23,7 +23,7 @@
 
     <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table id="orders-table" data-datatable class="w-full text-sm">
+            <table id="orders-table" class="w-full text-sm">
                 <thead class="bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-400">
                     <tr>
                         <th class="w-10 px-4 py-3 font-medium">#</th>
@@ -65,5 +65,11 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($orders->hasPages())
+            <div class="mt-4">
+                {{ $orders->links() }}
+            </div>
+        @endif
     </div>
 </div>

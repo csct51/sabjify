@@ -4,36 +4,85 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 #[Layout('layouts.search')]
 #[Title('Search')]
 class Search extends Component
 {
-    use WithPagination;
-
     #[Url(as: 'q', history: true)]
     public string $search = '';
 
-    public function updatedSearch(): void
+    /** @var Collection<int, Product> */
+    public Collection $items;
+
+    public int $page = 1;
+
+    public bool $hasMore = true;
+
+    public bool $loadingMore = false;
+
+    public int $perPage = 12;
+
+    public function mount(): void
     {
-        $this->resetPage();
+        $this->items = collect();
+        $this->loadItems();
     }
 
-    public function render(): View
+    public function updatedSearch(): void
     {
-        $products = Product::active()
+        $this->resetItems();
+    }
+
+    public function loadMore(): void
+    {
+        if (! $this->hasMore || $this->loadingMore) {
+            return;
+        }
+
+        $this->loadingMore = true;
+        $this->page++;
+        $this->loadItems();
+        $this->loadingMore = false;
+    }
+
+    /**
+     * @return Builder<Product>
+     */
+    private function query()
+    {
+        return Product::active()
             ->with(['category', 'units'])
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%'.$this->search.'%');
             })
-            ->orderBy('name')
-            ->paginate(12);
+            ->orderBy('name');
+    }
 
-        return view('livewire.search', ['products' => $products]);
+    private function loadItems(): void
+    {
+        $result = $this->query()->paginate($this->perPage, ['*'], 'page', $this->page);
+
+        $this->hasMore = $result->hasMorePages();
+        $this->items = Collection::make(array_merge($this->items->all(), $result->items()));
+    }
+
+    private function resetItems(): void
+    {
+        $this->page = 1;
+        $this->items = collect();
+        $this->hasMore = true;
+        $this->loadItems();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.search');
     }
 }

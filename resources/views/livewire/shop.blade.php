@@ -3,7 +3,7 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-stone-900 mb-1">{{ $this->category ? collect($this->categories)->firstWhere('slug', $this->category)?->name : 'All Products' }}</h1>
-                <p class="text-sm text-stone-500">{{ $products->total() }} items available</p>
+                <p class="text-sm text-stone-500">{{ $this->resultCount() }} items available</p>
             </div>
             <div class="flex items-center gap-3">
                 <div class="hidden lg:flex items-center gap-2">
@@ -56,7 +56,7 @@
                             >
                                 <span class="w-12 h-12 rounded bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
                                     @if ($cat->image)
-                                        <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" class="w-full h-full object-cover">
+                                        <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
                                     @endif
                                 </span>
                                 <span class="text-xs font-medium leading-tight line-clamp-1">{{ $cat->name }}</span>
@@ -68,7 +68,7 @@
         </aside>
 
         <div data-reveal>
-            @if ($products->isEmpty())
+            @if ($this->items->isEmpty())
                 <div class="text-center py-20">
                     <span class="inline-flex items-center justify-center w-16 h-16 mx-auto rounded-2xl bg-brand-50 text-brand-600"><i data-lucide="shopping-basket" class="w-8 h-8"></i></span>
                     <h3 class="mt-4 text-lg font-semibold text-stone-900">No products found</h3>
@@ -77,14 +77,26 @@
                 </div>
             @else
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                    @foreach ($products as $product)
+                    @foreach ($this->items as $product)
                         <livewire:product-card :product="$product" :key="$product->id" />
                     @endforeach
                 </div>
 
-                <div class="mt-8">
-                    {{ $products->links() }}
-                </div>
+                @if ($this->hasMore)
+                    <div
+                        x-data="{ sent: false }"
+                        x-intersect.full.margin.0px.0px.200px="if (!sent && $wire.hasMore && !$wire.loadingMore) { sent = true; $wire.loadMore(); }"
+                        class="mt-8 flex justify-center"
+                    >
+                        <x-loading-spinner wire:loading wire:target="loadMore" class="w-6 h-6 text-brand-600" />
+                    </div>
+
+                    <div class="mt-4 flex justify-center" wire:loading.remove wire:target="loadMore">
+                        <button type="button" wire:click="loadMore" class="rounded-xl border border-stone-300 text-stone-600 px-5 py-2.5 text-sm font-medium hover:bg-stone-50 transition">
+                            Load more
+                        </button>
+                    </div>
+                @endif
             @endif
         </div>
     </div>

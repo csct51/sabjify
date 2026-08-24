@@ -3,18 +3,18 @@
         <div class="flex items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-stone-900 mb-1">Recipes</h1>
-                <p class="text-sm text-stone-500">{{ $recipes->total() }} recipes to try</p>
+                <p class="text-sm text-stone-500">{{ $this->totalRecipes() }} recipes to try</p>
             </div>
         </div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" data-reveal>
-            @foreach ($recipes as $recipe)
+            @foreach ($this->items as $recipe)
                 <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                     <div class="p-4 pb-0">
                         <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
-                            <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" class="absolute inset-0 w-full h-full {{ $recipe->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+                            <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $recipe->imageFit() }} transition-transform duration-300 group-hover:scale-105">
                         </div>
                     </div>
                     <div class="p-4">
@@ -28,9 +28,18 @@
             @endforeach
         </div>
 
-        @if ($recipes->hasPages())
-            <div class="mt-10">
-                {{ $recipes->links() }}
+        @if ($this->hasMore)
+            <div
+                x-intersect.full.margin.0px.0px.200px="$wire.loadMore()"
+                class="mt-10 flex justify-center"
+            >
+                <x-loading-spinner wire:loading wire:target="loadMore" class="w-6 h-6 text-brand-600" />
+            </div>
+
+            <div class="mt-4 flex justify-center" wire:loading.remove wire:target="loadMore">
+                <button type="button" wire:click="loadMore" class="rounded-xl border border-stone-300 text-stone-600 px-5 py-2.5 text-sm font-medium hover:bg-stone-50 transition">
+                    Load more
+                </button>
             </div>
         @endif
     </div>

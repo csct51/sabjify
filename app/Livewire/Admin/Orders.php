@@ -9,17 +9,22 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Layout('layouts.admin')]
 #[Title('Orders')]
 class Orders extends Component
 {
+    use WithPagination;
+
     #[Url]
     public ?string $status = null;
 
     public function filter(string $status): void
     {
         $this->status = $status === 'all' ? null : $status;
+
+        $this->resetPage();
     }
 
     /**
@@ -45,7 +50,7 @@ class Orders extends Component
         $orders = Order::with('user')->withCount('items')
             ->when($this->status, fn ($query) => $query->where('status', $this->status))
             ->latest()
-            ->get();
+            ->paginate(20);
 
         return view('livewire.admin.orders', ['orders' => $orders]);
     }

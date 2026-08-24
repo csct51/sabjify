@@ -60,3 +60,28 @@ test('categories index page shows all active categories', function () {
         ->assertSee('Fruits')
         ->assertDontSee('Hidden Category');
 });
+
+test('shop paginates products and loads more on demand', function () {
+    Category::factory()->create();
+    Product::factory()->count(14)->create();
+
+    Livewire::test(Shop::class)
+        ->assertSet('items', fn ($items) => $items->count() === 12)
+        ->assertSet('hasMore', true)
+        ->call('loadMore')
+        ->assertSet('items', fn ($items) => $items->count() === 14)
+        ->assertSet('hasMore', false)
+        ->assertSet('page', 2);
+});
+
+test('shop resets pagination when a filter is applied', function () {
+    $category = Category::factory()->create(['name' => 'Fruits']);
+    Product::factory()->count(14)->create();
+    Product::factory()->create(['name' => 'Apple', 'category_id' => $category->id]);
+
+    Livewire::test(Shop::class)
+        ->set('category', $category->slug)
+        ->assertSet('page', 1)
+        ->assertSet('items', fn ($items) => $items->count() === 1)
+        ->assertSet('hasMore', false);
+});

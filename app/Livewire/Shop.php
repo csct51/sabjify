@@ -5,20 +5,19 @@ namespace App\Livewire;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as BaseCollection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 #[Layout('layouts.store')]
 #[Title('Shop')]
 class Shop extends Component
 {
-    use WithPagination;
-
     #[Url(as: 'q', history: false)]
     public string $search = '';
 
@@ -30,19 +29,36 @@ class Shop extends Component
 
     public bool $showFilters = false;
 
+    /** @var BaseCollection<int, Product> */
+    public BaseCollection $items;
+
+    public int $page = 1;
+
+    public bool $hasMore = true;
+
+    public bool $loadingMore = false;
+
+    public int $perPage = 12;
+
+    public function mount(): void
+    {
+        $this->items = collect();
+        $this->loadItems();
+    }
+
     public function updatedSearch(): void
     {
-        $this->resetPage();
+        $this->resetItems();
     }
 
     public function updatedCategory(): void
     {
-        $this->resetPage();
+        $this->resetItems();
     }
 
     public function updatedSort(): void
     {
-        $this->resetPage();
+        $this->resetItems();
     }
 
     public function clearFilters(): void
@@ -51,7 +67,19 @@ class Shop extends Component
         $this->category = null;
         $this->sort = 'latest';
 
-        $this->resetPage();
+        $this->resetItems();
+    }
+
+    public function loadMore(): void
+    {
+        if (! $this->hasMore || $this->loadingMore) {
+            return;
+        }
+
+        $this->loadingMore = true;
+        $this->page++;
+        $this->loadItems();
+        $this->loadingMore = false;
     }
 
     /**
@@ -72,9 +100,18 @@ class Shop extends Component
         return Product::active()->count();
     }
 
-    public function render(): View
+    #[Computed]
+    public function resultCount(): int
     {
-        $products = Product::active()
+        return $this->query()->count();
+    }
+
+    /**
+     * @return Builder<Product>
+     */
+    private function query()
+    {
+        return Product::active()
             ->with(['category', 'units'])
             ->when($this->category, function ($query) {
                 $query->whereHas('category', fn ($q) => $q->where('slug', $this->category));
@@ -89,9 +126,27 @@ class Shop extends Component
                     'popular' => $query->orderByDesc('sort_order'),
                     default => $query->latest(),
                 };
-            })
-            ->paginate(12);
+            });
+    }
 
-        return view('livewire.shop', ['products' => $products]);
+    private function loadItems(): void
+    {
+        $result = $this->query()->paginate($this->perPage, ['*'], 'page', $this->page);
+
+        $this->hasMore = $result->hasMorePages();
+        $this->items = BaseCollection::make(array_merge($this->items->all(), $result->items()));
+    }
+
+    private function resetItems(): void
+    {
+        $this->page = 1;
+        $this->items = collect();
+        $this->hasMore = true;
+        $this->loadItems();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.shop');
     }
 }

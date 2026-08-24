@@ -3,6 +3,7 @@
 use App\Livewire\Admin\RecipeForm;
 use App\Livewire\Admin\Recipes;
 use App\Livewire\RecipeProduct;
+use App\Livewire\Recipes\Index as RecipesIndex;
 use App\Livewire\RecipeShow;
 use App\Models\Admin;
 use App\Models\Product;
@@ -215,6 +216,18 @@ test('recipes index page shows active recipes', function () {
         ->assertOk()
         ->assertSee('Mango Salad')
         ->assertDontSee('Hidden Recipe');
+});
+
+test('recipes index paginates and loads more on demand', function () {
+    Recipe::factory()->count(14)->create(['is_active' => true]);
+
+    Livewire::test(RecipesIndex::class)
+        ->assertSet('items', fn ($items) => $items->count() === 12)
+        ->assertSet('hasMore', true)
+        ->call('loadMore')
+        ->assertSet('items', fn ($items) => $items->count() === 14)
+        ->assertSet('hasMore', false)
+        ->assertSee('14 recipes to try');
 });
 
 test('recipe detail page shows linked products', function () {
