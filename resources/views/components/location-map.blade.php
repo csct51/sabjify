@@ -9,6 +9,7 @@
     'height' => 'h-64',
     'autofill' => false,
     'readonly' => false,
+    'geolocate' => false,
     'existingAreas' => false,
     'excludeAreaId' => null,
 ])
@@ -51,10 +52,21 @@
         'existingAreas' => $existingAreas,
         'readonly' => $readonly,
         'routes' => $routeItems,
+        'geolocate' => $geolocate && ! $readonly,
     ];
 @endphp
 
 <div x-data>
+    @if ($geolocate && ! $readonly)
+        <button
+            type="button"
+            x-on:click="$refs.map.dispatchEvent(new CustomEvent('locate:request'))"
+            class="mb-2 inline-flex items-center gap-1.5 rounded-xl border border-brand-600 text-brand-600 hover:bg-brand-50 font-semibold px-3.5 py-2 text-sm transition"
+        >
+            <i data-lucide="crosshair" class="w-4 h-4"></i> Use my current location
+        </button>
+    @endif
+
     <div
         wire:ignore
         data-leaflet-map

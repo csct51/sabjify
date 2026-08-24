@@ -46,16 +46,9 @@ class AddAddressPrompt extends Component
 
     public function mount(): void
     {
-        $user = auth('web')->user();
-
-        if (! $user || session()->get('address_prompt_completed')) {
+        if (! auth('web')->user()) {
             return;
         }
-
-        $this->show = true;
-        $this->receiverName = $user->name;
-        $this->receiverPhone = $user->phone;
-        $this->selectedAddressId = $user->addresses()->latest()->value('id');
     }
 
     #[On('open-address-prompt')]
@@ -118,7 +111,6 @@ class AddAddressPrompt extends Component
         $this->makeDefault($address);
 
         $this->show = false;
-        session()->put('address_prompt_completed', true);
 
         $this->dispatch('address-updated');
 
@@ -181,7 +173,6 @@ class AddAddressPrompt extends Component
         $this->makeDefault($address);
 
         $this->show = false;
-        session()->put('address_prompt_completed', true);
 
         $this->dispatch('address-updated');
 

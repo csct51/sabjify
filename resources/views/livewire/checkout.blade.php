@@ -94,6 +94,7 @@
                                         lat-prop="latitude"
                                         lng-prop="longitude"
                                         :autofill="true"
+                                        geolocate
                                     />
                                     @error('latitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                     @error('longitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror

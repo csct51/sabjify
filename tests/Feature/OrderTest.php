@@ -353,6 +353,19 @@ test('checkout persists coordinates when using a saved address', function () {
         ->and($order->longitude)->toBe(72.8777);
 });
 
+test('checkout new address form offers to use the current location', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->assertSet('addressMode', 'new')
+        ->assertSee('Use my current location')
+        ->assertSee('locate:request');
+});
+
 test('cart disables checkout when below the minimum order amount', function () {
     config(['mart.minimum_order_amount' => 200]);
 

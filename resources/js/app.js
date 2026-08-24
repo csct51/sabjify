@@ -466,6 +466,19 @@ function initializeMap(element) {
     }
 
     if (config.geolocate) {
+        const requestCurrentLocation = (onError) => {
+            if (! navigator.geolocation) {
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                const latlng = [position.coords.latitude, position.coords.longitude];
+                placeMarker(latlng);
+                map.setView(latlng, 15);
+                emit();
+            }, onError, { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
+        };
+
         const locateButton = L.control({ position: 'topleft' });
 
         locateButton.onAdd = () => {
@@ -477,26 +490,18 @@ function initializeMap(element) {
             button.setAttribute('aria-label', 'Use my location');
 
             button.addEventListener('click', () => {
-                if (! navigator.geolocation) {
-                    return;
-                }
-
                 button.disabled = true;
-
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const latlng = [position.coords.latitude, position.coords.longitude];
-                    placeMarker(latlng);
-                    map.setView(latlng, 15);
-                    emit();
-                }, () => {
-                    button.disabled = false;
-                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
+                requestCurrentLocation(() => { button.disabled = false; });
             });
 
             return button;
         };
 
         locateButton.addTo(map);
+
+        element.addEventListener('locate:request', () => {
+            requestCurrentLocation(() => {});
+        });
     }
 
     map.on('click', (event) => {

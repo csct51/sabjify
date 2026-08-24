@@ -21,6 +21,16 @@ test('authenticated user can view their saved addresses', function () {
         ->assertSee('My Addresses');
 });
 
+test('address form offers to use the current location', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(Addresses::class)
+        ->call('openAddressForm')
+        ->assertSee('Use my current location')
+        ->assertSee('locate:request');
+});
+
 test('user can add a saved address', function () {
     $user = User::factory()->create();
 

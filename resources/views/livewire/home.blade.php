@@ -22,47 +22,52 @@
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12" data-reveal>
-        <div class="mb-6 text-center">
-            <h2 class="text-2xl font-bold text-stone-900">Shop by Category</h2>
-            <p class="mt-1 text-sm text-stone-500">Browse our fresh selection</p>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <section class="bg-white py-12 sm:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-stone-900">Shop by Category</h2>
+                <p class="mt-1 text-sm text-stone-500">Browse our fresh selection</p>
+            </div>
+        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4">
             @foreach ($this->categories as $category)
                 <a href="{{ route('shop', ['category' => $category->slug]) }}" wire:navigate class="group text-center">
-                    <div class="relative w-full aspect-square overflow-hidden rounded-full bg-gradient-to-br from-brand-50 to-lime-100 group-hover:shadow-md group-hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="relative w-full aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 to-lime-100 group-hover:shadow-md group-hover:-translate-y-0.5 transition-all duration-300">
                         <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
                     </div>
                     <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 truncate">{{ $category->name }}</p>
                 </a>
             @endforeach
             <a href="{{ route('categories.index') }}" wire:navigate class="group text-center flex flex-col items-center justify-center">
-                <div class="relative w-full aspect-square rounded-full bg-gradient-to-br from-brand-50 to-lime-100 inline-flex items-center justify-center group-hover:shadow-md group-hover:-translate-y-0.5 transition-all duration-300">
+                <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-br from-brand-50 to-lime-100 inline-flex items-center justify-center group-hover:shadow-md group-hover:-translate-y-0.5 transition-all duration-300">
                     <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
                 </div>
                 <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700">View all</p>
             </a>
+            </div>
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
-        <div class="mb-6 text-center">
-            <h2 class="text-2xl font-bold text-stone-900">Featured Products</h2>
-            <p class="mt-1 text-sm text-stone-500">Handpicked favourites just for you</p>
-        </div>
+    <section class="bg-brand-50/50 py-12 sm:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-stone-900">Featured Products</h2>
+                <p class="mt-1 text-sm text-stone-500">Handpicked favourites just for you</p>
+            </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             @foreach ($this->featuredProducts as $product)
                 <livewire:product-card :product="$product" :key="'featured-'.$product->id" />
             @endforeach
+            </div>
         </div>
     </section>
 
     @if ($this->sabjifyBaskets->isNotEmpty())
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
-            <div class="mb-6 text-center">
-                <h2 class="text-2xl font-bold text-stone-900">Sabjify Baskets</h2>
-                <p class="mt-1 text-sm text-stone-500">Our signature daily baskets</p>
-            </div>
+        <section class="bg-stone-50 py-12 sm:py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
+                <div class="mb-6 text-center">
+                    <h2 class="text-2xl font-bold text-stone-900">Sabjify Baskets</h2>
+                    <p class="mt-1 text-sm text-stone-500">Our signature daily baskets</p>
+                </div>
             <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
                 @foreach ($this->sabjifyBaskets as $basket)
                     <div class="shrink-0 snap-start w-64 sm:w-72">
@@ -76,15 +81,17 @@
                     <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
                 </a>
             </div>
+            </div>
         </section>
     @endif
 
     @if ($this->wellnessBaskets->isNotEmpty())
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
-            <div class="mb-6 text-center">
-                <h2 class="text-2xl font-bold text-stone-900">Wellness Baskets</h2>
-                <p class="mt-1 text-sm text-stone-500">Curated for a healthier you</p>
-            </div>
+        <section class="bg-brand-50/50 py-12 sm:py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
+                <div class="mb-6 text-center">
+                    <h2 class="text-2xl font-bold text-stone-900">Wellness Baskets</h2>
+                    <p class="mt-1 text-sm text-stone-500">Curated for a healthier you</p>
+                </div>
             <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
                 @foreach ($this->wellnessBaskets as $basket)
                     <div class="shrink-0 snap-start w-64 sm:w-72">
@@ -98,15 +105,17 @@
                     <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
                 </a>
             </div>
+            </div>
         </section>
     @endif
 
     @if ($this->recipes->isNotEmpty())
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16" data-reveal>
-            <div class="mb-6 text-center">
-                <h2 class="text-2xl font-bold text-stone-900">Recipes</h2>
-                <p class="mt-1 text-sm text-stone-500">Simple meals made fresh</p>
-            </div>
+        <section class="bg-stone-50 py-12 sm:py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
+                <div class="mb-6 text-center">
+                    <h2 class="text-2xl font-bold text-stone-900">Recipes</h2>
+                    <p class="mt-1 text-sm text-stone-500">Simple meals made fresh</p>
+                </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                 @foreach ($this->recipes as $recipe)
                     <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
@@ -131,11 +140,13 @@
                     <p class="mt-3 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
                 </a>
             </div>
+            </div>
         </section>
     @endif
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-4" data-reveal>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <section class="bg-brand-50/40 py-14 sm:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="truck" class="w-5 h-5"></i></span>
                 <p class="mt-2 text-sm font-semibold text-stone-800">Fast Delivery</p>
@@ -165,6 +176,7 @@
                 <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="headset" class="w-5 h-5"></i></span>
                 <p class="mt-2 text-sm font-semibold text-stone-800">24x7 Support</p>
                 <p class="text-xs text-stone-400">We're here to help</p>
+            </div>
             </div>
         </div>
     </section>

@@ -58,16 +58,17 @@ Route::post('/admin/logout', function () {
     return redirect()->route('admin.login');
 })->name('admin.logout')->middleware('auth:admin');
 
+Route::livewire('/', Home::class)->name('home');
+Route::livewire('/shop', Shop::class)->name('shop');
+Route::livewire('/search', Search::class)->name('search');
+Route::livewire('/categories', CategoriesIndex::class)->name('categories.index');
+Route::livewire('/product/{product:slug}', ProductDetail::class)->name('product.show');
+Route::livewire('/recipes', RecipesIndex::class)->name('recipes.index');
+Route::livewire('/recipes/{recipe:slug}', RecipeShow::class)->name('recipes.show');
+Route::livewire('/baskets', BasketsIndex::class)->name('baskets.index');
+Route::livewire('/baskets/{basket:slug}', BasketShow::class)->name('baskets.show');
+
 Route::middleware(['auth', 'user.active'])->group(function () {
-    Route::livewire('/', Home::class)->name('home');
-    Route::livewire('/shop', Shop::class)->name('shop');
-    Route::livewire('/search', Search::class)->name('search');
-    Route::livewire('/categories', CategoriesIndex::class)->name('categories.index');
-    Route::livewire('/product/{product:slug}', ProductDetail::class)->name('product.show');
-    Route::livewire('/recipes', RecipesIndex::class)->name('recipes.index');
-    Route::livewire('/recipes/{recipe:slug}', RecipeShow::class)->name('recipes.show');
-    Route::livewire('/baskets', BasketsIndex::class)->name('baskets.index');
-    Route::livewire('/baskets/{basket:slug}', BasketShow::class)->name('baskets.show');
     Route::livewire('/cart', Cart::class)->name('cart');
     Route::livewire('/checkout', Checkout::class)->name('checkout');
     Route::post('/checkout/payment/verify', [PaymentController::class, 'verifyCheckout'])->name('checkout.payment.verify');
