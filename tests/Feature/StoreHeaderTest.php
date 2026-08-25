@@ -91,8 +91,7 @@ test('home page renders the default address inside the header', function () {
     $this->actingAs($user)
         ->get('/')
         ->assertOk()
-        ->assertSee('12, MG Road')
-        ->assertSee('Mumbai');
+        ->assertSee('12, MG Road');
 });
 
 test('header does not show an address for guests', function () {
@@ -119,8 +118,7 @@ test('header shows the default delivery address', function () {
 
     Livewire::actingAs($user)
         ->test(StoreHeader::class)
-        ->assertSee('12, MG Road')
-        ->assertSee('Mumbai');
+        ->assertSee('12, MG Road');
 });
 
 test('header refreshes when the address-updated event fires', function () {
@@ -139,8 +137,7 @@ test('header refreshes when the address-updated event fires', function () {
 
     $component
         ->call('refreshAddress')
-        ->assertSee('12, MG Road')
-        ->assertSee('Mumbai');
+        ->assertSee('12, MG Road');
 });
 
 test('clicking the address chip opens the address prompt', function () {

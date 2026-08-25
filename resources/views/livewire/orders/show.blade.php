@@ -83,7 +83,7 @@
                         <span class="rounded-md bg-stone-100 border border-stone-200 px-2 py-0.5 text-xs text-stone-500">{{ $order->label ?? 'Home' }}</span>
                     </div>
                     <p class="text-sm font-medium text-stone-800">{{ $order->receiver_name }} · {{ $order->receiver_phone }}</p>
-                    <p class="mt-1 text-sm text-stone-500">{{ $order->address_line }}, {{ $order->city }}, {{ $order->state }}</p>
+                    <p class="mt-1 text-sm text-stone-500">{{ $order->address_line }}</p>
                 </div>
             </div>
 

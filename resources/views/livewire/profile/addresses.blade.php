@@ -54,7 +54,7 @@
                                     </div>
                                 </div>
                                 <p class="mt-2 text-sm text-stone-600">{{ $address->receiver_name }} · {{ $address->receiver_phone }}</p>
-                                <p class="text-sm text-stone-500">{{ $address->address_line }}{{ $address->landmark ? ', ' . $address->landmark : '' }}, {{ $address->city }}, {{ $address->state }}</p>
+                                <p class="text-sm text-stone-500">{{ $address->address_line }}{{ $address->landmark ? ', ' . $address->landmark : '' }}</p>
                                 @if (! $address->is_default)
                                     <button type="button" wire:click="setDefaultAddress({{ $address->id }})" wire:loading.attr="disabled" wire:target="setDefaultAddress({{ $address->id }})" class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 disabled:opacity-50">
                                         <x-loading-spinner wire:loading wire:target="setDefaultAddress({{ $address->id }})" class="w-3 h-3" />

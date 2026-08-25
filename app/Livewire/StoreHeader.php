@@ -77,13 +77,8 @@ class StoreHeader extends Component
 
         $label = 'Your location';
 
-        if ($address) {
-            $label = implode(', ', array_filter([
-                $address['address_line'],
-                $address['city'],
-                $address['state'],
-                $address['pincode'],
-            ]));
+        if ($address && $address['address_line'] !== '') {
+            $label = $address['address_line'];
         }
 
         $available = $this->checkDeliverable($lat, $lng);
@@ -121,9 +116,6 @@ class StoreHeader extends Component
         return implode(', ', array_filter([
             $address->address_line,
             $address->landmark ?: null,
-            $address->city,
-            $address->state,
-            $address->pincode,
         ]));
     }
 

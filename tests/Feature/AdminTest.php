@@ -326,7 +326,6 @@ test('admin can view customer details', function () {
         ->assertSee($customer->name)
         ->assertSee($customer->email)
         ->assertSee('+91 '.$customer->phone)
-        ->assertSee('Mumbai')
         ->assertSee($order->order_number)
         ->assertSee('240');
 });

@@ -54,7 +54,7 @@
                                             <span class="w-4 h-4 rounded-full border-2 {{ $this->addressMode === 'existing' && $this->addressId === $address->id ? 'border-brand-600 bg-brand-600' : 'border-stone-300' }}"></span>
                                         </div>
                                         <p class="mt-2 text-sm text-stone-600">{{ $address->receiver_name }} · {{ $address->receiver_phone }}</p>
-                                        <p class="mt-1 text-sm text-stone-500">{{ $address->address_line }}, {{ $address->landmark ? $address->landmark.', ' : '' }}{{ $address->city }}, {{ $address->state }}</p>
+                                        <p class="mt-1 text-sm text-stone-500">{{ $address->address_line }}{{ $address->landmark ? ', '.$address->landmark : '' }}</p>
                                     </button>
                                 @endforeach
                             </div>
