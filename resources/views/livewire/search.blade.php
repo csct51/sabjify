@@ -5,7 +5,7 @@
                 <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"></i>
                 <input
                     type="search"
-                    wire:model.live="search"
+                    wire:model.live.debounce.200ms="search"
                     placeholder="Search fruits & vegetables..."
                     autofocus
                     class="w-full rounded-full border-stone-200 bg-stone-50 py-2.5 pl-10 pr-4 text-sm focus:border-brand-500 focus:ring-brand-500"
@@ -22,10 +22,29 @@
                 <p class="text-sm text-stone-500 mt-1">{{ $this->search ? 'Try a different search term.' : 'Type a product name above to find fresh produce.' }}</p>
             </div>
         @else
-            <p class="text-sm text-stone-500 mb-4">{{ $this->totalResults() }} {{ $this->totalResults() === 1 ? 'item' : 'items' }} found</p>
+            @if ($this->showSuggestions && $this->search && $this->suggestions->isNotEmpty())
+                <ul data-suggestions class="mb-4 divide-y divide-stone-100 rounded-2xl border border-stone-200 bg-white overflow-hidden">
+                    @foreach ($this->suggestions as $s)
+                        <li>
+                            <button type="button" wire:click="selectSuggestion({{ $s->id }})" class="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left hover:bg-stone-50 transition">
+                                <span class="text-sm font-medium text-stone-800">{{ $s->name }}</span>
+                                @if ($s->category)
+                                    <span class="text-xs text-stone-400 shrink-0">{{ $s->category->name }}</span>
+                                @endif
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
+            @if ($this->search)
+                <p class="text-sm text-stone-500 mb-4">Showing results for "{{ $this->search }}"</p>
+            @endif
             <div class="relative min-h-[240px]">
-                <div wire:loading wire:target="search" class="absolute inset-0 z-10 flex items-center justify-center bg-[#F7F8F5]/60 rounded-xl">
-                    <x-loading-spinner class="w-8 h-8 text-brand-600" />
+                <div wire:loading wire:target="search" class="absolute inset-0 z-50 bg-[#F7F8F5]/40 backdrop-blur-sm">
+                    <div class="flex items-center justify-center w-full h-full">
+                        <x-loading-spinner class="w-8 h-8 text-brand-600" />
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">

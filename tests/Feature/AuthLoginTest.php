@@ -8,5 +8,7 @@ it('renders the login page with logo sized to the form width', function () {
         ->assertOk()
         ->assertDontSee(config('app.name'))
         ->assertDontSee('Fresh fruits & vegetables, delivered.')
-        ->assertSee('Login');
+        ->assertSee('Login')
+        ->assertSee('Back to home')
+        ->assertSee(route('home'));
 });

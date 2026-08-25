@@ -3,8 +3,8 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Support\ProductSearch;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -28,7 +28,11 @@ class Search extends Component
 
     public bool $loadingMore = false;
 
+    public bool $showSuggestions = true;
+
     public int $perPage = 12;
+
+    public int $total = 0;
 
     public function mount(): void
     {
@@ -38,6 +42,20 @@ class Search extends Component
 
     public function updatedSearch(): void
     {
+        $this->showSuggestions = true;
+        $this->resetItems();
+    }
+
+    public function selectSuggestion(int $id): void
+    {
+        $product = Product::find($id);
+
+        if (! $product) {
+            return;
+        }
+
+        $this->search = $product->name;
+        $this->showSuggestions = false;
         $this->resetItems();
     }
 
@@ -54,24 +72,26 @@ class Search extends Component
     }
 
     /**
-     * @return Builder<Product>
+     * @return array{items: Collection<int, Product>, total: int, hasMore: bool}
      */
-    private function query()
+    private function runSearch(): array
     {
-        return Product::active()
-            ->with(['category', 'units'])
-            ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%'.$this->search.'%');
-            })
-            ->orderBy('name');
+        return ProductSearch::search(
+            term: $this->search,
+            categorySlug: null,
+            sort: 'name',
+            page: $this->page,
+            perPage: $this->perPage,
+        );
     }
 
     private function loadItems(): void
     {
-        $result = $this->query()->paginate($this->perPage, ['*'], 'page', $this->page);
+        $result = $this->runSearch();
 
-        $this->hasMore = $result->hasMorePages();
-        $this->items = Collection::make(array_merge($this->items->all(), $result->items()));
+        $this->total = $result['total'];
+        $this->hasMore = $result['hasMore'];
+        $this->items = Collection::make(array_merge($this->items->all(), $result['items']->all()));
     }
 
     private function resetItems(): void
@@ -85,11 +105,29 @@ class Search extends Component
     #[Computed]
     public function totalResults(): int
     {
-        if (trim($this->search) === '') {
-            return 0;
+        return $this->total;
+    }
+
+    #[Computed]
+    public function suggestions(): Collection
+    {
+        $term = trim($this->search);
+
+        if (mb_strlen($term) < 2) {
+            return collect();
         }
 
-        return $this->query()->count();
+        $like = '%'.strtolower($term).'%';
+
+        return Product::active()
+            ->with('category')
+            ->where(function ($query) use ($like, $term) {
+                $query->where('name', 'like', '%'.$term.'%')
+                    ->orWhereRaw('LOWER(alternate_names) LIKE ?', [$like]);
+            })
+            ->orderBy('name')
+            ->limit(8)
+            ->get(['id', 'name', 'slug', 'category_id']);
     }
 
     public function render(): View

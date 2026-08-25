@@ -51,7 +51,55 @@
         </div>
     </section>
 
-    <section class="bg-brand-50/50 py-12 sm:py-16">
+    @if ($this->sabjifyBaskets->isNotEmpty())
+        <section class="bg-stone-50 py-12 sm:py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
+                <div class="mb-6 text-center">
+                    <h2 class="text-2xl font-bold text-stone-900">Sabjify Baskets</h2>
+                    <p class="mt-1 text-sm text-stone-500">Our signature daily baskets</p>
+                </div>
+                <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
+                    @foreach ($this->sabjifyBaskets as $basket)
+                        <div class="shrink-0 snap-start w-64 sm:w-72">
+                            <livewire:basket-card :basket="$basket" :show-items="true" :key="'sabjify-'.$basket->id" />
+                        </div>
+                    @endforeach
+                    <a href="{{ route('baskets.index') }}" wire:navigate class="group shrink-0 snap-start w-64 sm:w-72 bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
+                        <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
+                            <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
+                        </span>
+                        <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
+                    </a>
+                </div>
+                </div>
+            </section>
+    @endif
+
+    @if ($this->wellnessBaskets->isNotEmpty())
+        <section class="bg-brand-50/50 py-12 sm:py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
+                <div class="mb-6 text-center">
+                    <h2 class="text-2xl font-bold text-stone-900">Wellness Baskets</h2>
+                    <p class="mt-1 text-sm text-stone-500">Curated for a healthier you</p>
+                </div>
+                <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
+                    @foreach ($this->wellnessBaskets as $basket)
+                        <div class="shrink-0 snap-start w-64 sm:w-72">
+                            <livewire:basket-card :basket="$basket" :key="'wellness-'.$basket->id" />
+                        </div>
+                    @endforeach
+                    <a href="{{ route('baskets.index') }}" wire:navigate class="group shrink-0 snap-start w-64 sm:w-72 bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
+                        <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
+                            <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
+                        </span>
+                        <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
+                    </a>
+                </div>
+                </div>
+            </section>
+    @endif
+
+    <section class="bg-white py-12 sm:py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
             <div class="mb-6 text-center">
                 <h2 class="text-2xl font-bold text-stone-900">Featured Products</h2>
@@ -71,54 +119,6 @@
             </div>
         </div>
     </section>
-
-    @if ($this->sabjifyBaskets->isNotEmpty())
-        <section class="bg-stone-50 py-12 sm:py-16">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
-                <div class="mb-6 text-center">
-                    <h2 class="text-2xl font-bold text-stone-900">Sabjify Baskets</h2>
-                    <p class="mt-1 text-sm text-stone-500">Our signature daily baskets</p>
-                </div>
-            <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
-                @foreach ($this->sabjifyBaskets as $basket)
-                    <div class="shrink-0 snap-start w-64 sm:w-72">
-                        <livewire:basket-card :basket="$basket" :show-items="true" :key="'sabjify-'.$basket->id" />
-                    </div>
-                @endforeach
-                <a href="{{ route('baskets.index') }}" wire:navigate class="group shrink-0 snap-start w-64 sm:w-72 bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
-                    <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
-                        <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
-                    </span>
-                    <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
-                </a>
-            </div>
-            </div>
-        </section>
-    @endif
-
-    @if ($this->wellnessBaskets->isNotEmpty())
-        <section class="bg-brand-50/50 py-12 sm:py-16">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
-                <div class="mb-6 text-center">
-                    <h2 class="text-2xl font-bold text-stone-900">Wellness Baskets</h2>
-                    <p class="mt-1 text-sm text-stone-500">Curated for a healthier you</p>
-                </div>
-            <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
-                @foreach ($this->wellnessBaskets as $basket)
-                    <div class="shrink-0 snap-start w-64 sm:w-72">
-                        <livewire:basket-card :basket="$basket" :key="'wellness-'.$basket->id" />
-                    </div>
-                @endforeach
-                <a href="{{ route('baskets.index') }}" wire:navigate class="group shrink-0 snap-start w-64 sm:w-72 bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
-                    <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
-                        <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
-                    </span>
-                    <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
-                </a>
-            </div>
-            </div>
-        </section>
-    @endif
 
     <section class="bg-stone-50 py-12 sm:py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>

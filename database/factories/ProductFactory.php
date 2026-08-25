@@ -28,6 +28,7 @@ class ProductFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name),
             'description' => fake()->sentence(),
+            'alternate_names' => null,
             'unit' => fake()->randomElement(['1 kg', '500 g', '1 pc', 'dozen', 'bunch', '250 g']),
             'price' => $price,
             'mrp' => fake()->boolean(70) ? (int) ($price * 1.25) : null,
@@ -63,6 +64,11 @@ class ProductFactory extends Factory
         return $this->afterCreating(function (Product $product) {
             $product->units()->update(['in_stock' => false]);
         });
+    }
+
+    public function withAlternateNames(array $names): static
+    {
+        return $this->state(fn () => ['alternate_names' => implode(', ', $names)]);
     }
 
     public function withUnits(int $count): static

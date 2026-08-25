@@ -21,7 +21,7 @@ test('search shows matching products', function () {
 
     Livewire::test(Search::class)
         ->set('search', 'apple')
-        ->assertSee('1 item found');
+        ->assertSeeHtml('Showing results for "apple"');
 });
 
 test('search shows out of stock products with a label', function () {
@@ -31,7 +31,7 @@ test('search shows out of stock products with a label', function () {
 
     Livewire::test(Search::class)
         ->set('search', 'apple')
-        ->assertSee('2 items found');
+        ->assertSeeHtml('Showing results for "apple"');
 });
 
 test('search shows empty state when no query', function () {
@@ -71,7 +71,7 @@ test('search shows total result count independent of the loaded page', function 
 
     Livewire::test(Search::class)
         ->set('search', 'mango')
-        ->assertSee('14 items found')
+        ->assertSeeHtml('Showing results for "mango"')
         ->assertSet('items', fn ($items) => $items->count() === 12)
         ->assertSet('totalResults', 14);
 });

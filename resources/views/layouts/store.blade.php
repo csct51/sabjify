@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link rel="icon" type="image/png" href="/favicon.png">
 
         <title>{{ $title ?? config('app.name') }} - Fresh Fruits & Vegetables</title>
 
@@ -29,7 +30,7 @@
 
         <livewire:product-unit-picker />
 
-        <x-toast :initial-message="session('success')" initial-type="success" />
+        <x-store-toast :initial-message="session('success')" initial-type="success" />
 
         @livewireScripts
     </body>

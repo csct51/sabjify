@@ -51,6 +51,22 @@ test('shop page clears filters from the modal', function () {
         ->assertSee('2 items available');
 });
 
+test('shop page filters products by search query', function () {
+    Product::factory()->create(['name' => 'Apple']);
+    Product::factory()->create(['name' => 'Banana']);
+
+    Livewire::test(Shop::class)
+        ->assertSee('2 items available')
+        ->set('search', 'Apple')
+        ->assertSee('1 items available');
+});
+
+test('desktop filter controls use live binding', function () {
+    Livewire::test(Shop::class)
+        ->assertSee('wire:model.live')
+        ->assertSee('debounce.300ms');
+});
+
 test('categories index page shows all active categories', function () {
     Category::factory()->create(['name' => 'Fruits']);
     $hidden = Category::factory()->create(['name' => 'Hidden Category', 'is_active' => false]);

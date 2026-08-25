@@ -29,6 +29,8 @@ class ProductForm extends Component
 
     public string $description = '';
 
+    public string $alternateNames = '';
+
     public string $is_active = '1';
 
     public bool $is_featured = false;
@@ -53,6 +55,7 @@ class ProductForm extends Component
             $this->name = $product->name;
             $this->slug = $product->slug;
             $this->description = $product->description ?? '';
+            $this->alternateNames = implode(', ', $product->alternate_names ?? []);
             $this->is_active = $product->is_active ? '1' : '0';
             $this->is_featured = $product->is_featured;
             $this->sort_order = $product->sort_order;
@@ -136,6 +139,7 @@ class ProductForm extends Component
             'name' => ['required', 'string', 'max:100'],
             'slug' => ['required', 'string', 'max:120', 'unique:products,slug,'.($this->product->id ?? 'NULL')],
             'description' => ['nullable', 'string', 'max:1000'],
+            'alternateNames' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['boolean'],
             'is_featured' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
@@ -155,6 +159,7 @@ class ProductForm extends Component
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description ?: null,
+            'alternate_names' => $this->alternateNames,
             'unit' => $first['unit'],
             'price' => (int) $first['price'],
             'mrp' => $first['mrp'] !== null && $first['mrp'] !== '' ? (int) $first['mrp'] : null,

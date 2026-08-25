@@ -8,13 +8,13 @@
             <div class="flex items-center gap-3">
                 <div class="hidden lg:flex items-center gap-2">
                     <input
-                        wire:model="search"
+                        wire:model.live.debounce.300ms="search"
                         type="search"
                         placeholder="Search products..."
                         class="w-56 rounded-xl border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
                     >
                     <label class="text-sm text-stone-500">Sort by</label>
-                    <select wire:model="sort" class="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                    <select wire:model.live="sort" class="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                         <option value="latest">Latest</option>
                         <option value="price_low">Price: Low to High</option>
                         <option value="price_high">Price: High to Low</option>
@@ -33,16 +33,74 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 grid grid-cols-1 lg:grid-cols-[170px_1fr] gap-8">
         <aside data-reveal class="block sticky top-20 z-30 -mx-4 px-4 pt-2 pb-2 bg-[#F7F8F5]/70 backdrop-blur-md lg:mx-0 lg:px-0 lg:pt-0 lg:pb-0 lg:bg-transparent lg:static">
             <div class="lg:sticky lg:top-24">
-                <div>
-                    <h2 class="text-xs font-semibold text-stone-900 uppercase tracking-wide mb-3">Categories</h2>
-                    <div class="flex lg:flex-col gap-1.5 lg:max-h-80 lg:overflow-y-auto lg:pr-1 overflow-x-auto">
+            <div>
+                <h2 class="text-xs font-semibold text-stone-900 uppercase tracking-wide mb-3">Categories</h2>
+                <div
+                    x-data="{
+                        canLeft: false,
+                        canRight: false,
+                        canScroll: false,
+                        thumbSize: 0,
+                        thumbOffset: 0,
+                        update() {
+                            const el = this.$refs.track;
+                            const max = el.scrollWidth - el.clientWidth;
+                            this.canScroll = max > 4;
+                            this.canLeft = el.scrollLeft > 4;
+                            this.canRight = el.scrollLeft < max - 4;
+                            this.thumbSize = max > 0 ? (el.clientWidth / el.scrollWidth) * 100 : 100;
+                            this.thumbOffset = max > 0 ? (el.scrollLeft / max) * (100 - this.thumbSize) : 0;
+                        },
+                        scrollBy(dir) {
+                            this.$refs.track.scrollBy({ left: dir * 220, behavior: 'smooth' });
+                        },
+                        scrollToTrack(event) {
+                            const el = this.$refs.track;
+                            const rect = this.$refs.sbar.getBoundingClientRect();
+                            const ratio = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
+                            const max = el.scrollWidth - el.clientWidth;
+                            el.scrollLeft = ratio * max;
+                        },
+                        startDrag(event) {
+                            const el = this.$refs.track;
+                            const rect = this.$refs.sbar.getBoundingClientRect();
+                            const max = el.scrollWidth - el.clientWidth;
+                            const startX = event.clientX;
+                            const startScroll = el.scrollLeft;
+                            const move = (e) => {
+                                const delta = ((e.clientX - startX) / rect.width) * max;
+                                el.scrollLeft = Math.min(Math.max(startScroll + delta, 0), max);
+                            };
+                            const up = () => {
+                                window.removeEventListener('pointermove', move);
+                                window.removeEventListener('pointerup', up);
+                            };
+                            window.addEventListener('pointermove', move);
+                            window.addEventListener('pointerup', up);
+                        }
+                    }"
+                    x-init="$nextTick(() => update()); window.addEventListener('resize', () => update());"
+                    class="relative"
+                >
+                    <button
+                        type="button"
+                        @click="scrollBy(-1)"
+                        x-show="canLeft"
+                        x-transition.opacity
+                        aria-label="Scroll categories left"
+                        class="lg:hidden absolute left-0 top-1/2 -translate-y-1/2 z-20 inline-flex items-center justify-center w-7 h-9 rounded-r-lg bg-white/85 shadow-sm text-stone-600 hover:text-brand-600 hover:bg-white"
+                    >
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+
+                    <div x-ref="track" @scroll="update()" class="flex lg:flex-col gap-1.5 lg:max-h-80 lg:overflow-y-auto lg:pr-1 overflow-x-auto shop-cats-scroll">
                         <button
                             type="button"
                             wire:click="$set('category', null)"
                             class="shrink-0 lg:w-full flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-center transition {{ $this->category === null ? 'bg-brand-600 text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}"
                         >
-                            <span class="w-12 h-12 rounded flex items-center justify-center {{ $this->category === null ? 'bg-white/20 text-white' : 'bg-white text-brand-600 shadow-sm' }}">
-                                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                            <span class="w-12 h-12 lg:w-16 lg:h-16 rounded flex items-center justify-center {{ $this->category === null ? 'bg-white/20 text-white' : 'bg-white text-brand-600 shadow-sm' }}">
+                                <i data-lucide="layout-grid" class="w-4 h-4 lg:w-5 lg:h-5"></i>
                             </span>
                             <span class="text-xs font-medium leading-tight line-clamp-1">All</span>
                         </button>
@@ -53,7 +111,7 @@
                                 wire:click="$set('category', '{{ $cat->slug }}')"
                                 class="shrink-0 lg:w-full flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-center transition {{ $this->category === $cat->slug ? 'bg-brand-600 text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}"
                             >
-                                <span class="w-12 h-12 rounded bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
+                                <span class="w-12 h-12 lg:w-16 lg:h-16 rounded bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
                                     @if ($cat->image)
                                         <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
                                     @endif
@@ -62,15 +120,43 @@
                             </button>
                         @endforeach
                     </div>
+
+                    <button
+                        type="button"
+                        @click="scrollBy(1)"
+                        x-show="canRight"
+                        x-transition.opacity
+                        aria-label="Scroll categories right"
+                        class="lg:hidden absolute right-0 top-1/2 -translate-y-1/2 z-20 inline-flex items-center justify-center w-7 h-9 rounded-l-lg bg-white/85 shadow-sm text-stone-600 hover:text-brand-600 hover:bg-white"
+                    >
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+
+                    <div x-show="canLeft" class="lg:hidden pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#F7F8F5] to-transparent"></div>
+                    <div x-show="canRight" class="lg:hidden pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#F7F8F5] to-transparent"></div>
+
+                    <div
+                        x-show="canScroll"
+                        x-cloak
+                        class="lg:hidden mt-3 relative shop-cats-scrollbar"
+                        x-ref="sbar"
+                        @click="scrollToTrack($event)"
+                    >
+                        <div
+                            class="shop-cats-scrollbar__thumb"
+                            x-ref="sthumb"
+                            x-cloak
+                            @click.stop
+                            @pointerdown.prevent="startDrag($event)"
+                            x-bind:style="`left:${thumbOffset}%; width:${thumbSize}%`"
+                        ></div>
+                    </div>
+                </div>
                 </div>
             </div>
         </aside>
 
         <div data-reveal class="relative min-h-[240px]">
-            <div wire:loading wire:target="search,sort,category" class="absolute inset-0 z-10 flex items-center justify-center bg-[#F7F8F5]/60 rounded-xl">
-                <x-loading-spinner class="w-8 h-8 text-brand-600" />
-            </div>
-
             @if ($this->items->isEmpty())
                 <div class="text-center py-20">
                     <span class="inline-flex items-center justify-center w-16 h-16 mx-auto rounded-2xl bg-brand-50 text-brand-600"><i data-lucide="shopping-basket" class="w-8 h-8"></i></span>
@@ -101,6 +187,12 @@
                     </div>
                 @endif
             @endif
+        </div>
+
+        <div wire:loading wire:target="search,sort,category" class="fixed inset-0 z-50 bg-[#F7F8F5]/40 backdrop-blur-sm">
+            <div class="flex items-center justify-center w-full h-full">
+                <x-loading-spinner class="w-8 h-8 text-brand-600" />
+            </div>
         </div>
     </div>
 

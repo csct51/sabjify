@@ -76,6 +76,14 @@ class RecipeShow extends Component
         $this->cartError = $skipped !== []
             ? 'Out of stock: '.implode(', ', $skipped).'.'
             : null;
+
+        if ($this->cartMessage) {
+            $this->dispatch('toast', message: $this->cartMessage, type: 'success');
+        }
+
+        if ($this->cartError) {
+            $this->dispatch('toast', message: $this->cartError, type: 'error');
+        }
     }
 
     public function render(): View

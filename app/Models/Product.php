@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\CommaSeparatedArray;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,7 +33,7 @@ use Illuminate\Support\Str;
  * @property-read Collection<int, ProductUnit> $units
  * @property-read BasketProduct $pivot
  */
-#[Fillable(['category_id', 'name', 'slug', 'description', 'unit', 'price', 'mrp', 'image', 'is_active', 'is_featured', 'sort_order'])]
+#[Fillable(['category_id', 'name', 'slug', 'description', 'alternate_names', 'unit', 'price', 'mrp', 'image', 'is_active', 'is_featured', 'sort_order'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -48,6 +49,7 @@ class Product extends Model
         return [
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
+            'alternate_names' => CommaSeparatedArray::class,
         ];
     }
 

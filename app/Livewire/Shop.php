@@ -4,8 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\ProductSearch;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as BaseCollection;
 use Livewire\Attributes\Computed;
@@ -39,6 +39,8 @@ class Shop extends Component
     public bool $loadingMore = false;
 
     public int $perPage = 12;
+
+    public int $total = 0;
 
     public function mount(): void
     {
@@ -103,38 +105,30 @@ class Shop extends Component
     #[Computed]
     public function resultCount(): int
     {
-        return $this->query()->count();
+        return $this->total;
     }
 
     /**
-     * @return Builder<Product>
+     * @return array{items: Collection<int, Product>, total: int, hasMore: bool}
      */
-    private function query()
+    private function runSearch(): array
     {
-        return Product::active()
-            ->with(['category', 'units'])
-            ->when($this->category, function ($query) {
-                $query->whereHas('category', fn ($q) => $q->where('slug', $this->category));
-            })
-            ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%'.$this->search.'%');
-            })
-            ->when($this->sort, function ($query) {
-                match ($this->sort) {
-                    'price_low' => $query->orderBy('price'),
-                    'price_high' => $query->orderByDesc('price'),
-                    'popular' => $query->orderByDesc('sort_order'),
-                    default => $query->latest(),
-                };
-            });
+        return ProductSearch::search(
+            term: $this->search,
+            categorySlug: $this->category,
+            sort: $this->sort,
+            page: $this->page,
+            perPage: $this->perPage,
+        );
     }
 
     private function loadItems(): void
     {
-        $result = $this->query()->paginate($this->perPage, ['*'], 'page', $this->page);
+        $result = $this->runSearch();
 
-        $this->hasMore = $result->hasMorePages();
-        $this->items = BaseCollection::make(array_merge($this->items->all(), $result->items()));
+        $this->total = $result['total'];
+        $this->hasMore = $result['hasMore'];
+        $this->items = BaseCollection::make(array_merge($this->items->all(), $result['items']->all()));
     }
 
     private function resetItems(): void

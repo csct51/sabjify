@@ -1,4 +1,9 @@
 <div>
+    <a href="{{ route('home') }}" wire:navigate class="inline-flex items-center gap-1.5 mb-4 text-sm text-stone-500 hover:text-stone-700 transition">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        Back to home
+    </a>
+
     @if (session('error'))
         <div class="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ session('error') }}</div>
     @endif
