@@ -108,6 +108,14 @@
                             <p class="mt-3 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+                @else
+                    <div class="mt-8">
+                        <button type="button" disabled class="inline-flex items-center gap-2 rounded-xl bg-stone-200 text-stone-400 font-semibold px-8 py-3 cursor-not-allowed">
+                            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                            Out of Stock
+                        </button>
+                        <p class="mt-3 text-sm text-stone-500">This item is currently unavailable. <a href="{{ route('shop') }}" wire:navigate class="font-semibold text-brand-600 hover:text-brand-700">Browse similar products →</a></p>
+                    </div>
                 @endif
 
                 <div class="mt-10 border-t border-stone-200 pt-6 grid grid-cols-3 gap-4 text-center">

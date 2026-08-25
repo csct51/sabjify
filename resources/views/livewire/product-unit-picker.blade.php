@@ -1,12 +1,29 @@
 <div
-    x-data="{ open: false }"
-    x-on:product-unit-picker:open.window="open = true; $wire.open($event.detail.productId)"
+    x-data="{
+        open: false,
+        focusables() {
+            return Array.from($refs.dialog.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex=\'-1\'])'));
+        },
+        trapTab(e) {
+            if (e.key !== 'Tab') return;
+            const f = this.focusables();
+            if (! f.length) return;
+            const first = f[0];
+            const last = f[f.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (! e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        },
+        focusFirst() {
+            this.$nextTick(() => { if ($refs.dialog) $refs.dialog.focus(); });
+        }
+    }"
+    x-on:product-unit-picker:open.window="open = true; $wire.open($event.detail.productId); focusFirst()"
     x-on:product-unit-picker:close.window="open = false; $wire.close()"
     x-cloak
 >
     <div x-show="open" class="fixed inset-0 z-[100] flex items-center justify-center p-4" x-transition.opacity>
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="open = false; $wire.close()" aria-hidden="true"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-xs flex flex-col max-h-[80vh]" x-transition @keydown.escape.window="open = false; $wire.close()" role="dialog" aria-modal="true" aria-labelledby="unit-picker-title">
+        <div x-ref="dialog" tabindex="-1" @keydown.tab="trapTab($event)" class="relative bg-white rounded-2xl shadow-2xl w-full max-w-xs flex flex-col max-h-[80vh] outline-none" x-transition @keydown.escape.window="open = false; $wire.close()" role="dialog" aria-modal="true" aria-labelledby="unit-picker-title">
             @if ($this->product)
                 <div class="flex items-start justify-between gap-3 p-4 pb-3 border-b border-stone-100">
                     <div class="flex items-center gap-3 min-w-0">
@@ -52,6 +69,10 @@
                 </div>
 
                 <div class="p-3 border-t border-stone-100 bg-white rounded-b-2xl">
+                    @unless ($this->selectedUnitId)
+                        <p class="text-xs text-red-500 mb-2">Please select a size to continue.</p>
+                    @endunless
+
                     <div class="flex items-center justify-between gap-3 mb-3">
                         <div class="flex items-center gap-1 bg-stone-100 rounded-lg p-0.5">
                             <button type="button" wire:click="decrementQuantity" wire:loading.attr="disabled" class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center hover:bg-stone-50 disabled:opacity-40" aria-label="Decrease quantity"><i data-lucide="minus" class="w-3.5 h-3.5"></i></button>
@@ -64,7 +85,7 @@
                             @endif
                         </span>
                     </div>
-                    <button type="button" wire:click="addToCart" wire:loading.attr="disabled" wire:target="addToCart" class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 transition disabled:opacity-50">
+                    <button type="button" wire:click="addToCart" wire:loading.attr="disabled" wire:target="addToCart" {{ $this->selectedUnitId ? '' : 'disabled' }} class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         <span wire:loading.remove.inline-flex wire:target="addToCart" class="inline-flex items-center gap-2">
                             <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                             Add to Cart

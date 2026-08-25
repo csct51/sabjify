@@ -6,6 +6,7 @@ use App\Models\Product;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -79,6 +80,16 @@ class Search extends Component
         $this->items = collect();
         $this->hasMore = true;
         $this->loadItems();
+    }
+
+    #[Computed]
+    public function totalResults(): int
+    {
+        if (trim($this->search) === '') {
+            return 0;
+        }
+
+        return $this->query()->count();
     }
 
     public function render(): View

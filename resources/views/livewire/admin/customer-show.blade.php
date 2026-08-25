@@ -116,7 +116,7 @@
                                     @endif
                                 </div>
                                 <p class="text-sm text-stone-600 mt-2">{{ $address->receiver_name }} · {{ $address->receiver_phone }}</p>
-                                <p class="text-xs text-stone-500 mt-1">{{ $address->address_line }}, {{ $address->landmark ? $address->landmark.', ' : '' }}{{ $address->city }}, {{ $address->state }} - {{ $address->pincode }}</p>
+                                <p class="text-xs text-stone-500 mt-1">{{ $address->address_line }}, {{ $address->landmark ? $address->landmark.', ' : '' }}{{ $address->city }}, {{ $address->state }}</p>
                             </div>
                         @endforeach
                     </div>

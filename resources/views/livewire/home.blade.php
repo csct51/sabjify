@@ -1,4 +1,8 @@
 <div>
+    <section class="md:hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <img src="{{ asset('storage/heroes/2.jpg') }}" alt="Fresh fruits and vegetables" class="w-full h-auto block rounded-3xl">
+    </section>
+
     <section class="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div class="relative bg-brand-600 text-white overflow-hidden rounded-3xl">
             <img src="{{ asset('storage/heroes/hero09.jpg') }}" alt="Fresh fruits and vegetables" class="w-full h-auto block">
@@ -54,9 +58,16 @@
                 <p class="mt-1 text-sm text-stone-500">Handpicked favourites just for you</p>
             </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            @foreach ($this->featuredProducts as $product)
+            @forelse ($this->featuredProducts as $product)
                 <livewire:product-card :product="$product" :key="'featured-'.$product->id" />
-            @endforeach
+            @empty
+                <div class="col-span-full text-center py-12">
+                    <span class="inline-flex items-center justify-center w-16 h-16 mx-auto rounded-2xl bg-brand-50 text-brand-600"><i data-lucide="package-open" class="w-8 h-8"></i></span>
+                    <h3 class="mt-4 text-lg font-semibold text-stone-900">No products available right now</h3>
+                    <p class="text-sm text-stone-500 mt-1">Check back soon for fresh arrivals.</p>
+                    <a href="{{ route('shop') }}" wire:navigate class="mt-4 inline-block rounded-xl bg-brand-600 text-white px-5 py-2.5 text-sm font-semibold hover:bg-brand-700">Shop all</a>
+                </div>
+            @endforelse
             </div>
         </div>
     </section>
@@ -109,13 +120,20 @@
         </section>
     @endif
 
-    @if ($this->recipes->isNotEmpty())
-        <section class="bg-stone-50 py-12 sm:py-16">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
-                <div class="mb-6 text-center">
-                    <h2 class="text-2xl font-bold text-stone-900">Recipes</h2>
-                    <p class="mt-1 text-sm text-stone-500">Simple meals made fresh</p>
-                </div>
+    <section class="bg-stone-50 py-12 sm:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-stone-900">Recipes</h2>
+                <p class="mt-1 text-sm text-stone-500">Simple meals made fresh</p>
+            </div>
+        @if ($this->recipes->isEmpty())
+            <div class="text-center py-16">
+                <span class="inline-flex items-center justify-center w-16 h-16 mx-auto rounded-2xl bg-brand-50 text-brand-600"><i data-lucide="chef-hat" class="w-8 h-8"></i></span>
+                <h3 class="mt-4 text-lg font-semibold text-stone-900">No recipes yet</h3>
+                <p class="text-sm text-stone-500 mt-1">We're cooking up something fresh. Check back soon!</p>
+                <a href="{{ route('recipes.index') }}" wire:navigate class="mt-4 inline-block rounded-xl bg-brand-600 text-white px-5 py-2.5 text-sm font-semibold hover:bg-brand-700">Browse recipes</a>
+            </div>
+        @else
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                 @foreach ($this->recipes as $recipe)
                     <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
@@ -140,9 +158,9 @@
                     <p class="mt-3 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
                 </a>
             </div>
-            </div>
-        </section>
-    @endif
+        @endif
+        </div>
+    </section>
 
     <section class="bg-brand-50/40 py-14 sm:py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>

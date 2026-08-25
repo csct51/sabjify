@@ -170,4 +170,13 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Run tests: `php artisan test --compact` or filter: `php artisan test --compact --filter=testName`.
 - Do NOT delete tests without approval.
 
+=== tailwind rules ===
+
+## Tailwind Breakpoints
+
+- Tailwind is mobile-first, so the base (unprefixed) styles apply to the smallest screens. Most responsive behavior should target desktop, so prefer `lg:` (1024px+) variants over `sm:` (640px) or `md:` (768px).
+- Avoid `sm:` in most cases: `sm:` catches large phones and small tablets, which are not "small devices". Reserve `sm:` only when you intentionally want to change at the 640px boundary.
+- For mobile-only elements, hide them on desktop with `lg:hidden` (and show with `hidden lg:block`), not `sm:hidden`/`md:hidden`, unless a 640px/768px breakpoint is explicitly intended.
+- After adding new Tailwind utility classes, run `npm run build` (or ask the user to) so the classes are included in the compiled CSS; a class that isn't built (e.g. `lg:hidden`) will silently have no effect.
+
 </laravel-boost-guidelines>

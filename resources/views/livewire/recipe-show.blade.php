@@ -27,7 +27,7 @@
 
                 @if ($this->products->isNotEmpty())
                     <div class="mt-5 flex flex-wrap items-center gap-3">
-                        <button type="button" wire:click="addAllToCart" wire:loading.attr="disabled" wire:target="addAllToCart" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
+                        <button type="button" wire:click="addAllToCart" wire:loading.attr="disabled" wire:target="addAllToCart" class="hidden lg:inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition active:scale-95 disabled:opacity-70">
                             <span wire:loading.remove wire:target="addAllToCart"><i data-lucide="shopping-cart" class="w-5 h-5"></i></span>
                             <x-loading-spinner wire:loading wire:target="addAllToCart" class="w-4 h-4" />
                             <span wire:loading.remove wire:target="addAllToCart">Add All to Cart</span>
@@ -59,13 +59,6 @@
                         <div>
                             <p class="text-sm font-semibold text-stone-800">{{ count($recipe->steps ?? []) }}</p>
                             <p class="text-[11px] text-stone-400">steps</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2 rounded-xl bg-white border border-stone-200 px-4 py-2.5">
-                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="timer" class="w-4 h-4"></i></span>
-                        <div>
-                            <p class="text-sm font-semibold text-stone-800">Fresh</p>
-                            <p class="text-[11px] text-stone-400">farm to table</p>
                         </div>
                     </div>
                 </div>

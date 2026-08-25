@@ -10,7 +10,7 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" data-reveal>
-            @foreach ($this->items as $recipe)
+            @forelse ($this->items as $recipe)
                 <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                     <div class="p-4 pb-0">
                         <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
@@ -25,7 +25,13 @@
                         <p class="mt-2 text-xs text-stone-400">{{ $recipe->products_count }} items in this recipe</p>
                     </div>
                 </a>
-            @endforeach
+            @empty
+                <div class="col-span-full text-center py-20">
+                    <span class="inline-flex items-center justify-center w-16 h-16 mx-auto rounded-2xl bg-brand-50 text-brand-600"><i data-lucide="chef-hat" class="w-8 h-8"></i></span>
+                    <h3 class="mt-4 text-lg font-semibold text-stone-900">No recipes found</h3>
+                    <p class="text-sm text-stone-500 mt-1">We couldn't find any recipes to show right now.</p>
+                </div>
+            @endforelse
         </div>
 
         @if ($this->hasMore)

@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Models\ProductUnit;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -18,7 +19,12 @@ class ProductUnitPicker extends Component
     public function open(int $productId): void
     {
         $this->productId = $productId;
-        $this->selectedUnitId = $this->product()?->defaultUnit()?->id;
+
+        $product = $this->product();
+        $firstInStock = $product?->units->firstWhere('in_stock', true);
+        $this->selectedUnitId = $firstInStock === null
+            ? $product?->defaultUnit()?->id
+            : $firstInStock->id;
         $this->quantity = 1;
     }
 
@@ -56,7 +62,7 @@ class ProductUnitPicker extends Component
     }
 
     #[Computed]
-    public function selectedUnit()
+    public function selectedUnit(): ?ProductUnit
     {
         return $this->product()?->units->firstWhere('id', $this->selectedUnitId);
     }
@@ -72,7 +78,9 @@ class ProductUnitPicker extends Component
         $product = $this->product();
         $unit = $this->selectedUnit();
 
-        if (! ($unit?->in_stock ?? $product?->inStock())) {
+        $inStock = $unit !== null ? $unit->in_stock : ($product?->inStock() ?? false);
+
+        if (! $inStock) {
             $this->addError('stock', 'This product is out of stock.');
 
             return;

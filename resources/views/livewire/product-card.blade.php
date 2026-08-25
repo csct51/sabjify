@@ -44,8 +44,8 @@
             @if ($product->inStock())
                 @if ($product->hasMultipleUnits())
                     <button type="button" @click="$dispatch('product-unit-picker:open', { productId: {{ $product->id }} })" class="shrink-0 inline-flex items-center gap-0.5 px-2.5 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 active:scale-95 transition">
-                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                        Add
+                        Choose
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
                     </button>
                 @elseif ($this->inCart)
                     <div class="flex items-center gap-0.5 bg-brand-600 text-white rounded-lg p-0.5 shrink-0">

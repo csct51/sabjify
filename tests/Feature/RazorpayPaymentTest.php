@@ -29,9 +29,6 @@ test('online checkout opens payment without placing the order first', function (
         ->set('receiverName', 'Rahul Sharma')
         ->set('receiverPhone', '9876501234')
         ->set('addressLine', '12 Main Street')
-        ->set('city', 'Mumbai')
-        ->set('state', 'Maharashtra')
-        ->set('pincode', '400001')
         ->set('paymentMethod', 'online')
         ->call('placeOrder')
         ->assertDispatched(

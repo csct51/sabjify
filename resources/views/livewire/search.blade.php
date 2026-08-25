@@ -22,12 +22,17 @@
                 <p class="text-sm text-stone-500 mt-1">{{ $this->search ? 'Try a different search term.' : 'Type a product name above to find fresh produce.' }}</p>
             </div>
         @else
-            <p class="text-sm text-stone-500 mb-4">{{ $this->items->count() }} {{ $this->items->count() === 1 ? 'item' : 'items' }} found</p>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                @foreach ($this->items as $product)
-                    <livewire:product-card :product="$product" :key="$product->id" />
-                @endforeach
-            </div>
+            <p class="text-sm text-stone-500 mb-4">{{ $this->totalResults() }} {{ $this->totalResults() === 1 ? 'item' : 'items' }} found</p>
+            <div class="relative min-h-[240px]">
+                <div wire:loading wire:target="search" class="absolute inset-0 z-10 flex items-center justify-center bg-[#F7F8F5]/60 rounded-xl">
+                    <x-loading-spinner class="w-8 h-8 text-brand-600" />
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    @foreach ($this->items as $product)
+                        <livewire:product-card :product="$product" :key="$product->id" />
+                    @endforeach
+                </div>
 
             @if ($this->hasMore)
                 <div
@@ -43,6 +48,7 @@
                     </button>
                 </div>
             @endif
+            </div>
         @endif
     </div>
 </div>

@@ -45,12 +45,6 @@ class Checkout extends Component
 
     public string $landmark = '';
 
-    public string $city = '';
-
-    public string $state = '';
-
-    public string $pincode = '';
-
     public ?float $latitude = null;
 
     public ?float $longitude = null;
@@ -72,9 +66,6 @@ class Checkout extends Component
             $this->receiverPhone = $default->receiver_phone;
             $this->addressLine = $default->address_line;
             $this->landmark = $default->landmark ?? '';
-            $this->city = $default->city;
-            $this->state = $default->state;
-            $this->pincode = $default->pincode;
             $this->latitude = $default->latitude;
             $this->longitude = $default->longitude;
         } else {
@@ -128,7 +119,7 @@ class Checkout extends Component
     public function outOfStockItems(): Collection
     {
         return $this->cartItems()
-            ->filter(fn (CartItem $item) => $item->product && ! ($item->productUnit?->in_stock ?? $item->product->inStock()))
+            ->filter(fn (CartItem $item) => $item->product && ! $item->productUnit->in_stock)
             ->values();
     }
 
@@ -157,16 +148,11 @@ class Checkout extends Component
         $this->receiverPhone = auth('web')->user()->phone;
         $this->addressLine = '';
         $this->landmark = '';
-        $this->city = '';
-        $this->state = '';
-        $this->pincode = '';
     }
 
     /**
      * Confirm the target address is inside at least one active delivery
      * location.
-     *
-     * @param  array<string, mixed>  $addressData
      */
     private function assertDeliverable(?float $latitude, ?float $longitude): void
     {
@@ -192,6 +178,27 @@ class Checkout extends Component
     public function enabledPaymentMethods(): array
     {
         return config('mart.enabled_payment_methods', ['cod', 'online']);
+    }
+
+    /**
+     * Current checkout step for the progress indicator (1=Address, 2=Payment, 3=Review).
+     */
+    #[Computed]
+    public function currentStep(): int
+    {
+        $addressSet = $this->addressMode === 'existing'
+            ? $this->addressId !== null
+            : $this->addressLine !== '';
+
+        if (! $addressSet) {
+            return 1;
+        }
+
+        if (! $this->paymentMethod) {
+            return 2;
+        }
+
+        return 3;
     }
 
     public function placeOrder(): void
@@ -239,9 +246,6 @@ class Checkout extends Component
                 'receiverPhone' => ['required', 'regex:/^[6-9]\d{9}$/'],
                 'addressLine' => ['required', 'string', 'max:255'],
                 'landmark' => ['nullable', 'string', 'max:100'],
-                'city' => ['required', 'string', 'max:100'],
-                'state' => ['required', 'string', 'max:100'],
-                'pincode' => ['required', 'digits:6'],
                 'latitude' => ['nullable', 'numeric', 'between:-90,90'],
                 'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             ]);
@@ -253,9 +257,9 @@ class Checkout extends Component
                     'receiver_phone' => $this->receiverPhone,
                     'address_line' => $this->addressLine,
                     'landmark' => $this->landmark ?: null,
-                    'city' => $this->city,
-                    'state' => $this->state,
-                    'pincode' => $this->pincode,
+                    'city' => 'Raipur',
+                    'state' => 'Chhattisgarh',
+                    'pincode' => 0,
                     'latitude' => $this->latitude,
                     'longitude' => $this->longitude,
                     'is_default' => ! $this->addresses()->contains('is_default', true),
@@ -266,9 +270,9 @@ class Checkout extends Component
                 'receiver_name' => $this->receiverName,
                 'receiver_phone' => $this->receiverPhone,
                 'address_line' => $this->addressLine,
-                'city' => $this->city,
-                'state' => $this->state,
-                'pincode' => $this->pincode,
+                'city' => 'Raipur',
+                'state' => 'Chhattisgarh',
+                'pincode' => 0,
                 'latitude' => $this->latitude,
                 'longitude' => $this->longitude,
                 'label' => $this->label,
@@ -283,7 +287,7 @@ class Checkout extends Component
                 'address_line' => $address->address_line,
                 'city' => $address->city,
                 'state' => $address->state,
-                'pincode' => $address->pincode,
+                'pincode' => 0,
                 'latitude' => $address->latitude,
                 'longitude' => $address->longitude,
                 'label' => $address->label,

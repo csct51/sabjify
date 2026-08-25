@@ -20,7 +20,6 @@
                         <option value="price_high">Price: High to Low</option>
                         <option value="popular">Popular</option>
                     </select>
-                    <button type="button" wire:click="resetPage" wire:loading.attr="disabled" wire:target="resetPage" class="rounded-xl bg-brand-600 text-white px-4 py-2 text-sm font-semibold hover:bg-brand-700 transition disabled:opacity-70">Apply Filters</button>
                     <button type="button" wire:click="clearFilters" class="rounded-xl border border-stone-300 text-stone-600 px-4 py-2 text-sm font-medium hover:bg-stone-50 transition">Clear Filters</button>
                 </div>
                 <button type="button" wire:click="$set('showFilters', true)" class="lg:hidden inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition">
@@ -67,7 +66,11 @@
             </div>
         </aside>
 
-        <div data-reveal>
+        <div data-reveal class="relative min-h-[240px]">
+            <div wire:loading wire:target="search,sort,category" class="absolute inset-0 z-10 flex items-center justify-center bg-[#F7F8F5]/60 rounded-xl">
+                <x-loading-spinner class="w-8 h-8 text-brand-600" />
+            </div>
+
             @if ($this->items->isEmpty())
                 <div class="text-center py-20">
                     <span class="inline-flex items-center justify-center w-16 h-16 mx-auto rounded-2xl bg-brand-50 text-brand-600"><i data-lucide="shopping-basket" class="w-8 h-8"></i></span>
@@ -130,7 +133,6 @@
 
                     <div class="pt-2 flex gap-2">
                         <button type="button" wire:click="clearFilters" class="flex-1 rounded-xl border border-stone-300 text-stone-600 px-4 py-2.5 text-sm font-medium hover:bg-stone-50 transition">Clear Filters</button>
-                        <button type="button" wire:click="$set('showFilters', false)" class="flex-1 rounded-xl bg-brand-600 text-white px-4 py-2.5 text-sm font-semibold hover:bg-brand-700 transition">Apply Filters</button>
                     </div>
                 </div>
             </div>

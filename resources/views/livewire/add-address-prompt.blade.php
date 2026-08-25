@@ -39,7 +39,7 @@
                                         <span class="shrink-0 w-4 h-4 rounded-full border-2 {{ $selectedAddressId === $address->id ? 'border-brand-600 bg-brand-600' : 'border-stone-300' }}"></span>
                                     </div>
                                     <p class="mt-1.5 text-sm text-stone-500">{{ $address->receiver_phone }}</p>
-                                    <p class="mt-1 text-sm text-stone-600">{{ $address->address_line }}{{ $address->landmark ? ', '.$address->landmark : '' }}, {{ $address->city }}, {{ $address->state }} - {{ $address->pincode }}</p>
+                                    <p class="mt-1 text-sm text-stone-600">{{ $address->address_line }}{{ $address->landmark ? ', '.$address->landmark : '' }}, {{ $address->city }}, {{ $address->state }}</p>
                                 </button>
                             @endforeach
                         </div>

@@ -58,7 +58,7 @@
                 <p>
                     {{ $order->receiver_name }}<br>
                     {{ $order->receiver_phone }}<br>
-                    {{ $order->address_line }}, {{ $order->city }}, {{ $order->state }} - {{ $order->pincode }}
+                    {{ $order->address_line }}, {{ $order->city }}, {{ $order->state }}
                 </p>
             </div>
             <div class="block">

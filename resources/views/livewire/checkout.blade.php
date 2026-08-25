@@ -9,6 +9,28 @@
                 <a href="{{ route('shop') }}" wire:navigate class="mt-5 inline-block rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition">Start Shopping</a>
             </div>
         @else
+            @php
+                $checkoutStep = $this->currentStep();
+            @endphp
+
+            <ol class="flex items-center gap-2 sm:gap-4 mb-8 text-sm">
+                @foreach (['Address' => 1, 'Payment' => 2, 'Review' => 3] as $label => $num)
+                    <li class="flex items-center gap-2 {{ $num < $checkoutStep ? 'text-brand-700' : ($num === $checkoutStep ? 'text-stone-900 font-semibold' : 'text-stone-400') }}">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold {{ $num < $checkoutStep ? 'bg-brand-600 text-white' : ($num === $checkoutStep ? 'bg-brand-50 text-brand-700 ring-2 ring-brand-200' : 'bg-stone-100 text-stone-400') }}">
+                            @if ($num < $checkoutStep)
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            @else
+                                {{ $num }}
+                            @endif
+                        </span>
+                        <span class="hidden sm:inline">{{ $label }}</span>
+                    </li>
+                    @if ($num < 3)
+                        <li class="flex-1 h-px {{ $num < $checkoutStep ? 'bg-brand-300' : 'bg-stone-200' }}"></li>
+                    @endif
+                @endforeach
+            </ol>
+
             <div class="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
                 <div class="space-y-6">
                     <div class="bg-white rounded-2xl border border-stone-200 p-6">
@@ -32,7 +54,7 @@
                                             <span class="w-4 h-4 rounded-full border-2 {{ $this->addressMode === 'existing' && $this->addressId === $address->id ? 'border-brand-600 bg-brand-600' : 'border-stone-300' }}"></span>
                                         </div>
                                         <p class="mt-2 text-sm text-stone-600">{{ $address->receiver_name }} · {{ $address->receiver_phone }}</p>
-                                        <p class="mt-1 text-sm text-stone-500">{{ $address->address_line }}, {{ $address->landmark ? $address->landmark.', ' : '' }}{{ $address->city }}, {{ $address->state }} - {{ $address->pincode }}</p>
+                                        <p class="mt-1 text-sm text-stone-500">{{ $address->address_line }}, {{ $address->landmark ? $address->landmark.', ' : '' }}{{ $address->city }}, {{ $address->state }}</p>
                                     </button>
                                 @endforeach
                             </div>
@@ -86,21 +108,6 @@
                                 <div class="col-span-2">
                                     <label class="block text-sm font-medium text-stone-700 mb-1">Landmark <span class="text-stone-400">(optional)</span></label>
                                     <input wire:model="landmark" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">City <span class="text-red-500">*</span></label>
-                                    <input wire:model="city" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                    @error('city')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">State <span class="text-red-500">*</span></label>
-                                    <input wire:model="state" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                    @error('state')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                                <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Pincode <span class="text-red-500">*</span></label>
-                                    <input wire:model="pincode" type="text" maxlength="6" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                    @error('pincode')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
                                 <div class="col-span-2">
                                     <label class="block text-sm font-medium text-stone-700 mb-2">Delivery Location</label>
