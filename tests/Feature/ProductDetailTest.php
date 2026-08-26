@@ -65,6 +65,18 @@ test('product detail increments only the selected unit item', function () {
     expect($secondItem->fresh()->quantity)->toBe(2);
 });
 
+test('product detail shows an image carousel with the product and the store info slide', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->withUnits(1)->create();
+
+    Livewire::actingAs($user)
+        ->test(ProductDetail::class, ['product' => $product])
+        ->assertSee($product->displayImageUrl())
+        ->assertSee('storage/products/last-image.jpg')
+        ->assertSee('Show store information')
+        ->assertDontSee('grayscale');
+});
+
 test('product detail decrement removes the selected unit item when it reaches zero', function () {
     $user = User::factory()->create();
     $product = Product::factory()->available()->withUnits(3)->create();

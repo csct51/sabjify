@@ -30,7 +30,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
             <div class="mb-6 text-center">
                 <h2 class="text-2xl font-bold text-stone-900">Shop by Category</h2>
-                <p class="mt-1 text-sm text-stone-500">Browse our fresh selection</p>
+                <p class="mt-1 text-sm text-stone-500">Explore fresh produce and daily essentials, organised by category.</p>
             </div>
         <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4">
             @foreach ($this->categories as $category)
@@ -56,7 +56,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
                 <div class="mb-6 text-center">
                     <h2 class="text-2xl font-bold text-stone-900">Sabjify Baskets</h2>
-                    <p class="mt-1 text-sm text-stone-500">Our signature daily baskets</p>
+                    <p class="mt-1 text-sm text-stone-500">Ready-to-cook daily vegetable baskets, delivered straight to your door.</p>
                 </div>
                 <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
                     @foreach ($this->sabjifyBaskets as $basket)
@@ -80,7 +80,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
                 <div class="mb-6 text-center">
                     <h2 class="text-2xl font-bold text-stone-900">Wellness Baskets</h2>
-                    <p class="mt-1 text-sm text-stone-500">Curated for a healthier you</p>
+                    <p class="mt-1 text-sm text-stone-500">Balanced, nutrient-rich baskets curated to support a healthier everyday.</p>
                 </div>
                 <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
                     @foreach ($this->wellnessBaskets as $basket)
@@ -103,7 +103,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
             <div class="mb-6 text-center">
                 <h2 class="text-2xl font-bold text-stone-900">Featured Products</h2>
-                <p class="mt-1 text-sm text-stone-500">Handpicked favourites just for you</p>
+                <p class="mt-1 text-sm text-stone-500">A handpicked mix of seasonal favourites and bestsellers our customers love.</p>
             </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             @forelse ($this->featuredProducts as $product)
@@ -124,7 +124,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
             <div class="mb-6 text-center">
                 <h2 class="text-2xl font-bold text-stone-900">Recipes</h2>
-                <p class="mt-1 text-sm text-stone-500">Simple meals made fresh</p>
+                <p class="mt-1 text-sm text-stone-500">Easy, home-style recipes you can cook with the fresh produce you buy.</p>
             </div>
         @if ($this->recipes->isEmpty())
             <div class="text-center py-16">

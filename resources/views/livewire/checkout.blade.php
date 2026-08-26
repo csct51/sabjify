@@ -10,20 +10,30 @@
             </div>
         @else
             @php
-                $checkoutStep = $this->currentStep();
+                $checkoutStep = $this->step;
             @endphp
 
             <ol class="flex items-center gap-2 sm:gap-4 mb-8 text-sm">
                 @foreach (['Address' => 1, 'Payment' => 2, 'Review' => 3] as $label => $num)
-                    <li class="flex items-center gap-2 {{ $num < $checkoutStep ? 'text-brand-700' : ($num === $checkoutStep ? 'text-stone-900 font-semibold' : 'text-stone-400') }}">
-                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold {{ $num < $checkoutStep ? 'bg-brand-600 text-white' : ($num === $checkoutStep ? 'bg-brand-50 text-brand-700 ring-2 ring-brand-200' : 'bg-stone-100 text-stone-400') }}">
-                            @if ($num < $checkoutStep)
-                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                            @else
-                                {{ $num }}
-                            @endif
-                        </span>
-                        <span class="hidden sm:inline">{{ $label }}</span>
+                    @php
+                        $state = $num < $checkoutStep ? 'done' : ($num === $checkoutStep ? 'current' : 'todo');
+                    @endphp
+                    <li class="flex items-center gap-2 {{ $state === 'done' ? 'text-brand-700' : ($state === 'current' ? 'text-stone-900 font-semibold' : 'text-stone-400') }}">
+                        @if ($state === 'done')
+                            <button type="button" wire:click="backToStep({{ $num }})" class="flex items-center gap-2 hover:opacity-80 transition">
+                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold bg-brand-600 text-white">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                </span>
+                                <span class="hidden sm:inline">{{ $label }}</span>
+                            </button>
+                        @else
+                            <span class="flex items-center gap-2">
+                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold {{ $state === 'current' ? 'bg-brand-50 text-brand-700 ring-2 ring-brand-200' : 'bg-stone-100 text-stone-400' }}">
+                                    {{ $num }}
+                                </span>
+                                <span class="hidden sm:inline">{{ $label }}</span>
+                            </span>
+                        @endif
                     </li>
                     @if ($num < 3)
                         <li class="flex-1 h-px {{ $num < $checkoutStep ? 'bg-brand-300' : 'bg-stone-200' }}"></li>
@@ -31,130 +41,203 @@
                 @endforeach
             </ol>
 
-            <div class="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
+            <div class="grid gap-4 lg:gap-8 items-start {{ $this->step === 3 ? 'lg:grid-cols-[1fr_360px]' : 'lg:grid-cols-1' }}">
                 <div class="space-y-6">
-                    <div class="bg-white rounded-2xl border border-stone-200 p-6">
-                        <h2 class="font-semibold text-stone-900 mb-4">Delivery Address</h2>
+                    @if ($this->step === 1)
+                        <div class="bg-white rounded-2xl border border-stone-200 p-6">
+                            <h2 class="font-semibold text-stone-900 mb-4">Delivery Address</h2>
 
-                        @if ($this->addresses->isNotEmpty())
-                            <div class="space-y-2 mb-4">
-                                @foreach ($this->addresses as $address)
-                                    <button
-                                        type="button"
-                                        wire:click="selectAddress({{ $address->id }})"
-                                        class="w-full text-left rounded-xl border p-4 transition {{ $this->addressMode === 'existing' && $this->addressId === $address->id ? 'border-brand-500 bg-brand-50' : 'border-stone-200 hover:border-stone-300' }}"
-                                    >
-                                        <div class="flex items-center justify-between">
-                                            <span class="font-medium text-sm text-stone-900 flex items-center gap-2">
-                                                <span class="rounded-md bg-white border border-stone-200 px-2 py-0.5 text-xs text-stone-500">{{ $address->label }}</span>
-                                                @if ($address->is_default)
-                                                    <span class="text-xs text-brand-600 font-medium">Default</span>
-                                                @endif
-                                            </span>
-                                            <span class="w-4 h-4 rounded-full border-2 {{ $this->addressMode === 'existing' && $this->addressId === $address->id ? 'border-brand-600 bg-brand-600' : 'border-stone-300' }}"></span>
-                                        </div>
-                                        <p class="mt-2 text-sm text-stone-600">{{ $address->receiver_name }} · {{ $address->receiver_phone }}</p>
-                                        <p class="mt-1 text-sm text-stone-500">{{ $address->address_line }}{{ $address->landmark ? ', '.$address->landmark : '' }}</p>
-                                    </button>
-                                @endforeach
-                            </div>
+                            @if ($this->addresses->isNotEmpty())
+                                <div class="space-y-2 mb-4">
+                                    @foreach ($this->addresses as $address)
+                                        <button
+                                            type="button"
+                                            wire:click="selectAddress({{ $address->id }})"
+                                            class="w-full text-left rounded-xl border p-4 transition {{ $this->addressMode === 'existing' && $this->addressId === $address->id ? 'border-brand-500 bg-brand-50' : 'border-stone-200 hover:border-stone-300' }}"
+                                        >
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-medium text-sm text-stone-900 flex items-center gap-2">
+                                                    <span class="rounded-md bg-white border border-stone-200 px-2 py-0.5 text-xs text-stone-500">{{ $address->label }}</span>
+                                                    @if ($address->is_default)
+                                                        <span class="text-xs text-brand-600 font-medium">Default</span>
+                                                    @endif
+                                                </span>
+                                                <span class="w-4 h-4 rounded-full border-2 {{ $this->addressMode === 'existing' && $this->addressId === $address->id ? 'border-brand-600 bg-brand-600' : 'border-stone-300' }}"></span>
+                                            </div>
+                                            <p class="mt-2 text-sm text-stone-600">{{ $address->receiver_name }} · {{ $address->receiver_phone }}</p>
+                                            <p class="mt-1 text-sm text-stone-500">{{ $address->address_line }}{{ $address->landmark ? ', '.$address->landmark : '' }}</p>
+                                        </button>
+                                    @endforeach
+                                </div>
 
-                            <button type="button" wire:click="addNewAddress" class="text-sm font-semibold text-brand-600 hover:text-brand-700 {{ $this->addressMode === 'new' ? 'underline' : '' }}">
-                                + Add new address
-                            </button>
+                                <button type="button" wire:click="addNewAddress" class="text-sm font-semibold text-brand-600 hover:text-brand-700 {{ $this->addressMode === 'new' ? 'underline' : '' }}">
+                                    + Add new address
+                                </button>
 
-                            @if ($this->addressMode === 'existing' && ($this->latitude === null || $this->longitude === null))
-                                <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                                    <p class="text-sm text-amber-700 mb-2">This address needs a delivery location. Tap the map to set it.</p>
-                                    <x-location-map
-                                        :lat="$latitude"
-                                        :lng="$longitude"
-                                        lat-prop="latitude"
-                                        lng-prop="longitude"
-                                        :autofill="true"
-                                        geolocate
-                                    />
-                                    @error('latitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                                    @error('longitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                @if ($this->addressMode === 'existing' && ($this->latitude === null || $this->longitude === null))
+                                    <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                                        <p class="text-sm text-amber-700 mb-2">This address needs a delivery location. Tap the map to set it.</p>
+                                        <x-location-map
+                                            :lat="$latitude"
+                                            :lng="$longitude"
+                                            lat-prop="latitude"
+                                            lng-prop="longitude"
+                                            :autofill="true"
+                                            geolocate
+                                        />
+                                        @error('latitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                        @error('longitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                    </div>
+                                @endif
+                            @endif
+
+                            @if ($this->addressMode === 'new')
+                                <div class="grid grid-cols-2 gap-4 mt-4">
+                                    <div class="col-span-2 sm:col-span-1">
+                                        <label class="block text-sm font-medium text-stone-700 mb-1">Label <span class="text-red-500">*</span></label>
+                                        <select wire:model="label" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                                            <option value="Home">Home</option>
+                                            <option value="Work">Work</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-span-2 sm:col-span-1">
+                                        <label class="block text-sm font-medium text-stone-700 mb-1">Receiver Name <span class="text-red-500">*</span></label>
+                                        <input wire:model="receiverName" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                        @error('receiverName')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-stone-700 mb-1">Phone <span class="text-red-500">*</span></label>
+                                        <input wire:model="receiverPhone" type="tel" maxlength="10" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                        @error('receiverPhone')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-stone-700 mb-1">Address <span class="text-red-500">*</span></label>
+                                        <textarea wire:model="addressLine" rows="2" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></textarea>
+                                        @error('addressLine')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-stone-700 mb-1">Landmark <span class="text-stone-400">(optional)</span></label>
+                                        <input wire:model="landmark" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-stone-700 mb-2">Delivery Location</label>
+                                        <x-location-map
+                                            :lat="$latitude"
+                                            :lng="$longitude"
+                                            lat-prop="latitude"
+                                            lng-prop="longitude"
+                                            :autofill="true"
+                                            geolocate
+                                        />
+                                        @error('latitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                        @error('longitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                    </div>
+                                    <label class="col-span-2 flex items-center gap-2 text-sm text-stone-600">
+                                        <input wire:model="saveAddress" type="checkbox" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
+                                        Save this address for future orders
+                                    </label>
                                 </div>
                             @endif
-                        @endif
 
-                        @if ($this->addressMode === 'new')
-                            <div class="grid grid-cols-2 gap-4 mt-4">
-                                <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Label <span class="text-red-500">*</span></label>
-                                    <select wire:model="label" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
-                                        <option value="Home">Home</option>
-                                        <option value="Work">Work</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Receiver Name <span class="text-red-500">*</span></label>
-                                    <input wire:model="receiverName" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                    @error('receiverName')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                                <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Phone <span class="text-red-500">*</span></label>
-                                    <input wire:model="receiverPhone" type="tel" maxlength="10" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                    @error('receiverPhone')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                                <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Address <span class="text-red-500">*</span></label>
-                                    <textarea wire:model="addressLine" rows="2" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></textarea>
-                                    @error('addressLine')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                                <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-stone-700 mb-1">Landmark <span class="text-stone-400">(optional)</span></label>
-                                    <input wire:model="landmark" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                </div>
-                                <div class="col-span-2">
-                                    <label class="block text-sm font-medium text-stone-700 mb-2">Delivery Location</label>
-                                    <x-location-map
-                                        :lat="$latitude"
-                                        :lng="$longitude"
-                                        lat-prop="latitude"
-                                        lng-prop="longitude"
-                                        :autofill="true"
-                                        geolocate
-                                    />
-                                    @error('latitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                                    @error('longitude')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                                </div>
-                                <label class="col-span-2 flex items-center gap-2 text-sm text-stone-600">
-                                    <input wire:model="saveAddress" type="checkbox" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
-                                    Save this address for future orders
-                                </label>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="bg-white rounded-2xl border border-stone-200 p-6">
-                        <h2 class="font-semibold text-stone-900 mb-4">Payment Method <span class="text-red-500">*</span></h2>
-                        <div class="space-y-2">
-                            @foreach (config('mart.payment_methods') as $key => $method)
-                                @if (in_array($key, $this->enabledPaymentMethods, true))
-                                    <label class="flex items-center gap-3 rounded-xl border border-stone-200 p-4 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
-                                        <input type="radio" wire:model.live="paymentMethod" value="{{ $key }}" class="rounded-full border-stone-300 text-brand-600 focus:ring-brand-500">
-                                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="{{ $method['icon'] }}" class="w-5 h-5"></i></span>
-                                        <span>
-                                            <span class="block text-sm font-medium text-stone-900">{{ $method['label'] }}</span>
-                                            <span class="block text-xs text-stone-500">{{ $method['description'] }}</span>
-                                        </span>
-                                    </label>
-                                @endif
-                            @endforeach
+                            @error('address')<p class="mt-3 text-xs text-red-600">{{ $message }}</p>@enderror
+                            @error('delivery')<p class="mt-3 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
-                        @error('paymentMethod')<p class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror
-                    </div>
 
-                    <div class="bg-white rounded-2xl border border-stone-200 p-6">
-                        <h2 class="font-semibold text-stone-900 mb-3">Order Notes <span class="text-stone-400 font-normal text-xs">(optional)</span></h2>
-                        <textarea wire:model="notes" rows="2" placeholder="e.g. Call me before delivery" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></textarea>
-                    </div>
+                        <div class="flex justify-end">
+                            <button type="button" wire:click="nextFromAddress" wire:loading.attr="disabled" wire:target="nextFromAddress" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition disabled:opacity-70">
+                                <span wire:loading.remove wire:target="nextFromAddress">Continue to Payment</span>
+                                <span wire:loading.inline-flex wire:target="nextFromAddress" class="inline-flex items-center gap-2"><x-loading-spinner class="w-4 h-4" /> Saving…</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    @elseif ($this->step === 2)
+                        <div class="bg-white rounded-2xl border border-stone-200 p-6">
+                            <h2 class="font-semibold text-stone-900 mb-4">Payment Method <span class="text-red-500">*</span></h2>
+                            <div class="space-y-2">
+                                @foreach (config('mart.payment_methods') as $key => $method)
+                                    @if (in_array($key, $this->enabledPaymentMethods, true))
+                                        <label class="flex items-center gap-3 rounded-xl border border-stone-200 p-4 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                                            <input type="radio" wire:model.live="paymentMethod" value="{{ $key }}" class="rounded-full border-stone-300 text-brand-600 focus:ring-brand-500">
+                                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="{{ $method['icon'] }}" class="w-5 h-5"></i></span>
+                                            <span>
+                                                <span class="block text-sm font-medium text-stone-900">{{ $method['label'] }}</span>
+                                                <span class="block text-xs text-stone-500">{{ $method['description'] }}</span>
+                                            </span>
+                                        </label>
+                                    @endif
+                                @endforeach
+                            </div>
+                            @error('paymentMethod')<p class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <button type="button" wire:click="backToAddress" class="inline-flex items-center gap-2 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 font-semibold px-5 py-3 text-sm transition">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+                            </button>
+                            <button type="button" wire:click="nextFromPayment" wire:loading.attr="disabled" wire:target="nextFromPayment" class="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 transition disabled:opacity-70">
+                                <span wire:loading.remove wire:target="nextFromPayment">Continue to Review</span>
+                                <span wire:loading.inline-flex wire:target="nextFromPayment" class="inline-flex items-center gap-2"><x-loading-spinner class="w-4 h-4" /> Saving…</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    @else
+                        <div class="bg-white rounded-2xl border border-stone-200 p-6">
+                            <h2 class="font-semibold text-stone-900 mb-4">Review your order</h2>
+
+                            <div class="rounded-xl border border-stone-200 p-4">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="text-xs uppercase tracking-wide text-stone-400 font-medium">Deliver to</p>
+                                        @if ($this->addressMode === 'existing' && $this->addressId)
+                                            @php $selected = $this->addresses->firstWhere('id', $this->addressId); @endphp
+                                            <p class="mt-1 text-sm font-medium text-stone-900">
+                                                <span class="rounded-md bg-stone-100 px-2 py-0.5 text-xs text-stone-500 mr-1">{{ $selected->label }}</span>
+                                                {{ $selected->receiver_name }} · {{ $selected->receiver_phone }}
+                                            </p>
+                                            <p class="mt-1 text-sm text-stone-500">{{ $selected->address_line }}{{ $selected->landmark ? ', '.$selected->landmark : '' }}</p>
+                                        @else
+                                            <p class="mt-1 text-sm font-medium text-stone-900">
+                                                <span class="rounded-md bg-stone-100 px-2 py-0.5 text-xs text-stone-500 mr-1">{{ $this->label }}</span>
+                                                {{ $this->receiverName }} · {{ $this->receiverPhone }}
+                                            </p>
+                                            <p class="mt-1 text-sm text-stone-500">{{ $this->addressLine }}{{ $this->landmark ? ', '.$this->landmark : '' }}</p>
+                                        @endif
+                                    </div>
+                                    <button type="button" wire:click="backToAddress" class="shrink-0 text-sm font-semibold text-brand-600 hover:text-brand-700">Edit</button>
+                                </div>
+                            </div>
+
+                            <div class="rounded-xl border border-stone-200 p-4 mt-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="text-xs uppercase tracking-wide text-stone-400 font-medium">Payment</p>
+                                        @php $pm = config('mart.payment_methods')[$this->paymentMethod]; @endphp
+                                        <p class="mt-1 text-sm font-medium text-stone-900 flex items-center gap-2">
+                                            <i data-lucide="{{ $pm['icon'] }}" class="w-4 h-4 text-brand-600"></i>
+                                            {{ $pm['label'] }}
+                                        </p>
+                                        <p class="mt-0.5 text-xs text-stone-500">{{ $pm['description'] }}</p>
+                                    </div>
+                                    <button type="button" wire:click="backToPayment" class="shrink-0 text-sm font-semibold text-brand-600 hover:text-brand-700">Edit</button>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-stone-700 mb-1">Order Notes <span class="text-stone-400 font-normal text-xs">(optional)</span></label>
+                                <textarea wire:model="notes" rows="2" placeholder="e.g. Call me before delivery" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-start hidden lg:flex">
+                            <button type="button" wire:click="backToPayment" class="inline-flex items-center gap-2 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 font-semibold px-5 py-3 text-sm transition">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Payment
+                            </button>
+                        </div>
+                    @endif
                 </div>
 
+                @if ($this->step === 3)
                 <div class="bg-white rounded-2xl border border-stone-200 p-6 lg:sticky lg:top-20">
                     <h2 class="font-semibold text-stone-900 mb-4">Order Summary</h2>
                     <div class="space-y-3 max-h-64 overflow-y-auto pr-1 mb-4">
@@ -190,15 +273,21 @@
                         </div>
                     </div>
 
-                    <button type="button" wire:click="placeOrder" wire:loading.attr="disabled" wire:target="placeOrder" class="mt-5 w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition disabled:opacity-70">
-                        <span wire:loading.remove wire:target="placeOrder">
-                            {{ $this->paymentMethod === 'online' ? 'Pay Securely' : 'Place Order' }} · {{ \Illuminate\Support\Number::currency($this->total, 'INR') }}
-                        </span>
-                        <span wire:loading.inline-flex wire:target="placeOrder" class="inline-flex items-center gap-2">
-                            <x-loading-spinner class="w-4 h-4" />
-                            {{ $this->paymentMethod === 'online' ? 'Processing Payment...' : 'Placing Order...' }}
-                        </span>
-                    </button>
+                    @if ($this->step === 3)
+                        <button type="button" wire:click="placeOrder" wire:loading.attr="disabled" wire:target="placeOrder" class="mt-5 w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 transition disabled:opacity-70">
+                            <span wire:loading.remove wire:target="placeOrder">
+                                {{ $this->paymentMethod === 'online' ? 'Pay Securely' : 'Place Order' }} · {{ \Illuminate\Support\Number::currency($this->total, 'INR') }}
+                            </span>
+                            <span wire:loading.inline-flex wire:target="placeOrder" class="inline-flex items-center gap-2">
+                                <x-loading-spinner class="w-4 h-4" />
+                                {{ $this->paymentMethod === 'online' ? 'Processing Payment...' : 'Placing Order...' }}
+                            </span>
+                        </button>
+
+                        @if ($this->paymentMethod === 'online')
+                            <p class="mt-2 text-xs text-stone-400 text-center">You will be redirected to Razorpay to complete the payment. Your order is placed only after payment succeeds.</p>
+                        @endif
+                    @endif
 
                     @error('minimum')
                         <p class="mt-2 text-xs text-red-600 text-center">{{ $message }}</p>
@@ -212,10 +301,11 @@
                         <p class="mt-2 text-xs text-red-600 text-center">{{ $message }}</p>
                     @enderror
 
-                    @if ($this->paymentMethod === 'online')
-                        <p class="mt-2 text-xs text-stone-400 text-center">You will be redirected to Razorpay to complete the payment. Your order is placed only after payment succeeds.</p>
-                    @endif
+                    <button type="button" wire:click="backToPayment" class="lg:hidden mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 font-semibold py-3 text-sm transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Payment
+                    </button>
                 </div>
+                @endif
             </div>
         @endif
     </div>

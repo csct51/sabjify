@@ -32,6 +32,7 @@
                         radius-prop="radiusKm"
                         existing-areas
                         :exclude-area-id="$location?->id"
+                        geolocate
                     />
                     <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>

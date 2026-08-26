@@ -110,6 +110,14 @@ test('admin can delete a delivery location', function () {
     expect(DeliveryLocation::find($location->id))->toBeNull();
 });
 
+test('admin delivery location form shows a use my current location button', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(DeliveryLocationForm::class)
+        ->assertSee('Use my current location');
+});
+
 test('delivery location form defaults the radius to 1 km', function () {
     $admin = Admin::factory()->create();
 

@@ -1,4 +1,4 @@
-import { createIcons, Apple, ArrowLeft, ArrowRight, BadgeCheck, Banknote, Bell, BookOpen, Carrot,   Check, ChefHat, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, Citrus, CreditCard, Eye, EyeOff, FileText, Filter, Folder, Gift, Headset, Home, IndianRupee, KeyRound, LayoutDashboard, LayoutGrid, Leaf, Link, ListChecks, Locate, Lock, LogOut, MapPin, Menu, Minus, Navigation, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Scale, Search, Settings, Shield, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, UserCircle, Users, Utensils, X } from 'lucide';
+import { createIcons, Apple, ArrowLeft, ArrowRight, BadgeCheck, Banknote, Bell, BookOpen, Carrot,   Check, ChefHat, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, Citrus, CreditCard, Crosshair, Eye, EyeOff, FileText, Filter, Folder, Gift, Headset, Home, IndianRupee, KeyRound, LayoutDashboard, LayoutGrid, Leaf, Link, ListChecks, Locate, Lock, LogOut, MapPin, Menu, Minus, Navigation, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Scale, Search, Settings, Shield, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Trash2, Truck, Upload, User, UserCircle, Users, Utensils, X } from 'lucide';
 import DataTable from 'datatables.net-dt';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
 import L from 'leaflet';
@@ -21,6 +21,7 @@ const icons = {
     CircleCheck,
     Citrus,
     CreditCard,
+    Crosshair,
     Eye,
     EyeOff,
     FileText,
@@ -443,8 +444,7 @@ function initializeMap(element) {
         currentLatLng = L.latLng(latlng);
 
         if (! marker) {
-            marker = L.marker(currentLatLng, { icon: mapPinIcon, draggable: true }).addTo(map);
-            marker.on('dragend', emit);
+            marker = L.marker(currentLatLng, { icon: mapPinIcon, draggable: false }).addTo(map);
         } else {
             marker.setLatLng(currentLatLng);
         }

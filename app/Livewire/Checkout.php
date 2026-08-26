@@ -35,6 +35,8 @@ class Checkout extends Component
 
     public bool $saveAddress = true;
 
+    public int $step = 1;
+
     public string $label = 'Home';
 
     public string $receiverName = '';
@@ -186,19 +188,83 @@ class Checkout extends Component
     #[Computed]
     public function currentStep(): int
     {
-        $addressSet = $this->addressMode === 'existing'
-            ? $this->addressId !== null
-            : $this->addressLine !== '';
+        return $this->step;
+    }
 
-        if (! $addressSet) {
-            return 1;
+    public function nextFromAddress(): void
+    {
+        if ($this->addressMode === 'existing') {
+            if (! $this->addressId) {
+                $this->addError('address', 'Please select a delivery address.');
+
+                return;
+            }
+        } else {
+            $this->validate([
+                'label' => ['required', 'string', 'max:20'],
+                'receiverName' => ['required', 'string', 'max:100'],
+                'receiverPhone' => ['required', 'regex:/^[6-9]\d{9}$/'],
+                'addressLine' => ['required', 'string', 'max:255'],
+                'landmark' => ['nullable', 'string', 'max:100'],
+                'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+                'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            ]);
+
+            if ($this->saveAddress) {
+                $address = auth('web')->user()->addresses()->create([
+                    'label' => $this->label,
+                    'receiver_name' => $this->receiverName,
+                    'receiver_phone' => $this->receiverPhone,
+                    'address_line' => $this->addressLine,
+                    'landmark' => $this->landmark ?: null,
+                    'city' => 'Raipur',
+                    'state' => 'Chhattisgarh',
+                    'pincode' => 0,
+                    'latitude' => $this->latitude,
+                    'longitude' => $this->longitude,
+                    'is_default' => ! $this->addresses()->contains('is_default', true),
+                ]);
+
+                $this->addressId = $address->id;
+                $this->addressMode = 'existing';
+            }
         }
 
-        if (! $this->paymentMethod) {
-            return 2;
+        $this->assertDeliverable($this->latitude, $this->longitude);
+
+        if ($this->getErrorBag()->has('delivery')) {
+            return;
         }
 
-        return 3;
+        $this->step = 2;
+    }
+
+    public function nextFromPayment(): void
+    {
+        if (! in_array($this->paymentMethod, $this->enabledPaymentMethods(), true)) {
+            $this->addError('paymentMethod', 'Please choose a payment method.');
+
+            return;
+        }
+
+        $this->step = 3;
+    }
+
+    public function backToAddress(): void
+    {
+        $this->step = 1;
+    }
+
+    public function backToPayment(): void
+    {
+        $this->step = 2;
+    }
+
+    public function backToStep(int $step): void
+    {
+        if ($step < $this->step) {
+            $this->step = $step;
+        }
     }
 
     public function placeOrder(): void
