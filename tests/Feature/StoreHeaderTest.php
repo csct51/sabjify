@@ -24,7 +24,8 @@ it('detects a guest location and shows delivery available when no zones are conf
         ->assertSet('hasLocation', true)
         ->assertSet('deliveryAvailable', true)
         ->assertSee('MG Road')
-        ->assertSee('Delivery available');
+        ->assertSee('Delivery available')
+        ->assertSee('text-green-600');
 });
 
 it('shows not delivering here for a guest outside every active delivery zone', function () {
@@ -45,7 +46,9 @@ it('shows not delivering here for a guest outside every active delivery zone', f
     Livewire::test(StoreHeader::class)
         ->call('detectLocation', 19.076, 72.8777)
         ->assertSet('deliveryAvailable', false)
-        ->assertSee('Not delivering here');
+        ->assertSee('Coming soon')
+        ->assertSee('text-amber-500')
+        ->assertSee('text-amber-600');
 });
 
 it('shows delivery available for a logged in user whose default address is inside a zone', function () {
@@ -118,7 +121,8 @@ test('header shows the default delivery address', function () {
 
     Livewire::actingAs($user)
         ->test(StoreHeader::class)
-        ->assertSee('12, MG Road');
+        ->assertSee('12, MG Road')
+        ->assertSee('text-stone-500');
 });
 
 test('header refreshes when the address-updated event fires', function () {
