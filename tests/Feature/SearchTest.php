@@ -10,8 +10,10 @@ beforeEach(function () {
     $this->actingAs(User::factory()->create());
 });
 
-test('search page renders', function () {
-    $this->get('/search')->assertOk();
+test('search page renders and mounts the unit picker', function () {
+    $this->get('/search')
+        ->assertOk()
+        ->assertSee('product-unit-picker:open.window');
 });
 
 test('search shows matching products', function () {

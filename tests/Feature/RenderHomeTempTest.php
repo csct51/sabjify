@@ -11,5 +11,8 @@ it('renders home with product cards', function () {
 
     file_put_contents('C:/Users/CHANDR~1/AppData/Local/Temp/opencode/home-render.html', $html);
 
-    expect(true)->toBeTrue();
+    expect($html)
+        ->toContain('Shop by Category')
+        ->toContain('font-heading')
+        ->toContain('font-extrabold');
 });

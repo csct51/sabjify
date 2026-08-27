@@ -18,6 +18,8 @@
 
         <livewire:store-bottom-nav />
 
+        <livewire:product-unit-picker />
+
         @livewireScripts
     </body>
 </html>

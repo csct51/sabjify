@@ -26,10 +26,10 @@
         </div>
     </section>
 
-    <section class="bg-white py-12 sm:py-16">
+    <section class="bg-white py-6 sm:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
             <div class="mb-6 text-center">
-                <h2 class="text-2xl font-bold text-stone-900">Shop by Category</h2>
+                <h2 class="text-2xl font-extrabold text-stone-900 font-heading">Shop by Category</h2>
                 <p class="mt-1 text-sm text-stone-500">Explore fresh produce and daily essentials, organised by category.</p>
             </div>
         <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -52,10 +52,10 @@
     </section>
 
     @if ($this->sabjifyBaskets->isNotEmpty())
-        <section class="bg-stone-50 py-12 sm:py-16">
+        <section class="bg-stone-50 py-6 sm:py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
                 <div class="mb-6 text-center">
-                    <h2 class="text-2xl font-bold text-stone-900">Sabjify Baskets</h2>
+                    <h2 class="text-2xl font-extrabold text-stone-900 font-heading">Sabjify Baskets</h2>
                     <p class="mt-1 text-sm text-stone-500">Ready-to-cook daily vegetable baskets, delivered straight to your door.</p>
                 </div>
                 <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
@@ -76,10 +76,10 @@
     @endif
 
     @if ($this->wellnessBaskets->isNotEmpty())
-        <section class="bg-brand-50/50 py-12 sm:py-16">
+        <section class="bg-brand-50/50 py-6 sm:py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
                 <div class="mb-6 text-center">
-                    <h2 class="text-2xl font-bold text-stone-900">Wellness Baskets</h2>
+                    <h2 class="text-2xl font-extrabold text-stone-900 font-heading">Wellness Baskets</h2>
                     <p class="mt-1 text-sm text-stone-500">Balanced, nutrient-rich baskets curated to support a healthier everyday.</p>
                 </div>
                 <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
@@ -99,10 +99,10 @@
             </section>
     @endif
 
-    <section class="bg-white py-12 sm:py-16">
+    <section class="bg-white py-6 sm:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
             <div class="mb-6 text-center">
-                <h2 class="text-2xl font-bold text-stone-900">Featured Products</h2>
+                <h2 class="text-2xl font-extrabold text-stone-900 font-heading">Featured Products</h2>
                 <p class="mt-1 text-sm text-stone-500">A handpicked mix of seasonal favourites and bestsellers our customers love.</p>
             </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -120,10 +120,10 @@
         </div>
     </section>
 
-    <section class="bg-stone-50 py-12 sm:py-16">
+    <section class="bg-stone-50 py-6 sm:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
             <div class="mb-6 text-center">
-                <h2 class="text-2xl font-bold text-stone-900">Recipes</h2>
+                <h2 class="text-2xl font-extrabold text-stone-900 font-heading">Recipes</h2>
                 <p class="mt-1 text-sm text-stone-500">Easy, home-style recipes you can cook with the fresh produce you buy.</p>
             </div>
         @if ($this->recipes->isEmpty())
@@ -162,7 +162,7 @@
         </div>
     </section>
 
-    <section class="bg-brand-50/40 py-14 sm:py-16">
+    <section class="bg-brand-50/40 py-6 sm:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
