@@ -51,6 +51,8 @@ class Checkout extends Component
 
     public ?float $longitude = null;
 
+    public string $deliverySlot = 'morning';
+
     public function mount(): void
     {
         if (! in_array($this->paymentMethod, $this->enabledPaymentMethods(), true)) {
@@ -303,6 +305,7 @@ class Checkout extends Component
         $this->validate([
             'paymentMethod' => ['required', 'in:'.implode(',', $this->enabledPaymentMethods())],
             'notes' => ['nullable', 'string', 'max:500'],
+            'deliverySlot' => ['required', 'string', 'in:morning,evening'],
         ]);
 
         if ($this->addressMode === 'new' || ! $this->addressId) {
@@ -343,6 +346,7 @@ class Checkout extends Component
                 'longitude' => $this->longitude,
                 'label' => $this->label,
                 'notes' => $this->notes ?: null,
+                'delivery_slot' => $this->deliverySlot,
             ];
         } else {
             $address = $this->addresses()->firstWhere('id', $this->addressId);
@@ -358,6 +362,7 @@ class Checkout extends Component
                 'longitude' => $address->longitude,
                 'label' => $address->label,
                 'notes' => $this->notes ?: null,
+                'delivery_slot' => $this->deliverySlot,
             ];
         }
 

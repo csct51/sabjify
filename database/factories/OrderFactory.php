@@ -41,6 +41,7 @@ class OrderFactory extends Factory
             'pincode' => fake()->numerify('######'),
             'label' => 'Home',
             'notes' => null,
+            'delivery_slot' => fake()->randomElement(['morning', 'evening']),
         ];
     }
 

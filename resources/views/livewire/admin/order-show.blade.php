@@ -74,6 +74,12 @@
                 </div>
                 <p class="text-sm font-medium text-stone-800">{{ $order->receiver_name }} · {{ $order->receiver_phone }}</p>
                 <p class="mt-1 text-sm text-stone-500">{{ $order->address_line }}</p>
+                @if ($order->delivery_slot)
+                    <p class="mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium {{ $order->delivery_slot === 'evening' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-sky-200 bg-sky-50 text-sky-700' }}">
+                        <i data-lucide="{{ $order->delivery_slot === 'evening' ? 'moon' : 'sun' }}" class="w-3.5 h-3.5"></i>
+                        {{ \App\Enums\DeliverySlot::tryFrom($order->delivery_slot)?->label() ?? ucfirst($order->delivery_slot) }}
+                    </p>
+                @endif
                 @if ($order->notes)
                     <p class="mt-3 text-sm rounded-xl bg-stone-50 border border-stone-200 px-3 py-2 text-stone-600"><span class="font-medium">Notes:</span> {{ $order->notes }}</p>
                 @endif

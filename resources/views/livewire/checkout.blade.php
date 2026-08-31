@@ -224,6 +224,29 @@
                             </div>
 
                             <div class="mt-4">
+                                <p class="block text-sm font-medium text-stone-700 mb-1">Delivery Time <span class="text-red-500">*</span></p>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-3 rounded-xl border border-stone-200 p-4 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                                        <input type="radio" wire:model.live="deliverySlot" value="morning" class="rounded-full border-stone-300 text-brand-600 focus:ring-brand-500">
+                                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="sun" class="w-5 h-5"></i></span>
+                                        <span>
+                                            <span class="block text-sm font-medium text-stone-900">Morning — 8 AM to 12 PM</span>
+                                            <span class="block text-xs text-stone-500">Fresh delivery to start your day</span>
+                                        </span>
+                                    </label>
+                                    <label class="flex items-center gap-3 rounded-xl border border-stone-200 p-4 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                                        <input type="radio" wire:model.live="deliverySlot" value="evening" class="rounded-full border-stone-300 text-brand-600 focus:ring-brand-500">
+                                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600"><i data-lucide="moon" class="w-5 h-5"></i></span>
+                                        <span>
+                                            <span class="block text-sm font-medium text-stone-900">Evening — 6 PM to 9 PM</span>
+                                            <span class="block text-xs text-stone-500">Evening delivery after work</span>
+                                        </span>
+                                    </label>
+                                </div>
+                                @error('deliverySlot')<p class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="mt-4">
                                 <label class="block text-sm font-medium text-stone-700 mb-1">Order Notes <span class="text-stone-400 font-normal text-xs">(optional)</span></label>
                                 <textarea wire:model="notes" rows="2" placeholder="e.g. Call me before delivery" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></textarea>
                             </div>

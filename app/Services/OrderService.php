@@ -54,6 +54,7 @@ class OrderService
                 'longitude' => $data['longitude'] ?? null,
                 'label' => $data['label'] ?? null,
                 'notes' => $data['notes'] ?? null,
+                'delivery_slot' => $data['delivery_slot'] ?? null,
             ]);
 
             foreach ($cartItems as $cartItem) {

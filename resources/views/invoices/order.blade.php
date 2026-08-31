@@ -67,6 +67,12 @@
             </div>
         </div>
 
+        @if ($order->delivery_slot)
+            <div style="margin-bottom:24px; font-size:12px; color:#57534e;">
+                <strong>Delivery Slot:</strong> {{ \App\Enums\DeliverySlot::tryFrom($order->delivery_slot)?->label() ?? ucfirst($order->delivery_slot) }}
+            </div>
+        @endif
+
         <table>
             <thead>
                 <tr>
