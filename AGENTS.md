@@ -180,3 +180,11 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - After adding new Tailwind utility classes, run `npm run build` (or ask the user to) so the classes are included in the compiled CSS; a class that isn't built (e.g. `lg:hidden`) will silently have no effect.
 
 </laravel-boost-guidelines>
+
+=== phase 2 — live database rules ===
+
+# Phase 2 — Live Database Rules
+
+- App is LIVE (Phase 1) and receiving orders. NEVER run `php artisan migrate:fresh`, `migrate:refresh`, `migrate:reset`, `db:wipe`, or any destructive schema command — migrating fresh is NOT an option.
+- All schema changes from this point onward are Phase 2 and must be additive `Schema::table` migrations only: `php artisan make:migration ...` + `php artisan migrate --force` on production.
+- New columns must be `nullable` or have safe defaults so existing live orders remain valid; no history rewrite.
