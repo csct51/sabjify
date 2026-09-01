@@ -13,8 +13,15 @@
                         }
 
                         navigator.geolocation.getCurrentPosition(
-                            (position) => $wire.call('detectLocation', position.coords.latitude, position.coords.longitude),
-                            () => {},
+                            (position) => {
+                                $wire.call('detectLocation', position.coords.latitude, position.coords.longitude);
+                                window.dispatchEvent(new CustomEvent('geolocation:permission-granted'));
+                            },
+                            (error) => {
+                                if (error && error.code === 1) {
+                                    window.dispatchEvent(new CustomEvent('geolocation:permission-denied'));
+                                }
+                            },
                             { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
                         );
                     }

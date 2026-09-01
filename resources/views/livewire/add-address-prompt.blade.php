@@ -121,7 +121,6 @@
                                 <span wire:loading.remove.inline-flex wire:target="saveGuestLocation" class="inline-flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4"></i> Confirm location</span>
                                 <span wire:loading wire:target="saveGuestLocation">Saving...</span>
                             </button>
-                            <a href="{{ route('login') }}" wire:navigate class="text-center text-sm font-medium text-brand-600 hover:text-brand-700">Login to save address</a>
                             @if ($dismissable)
                                 <button type="button" wire:click="dismiss" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 font-semibold px-5 py-2.5 text-sm transition">
                                     <i data-lucide="x" class="w-4 h-4"></i> Close

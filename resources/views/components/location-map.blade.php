@@ -91,5 +91,12 @@
 
     @if (! $readonly)
         <p class="mt-1.5 text-xs text-stone-400">@if ($autofill) Click inside the green circle to select your delivery location. Our service is currently available only within the highlighted areas. @else Click the map or drag the pin to set the center of this delivery zone. @endif</p>
+        <div x-data="{ denied: false }" x-on:geolocation:permission-denied.window="denied = true" x-on:geolocation:permission-granted.window="denied = false" x-show="denied" x-cloak class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-700" style="display: none;">
+            @if ($autofill)
+                Location permission denied. Please tap inside the green circle to set your delivery location manually.
+            @else
+                Location permission denied. Please click the map to set the location manually.
+            @endif
+        </div>
     @endif
 </div>

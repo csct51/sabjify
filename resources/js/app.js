@@ -483,6 +483,7 @@ function initializeMap(element) {
                 placeMarker(latlng);
                 map.setView(latlng, 15);
                 emit();
+                window.dispatchEvent(new CustomEvent('geolocation:permission-granted'));
             }, onError, { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
         };
 
@@ -498,7 +499,12 @@ function initializeMap(element) {
 
             button.addEventListener('click', () => {
                 button.disabled = true;
-                requestCurrentLocation(() => { button.disabled = false; });
+                requestCurrentLocation((error) => {
+                    button.disabled = false;
+                    if (error && error.code === 1) {
+                        window.dispatchEvent(new CustomEvent('geolocation:permission-denied'));
+                    }
+                });
             });
 
             return button;
@@ -507,7 +513,11 @@ function initializeMap(element) {
         locateButton.addTo(map);
 
         element.addEventListener('locate:request', () => {
-            requestCurrentLocation(() => {});
+            requestCurrentLocation((error) => {
+                if (error && error.code === 1) {
+                    window.dispatchEvent(new CustomEvent('geolocation:permission-denied'));
+                }
+            });
         });
     }
 
