@@ -90,6 +90,6 @@
     @endif
 
     @if (! $readonly)
-        <p class="mt-1.5 text-xs text-stone-400">@if ($autofill) Drop the pin on your delivery location to confirm it's within our delivery area. @else Click the map or drag the pin to set the center of this delivery zone. @endif</p>
+        <p class="mt-1.5 text-xs text-stone-400">@if ($autofill) Click inside the green circle to select your delivery location. Our service is currently available only within the highlighted areas. @else Click the map or drag the pin to set the center of this delivery zone. @endif</p>
     @endif
 </div>

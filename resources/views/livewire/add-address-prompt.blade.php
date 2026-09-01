@@ -120,19 +120,20 @@
                             />
                             @error('latitude') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             @error('longitude') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            @error('delivery') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         <div class="flex flex-col gap-2">
-                            @if ($this->addresses->isNotEmpty())
-                                <button type="button" wire:click="backToSelect" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 font-semibold px-5 py-2.5 text-sm transition">
-                                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to addresses
-                                </button>
-                            @endif
                             <button type="submit" wire:loading.attr="disabled" wire:target="saveAddress" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-5 py-2.5 text-sm transition disabled:opacity-70">
                                 <x-loading-spinner wire:loading wire:target="saveAddress" class="w-4 h-4" />
                                 <span wire:loading.remove.inline-flex wire:target="saveAddress" class="inline-flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4"></i> Save Address</span>
                                 <span wire:loading wire:target="saveAddress">Saving...</span>
                             </button>
+                            @if ($this->addresses->isNotEmpty())
+                                <button type="button" wire:click="backToSelect" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 font-semibold px-5 py-2.5 text-sm transition">
+                                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to addresses
+                                </button>
+                            @endif
                         </div>
                     </form>
                 @endif

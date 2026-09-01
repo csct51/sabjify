@@ -144,6 +144,20 @@ class AddAddressPrompt extends Component
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
+        if ($this->deliveryLocations()->isNotEmpty()) {
+            if ($validated['latitude'] === null || $validated['longitude'] === null) {
+                $this->addError('delivery', 'Please tap inside the green circle to set your delivery location.');
+
+                return;
+            }
+
+            if (! $this->checkDeliverable((float) $validated['latitude'], (float) $validated['longitude'])) {
+                $this->addError('delivery', 'We don\'t deliver to this location yet. Please choose a location inside the green circle.');
+
+                return;
+            }
+        }
+
         $address = auth('web')->user()->addresses()->create([
             'label' => $validated['label'],
             'receiver_name' => $validated['receiverName'],

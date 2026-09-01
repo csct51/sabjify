@@ -113,6 +113,7 @@
                         />
                         @error('latitude') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         @error('longitude') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        @error('delivery') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <label class="flex items-center gap-2 text-sm text-stone-700">

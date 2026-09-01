@@ -212,6 +212,12 @@ class Checkout extends Component
                 'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             ]);
 
+            $this->assertDeliverable($this->latitude, $this->longitude);
+
+            if ($this->getErrorBag()->has('delivery')) {
+                return;
+            }
+
             if ($this->saveAddress) {
                 $address = auth('web')->user()->addresses()->create([
                     'label' => $this->label,
