@@ -26,6 +26,8 @@
 
         <livewire:add-address-prompt />
 
+        <livewire:guest-address-claim-prompt />
+
         <x-basket-preview />
 
         <livewire:product-unit-picker />

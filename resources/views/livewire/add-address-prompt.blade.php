@@ -63,6 +63,72 @@
                             </button>
                         @endif
                     </div>
+                @elseif($view === 'guest')
+                    <div class="flex items-start gap-3">
+                        <span class="flex items-center justify-center w-10 h-10 rounded-2xl bg-brand-600 text-white shrink-0"><i data-lucide="map-pin" class="w-5 h-5"></i></span>
+                        <div class="flex-1 min-w-0">
+                            <h2 class="text-base font-bold text-stone-900">Set delivery location</h2>
+                            <p class="text-xs text-stone-500">Tap inside the green circle to set your delivery location. Our service is currently available only within the highlighted areas.</p>
+                        </div>
+                        @if ($dismissable)
+                            <button type="button" wire:click="dismiss" aria-label="Close" class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        @endif
+                    </div>
+
+                    <form wire:submit="saveGuestLocation" class="mt-4 space-y-3">
+                        <div>
+                            <label for="guest-addressLine" class="block text-sm font-medium text-stone-700 mb-1">Address <span class="text-red-500">*</span></label>
+                            <input id="guest-addressLine" type="text" wire:model="addressLine" placeholder="Flat / house no, street, area" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100" />
+                            @error('addressLine') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="guest-landmark" class="block text-sm font-medium text-stone-700 mb-1">Landmark (optional)</label>
+                            <input id="guest-landmark" type="text" wire:model="landmark" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100" />
+                            @error('landmark') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-stone-700 mb-2">Delivery Location</label>
+                            <x-location-map
+                                :lat="$latitude"
+                                :lng="$longitude"
+                                lat-prop="latitude"
+                                lng-prop="longitude"
+                                :autofill="true"
+                                geolocate
+                                height="h-48"
+                            />
+                            @error('latitude') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            @error('longitude') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            @error('delivery') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            @if ($latitude !== null && $longitude !== null)
+                                <div class="mt-2">
+                                    @if ($this->deliveryLocations()->isEmpty() || $this->checkDeliverable((float) $latitude, (float) $longitude))
+                                        <span class="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 text-green-700 px-3 py-1 text-xs font-medium">Delivery available</span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-3 py-1 text-xs font-medium">Coming soon — outside delivery area</span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <button type="submit" wire:loading.attr="disabled" wire:target="saveGuestLocation" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-5 py-2.5 text-sm transition disabled:opacity-70">
+                                <x-loading-spinner wire:loading wire:target="saveGuestLocation" class="w-4 h-4" />
+                                <span wire:loading.remove.inline-flex wire:target="saveGuestLocation" class="inline-flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4"></i> Confirm location</span>
+                                <span wire:loading wire:target="saveGuestLocation">Saving...</span>
+                            </button>
+                            <a href="{{ route('login') }}" wire:navigate class="text-center text-sm font-medium text-brand-600 hover:text-brand-700">Login to save address</a>
+                            @if ($dismissable)
+                                <button type="button" wire:click="dismiss" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 font-semibold px-5 py-2.5 text-sm transition">
+                                    <i data-lucide="x" class="w-4 h-4"></i> Close
+                                </button>
+                            @endif
+                        </div>
+                    </form>
                 @else
                     <div class="flex items-center gap-3">
                         <span class="flex items-center justify-center w-10 h-10 rounded-2xl bg-brand-600 text-white shrink-0"><i data-lucide="map-pin" class="w-5 h-5"></i></span>
