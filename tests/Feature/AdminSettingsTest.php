@@ -1,7 +1,8 @@
 <?php
 
 use App\Livewire\Admin\Settings;
-use App\Livewire\Admin\Units;
+use App\Livewire\Admin\Units\Create as UnitsCreate;
+use App\Livewire\Admin\Units\Index as UnitsIndex;
 use App\Models\Admin;
 use App\Models\Product;
 use App\Models\Setting;
@@ -24,20 +25,23 @@ test('admin can add and remove a unit', function () {
     $admin = Admin::factory()->create();
 
     Livewire::actingAs($admin, 'admin')
-        ->test(Units::class)
-        ->set('newUnit', '750 ml')
-        ->call('addUnit')
-        ->assertSee('750 ml');
+        ->test(UnitsCreate::class)
+        ->set('name', '750 g')
+        ->set('base_unit', 'g')
+        ->set('to_base_factor', '750')
+        ->set('sort_order', 10)
+        ->call('save')
+        ->assertHasNoErrors();
 
-    expect(Unit::query()->where('name', '750 ml')->exists())->toBeTrue();
+    expect(Unit::query()->where('name', '750 g')->exists())->toBeTrue();
 
-    $unit = Unit::query()->where('name', '750 ml')->firstOrFail();
+    $unit = Unit::query()->where('name', '750 g')->firstOrFail();
 
     Livewire::actingAs($admin, 'admin')
-        ->test(Units::class)
-        ->call('removeUnit', $unit->id);
+        ->test(UnitsIndex::class)
+        ->call('delete', $unit->id);
 
-    expect(Unit::query()->where('name', '750 ml')->exists())->toBeFalse();
+    expect(Unit::query()->where('name', '750 g')->exists())->toBeFalse();
 });
 
 test('admin cannot add a duplicate unit', function () {
@@ -45,10 +49,12 @@ test('admin cannot add a duplicate unit', function () {
     Unit::factory()->create(['name' => '1 kg']);
 
     Livewire::actingAs($admin, 'admin')
-        ->test(Units::class)
-        ->set('newUnit', '1 kg')
-        ->call('addUnit')
-        ->assertHasErrors('newUnit');
+        ->test(UnitsCreate::class)
+        ->set('name', '1 kg')
+        ->set('base_unit', 'g')
+        ->set('to_base_factor', '1000')
+        ->call('save')
+        ->assertHasErrors('name');
 
     expect(Unit::query()->where('name', '1 kg')->count())->toBe(1);
 });
@@ -59,8 +65,8 @@ test('admin cannot remove a unit used by products', function () {
     Product::factory()->create(['unit' => 'dozen']);
 
     Livewire::actingAs($admin, 'admin')
-        ->test(Units::class)
-        ->call('removeUnit', $unit->id)
+        ->test(UnitsIndex::class)
+        ->call('delete', $unit->id)
         ->assertHasErrors('remove');
 
     expect(Unit::query()->where('name', 'dozen')->exists())->toBeTrue();

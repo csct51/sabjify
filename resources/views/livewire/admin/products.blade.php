@@ -29,6 +29,7 @@
                         <th class="px-4 py-3 font-medium">Category</th>
                         <th class="px-4 py-3 font-medium text-right">Price</th>
                         <th class="px-4 py-3 font-medium text-center">Stock</th>
+                        <th class="px-4 py-3 font-medium text-center">Qty</th>
                         <th class="px-4 py-3 font-medium text-center">Featured</th>
                         <th class="px-4 py-3 font-medium text-center">Status</th>
                         <th class="px-4 py-3 font-medium text-right">Actions</th>
@@ -61,6 +62,11 @@
                             <td class="px-4 py-3 text-center">
                                 <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $product->inStock() ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200' }}">
                                     {{ $product->inStock() ? 'In stock' : 'Out of stock' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ (float) $product->current_stock > 0 ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-stone-100 text-stone-500 border border-stone-200' }}">
+                                    {{ $product->displayStock() }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">

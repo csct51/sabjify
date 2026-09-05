@@ -19,14 +19,43 @@ use Illuminate\Support\Carbon;
  * @property int $price
  * @property int $quantity
  * @property int $total
+ * @property int|null $product_unit_id
+ * @property numeric|null $base_qty
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['order_id', 'product_id', 'basket_id', 'product_name', 'unit', 'price', 'quantity', 'total'])]
+#[Fillable(['order_id', 'product_id', 'basket_id', 'product_name', 'unit', 'price', 'quantity', 'total', 'product_unit_id', 'base_qty'])]
 class OrderItem extends Model
 {
     /** @use HasFactory<OrderItemFactory> */
     use HasFactory;
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'base_qty' => 'decimal:3',
+        ];
+    }
+
+    /**
+     * Base-unit quantity sold (snapshot; falls back to live conversion for
+     * rows predating the base_qty snapshot).
+     */
+    public function soldBaseQty(): float
+    {
+        if ($this->base_qty !== null) {
+            return (float) $this->base_qty;
+        }
+
+        $factor = $this->unit ? Unit::factorFor($this->unit) : null;
+
+        return round((float) $this->quantity * ($factor ?? 1.0), 3);
+    }
 
     /**
      * @return BelongsTo<Order, $this>
@@ -50,5 +79,13 @@ class OrderItem extends Model
     public function basket(): BelongsTo
     {
         return $this->belongsTo(Basket::class);
+    }
+
+    /**
+     * @return BelongsTo<ProductUnit, $this>
+     */
+    public function productUnit(): BelongsTo
+    {
+        return $this->belongsTo(ProductUnit::class);
     }
 }

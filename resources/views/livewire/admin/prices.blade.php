@@ -43,6 +43,7 @@
                             <th class="px-4 py-3 font-medium">Price</th>
                             <th class="px-4 py-3 font-medium">MRP</th>
                             <th class="px-4 py-3 font-medium text-center">Stock</th>
+                            <th class="px-4 py-3 font-medium text-center">Qty</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-stone-100">
@@ -51,7 +52,7 @@
                             @if ($unit->product?->category_id !== $currentCategoryId)
                                 @php $currentCategoryId = $unit->product?->category_id; @endphp
                                 <tr class="bg-brand-50/40">
-                                    <td colspan="5" class="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-brand-700">{{ $unit->product?->category?->name }}</td>
+                                    <td colspan="6" class="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-brand-700">{{ $unit->product?->category?->name }}</td>
                                 </tr>
                             @endif
                             <tr class="hover:bg-stone-50" wire:key="unit-{{ $unit->id }}">
@@ -89,6 +90,11 @@
                                     >
                                         <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition {{ $unit->in_stock ? 'translate-x-[22px]' : 'translate-x-0.5' }}"></span>
                                     </button>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ (float) ($unit->product?->current_stock ?? 0) > 0 ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-stone-100 text-stone-500 border border-stone-200' }}">
+                                        {{ $unit->product?->displayStock() ?? '—' }}
+                                    </span>
                                 </td>
                             </tr>
                         @endforeach

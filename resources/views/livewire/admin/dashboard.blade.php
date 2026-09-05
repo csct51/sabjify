@@ -68,7 +68,7 @@
                     <a href="{{ route('admin.products.edit', $product) }}" wire:navigate class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-stone-50 transition">
                         <div class="min-w-0">
                             <p class="font-medium text-sm text-stone-900 truncate">{{ $product->name }}</p>
-                            <p class="text-xs text-stone-400">{{ $product->category?->name }}</p>
+                            <p class="text-xs text-stone-400">{{ $product->category?->name }} · Qty: {{ $product->displayStock() }}</p>
                         </div>
                         <span class="shrink-0 inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">Out of stock</span>
                     </a>

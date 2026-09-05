@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Basket;
 use App\Models\Product;
+use App\Models\Unit;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -44,6 +45,15 @@ class BasketCard extends Component
             return;
         }
 
+        $existing = (int) (auth('web')->user()->cartItems()
+            ->where('basket_id', $this->basket->id)
+            ->value('quantity') ?? 0);
+        $sellable = $this->basket->basketsSellable();
+
+        if (! $this->basket->is_active || ! $this->basket->constituentsInStock() || $existing + 1 > $sellable) {
+            return;
+        }
+
         $cartItem = auth('web')->user()->cartItems()->firstOrNew(['basket_id' => $this->basket->id]);
         $cartItem->product_id = null;
         $cartItem->quantity++;
@@ -60,6 +70,13 @@ class BasketCard extends Component
         $cartItem = auth('web')->user()->cartItems()
             ->where('basket_id', $this->basket->id)
             ->firstOrFail();
+
+        $sellable = $this->basket->basketsSellable();
+
+        if (! $this->basket->is_active || ! $this->basket->constituentsInStock() || $cartItem->quantity + 1 > $sellable) {
+            return;
+        }
+
         $cartItem->increment('quantity');
 
         $this->quantity = $cartItem->quantity;
@@ -120,10 +137,10 @@ class BasketCard extends Component
 
     private function resolveUnitName(Product $product): string
     {
-        return $product->pivot?->unit
+        return Unit::displayUnitFor($product->pivot?->unit
             ?? $product->units->firstWhere('id', $product->pivot?->product_unit_id)?->unit
             ?? $product->units->first()?->unit
-            ?? $product->unit;
+            ?? $product->unit);
     }
 
     public function render(): View

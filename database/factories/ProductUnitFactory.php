@@ -26,6 +26,7 @@ class ProductUnitFactory extends Factory
             'price' => $price,
             'mrp' => fake()->boolean(70) ? (int) ($price * 1.25) : null,
             'sort_order' => 0,
+            'in_stock' => true,
         ];
     }
 }

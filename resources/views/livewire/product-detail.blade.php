@@ -47,7 +47,8 @@
                         <p class="text-sm font-medium text-stone-700 mb-2">Select size</p>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($product->units as $unit)
-                                <button type="button" wire:click="selectUnit({{ $unit->id }})" {{ $unit->in_stock ? '' : 'disabled' }} class="rounded-xl border px-4 py-2.5 text-sm font-medium transition {{ $this->selectedUnit?->id === $unit->id ? 'border-brand-600 bg-brand-50 text-brand-700 ring-2 ring-brand-100' : ($unit->in_stock ? 'border-stone-200 hover:border-brand-300 text-stone-700' : 'border-stone-200 text-stone-400 opacity-60 cursor-not-allowed') }}">
+                                @php $sizeAvailable = $unit->in_stock && $product->sellablePacksFor($unit) > 0; @endphp
+                                <button type="button" wire:click="selectUnit({{ $unit->id }})" {{ $sizeAvailable ? '' : 'disabled' }} class="rounded-xl border px-4 py-2.5 text-sm font-medium transition {{ $this->selectedUnit?->id === $unit->id ? 'border-brand-600 bg-brand-50 text-brand-700 ring-2 ring-brand-100' : ($sizeAvailable ? 'border-stone-200 hover:border-brand-300 text-stone-700' : 'border-stone-200 text-stone-400 opacity-60 cursor-not-allowed') }}">
                                     <span class="block">{{ $unit->unit }}</span>
                                     <span class="block text-xs font-semibold {{ $this->selectedUnit?->id === $unit->id ? 'text-brand-700' : 'text-stone-500' }}">
                                         {{ \Illuminate\Support\Number::currency($unit->price, 'INR') }}
@@ -55,7 +56,7 @@
                                             <span class="line-through font-normal text-stone-400">{{ \Illuminate\Support\Number::currency($unit->mrp, 'INR') }}</span>
                                         @endif
                                     </span>
-                                    @unless ($unit->in_stock)
+                                    @unless ($sizeAvailable)
                                         <span class="block text-[10px] font-normal text-red-500">Out of stock</span>
                                     @endunless
                                 </button>
@@ -78,8 +79,13 @@
                     </div>
                 @endif
 
+                @php
+                    $packsLeft = $product->sellablePacksFor($this->selectedUnit);
+                    $unitAvailable = ($this->selectedUnit?->in_stock ?? $product->inStock()) && $packsLeft > 0;
+                    $showLeft = $unitAvailable && $packsLeft <= $product->lowPacksThreshold($this->selectedUnit);
+                @endphp
                 <div class="mt-3 flex items-center gap-4 text-sm">
-                    @if ($this->selectedUnit?->in_stock ?? $product->inStock())
+                    @if ($unitAvailable)
                         <span class="inline-flex items-center gap-1.5 text-green-600 font-medium">
                             <span class="w-2 h-2 rounded-full bg-green-500"></span> In Stock
                         </span>
@@ -88,12 +94,15 @@
                             <span class="w-2 h-2 rounded-full bg-red-500"></span> Out of Stock
                         </span>
                     @endif
+                    @if ($showLeft)
+                        <span class="inline-flex items-center gap-1.5 text-amber-600 font-medium">Only {{ $packsLeft }} left</span>
+                    @endif
                     <span class="text-stone-400">SKU: {{ $product->id }}</span>
                 </div>
 
                 <p class="mt-6 text-stone-600 leading-relaxed">{{ $product->description }}</p>
 
-                @if ($this->selectedUnit?->in_stock ?? $product->inStock())
+                @if ($unitAvailable)
                     <div class="mt-8">
                         @if ($this->inCart)
                             <div class="flex flex-wrap items-center gap-4">

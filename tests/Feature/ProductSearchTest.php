@@ -4,6 +4,7 @@ use App\Livewire\Admin\ProductForm;
 use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Unit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -58,6 +59,7 @@ test('store search matches product by alternate name', function () {
 test('admin product form saves alternate names', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
 
     Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class)
@@ -66,6 +68,7 @@ test('admin product form saves alternate names', function () {
         ->set('slug', 'tomato-alt')
         ->set('description', 'Fresh red tomato')
         ->set('alternateNames', 'tamatar, टमाटर')
+        ->set('baseUnit', 'g')
         ->set('unitRows', [['unit' => '1 kg', 'price' => '50', 'mrp' => null, 'in_stock' => true]])
         ->set('sort_order', 0)
         ->call('save')

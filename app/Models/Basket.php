@@ -79,6 +79,106 @@ class Basket extends Model
     }
 
     /**
+     * Base units of a constituent line per basket. Custom numeric qtys
+     * composed as "{number} {purchaseUnit}" resolve exactly; dropdown lines
+     * convert via the linked unit; legacy free text falls back to factorFor().
+     */
+    public static function baseShareFor(Product $product, ?int $unitId, ?string $unitName): float
+    {
+        $purchaseUnit = $product->purchaseUnit();
+        $name = is_string($unitName) ? trim($unitName) : '';
+
+        if ($name !== '' && preg_match('/^(\d+(?:\.\d+)?)\s+'.preg_quote($purchaseUnit, '/').'$/i', $name, $matches)) {
+            return round((float) $matches[1] * (Unit::factorFor($purchaseUnit) ?? 1.0), 3);
+        }
+
+        if ($unitId) {
+            $unit = $product->relationLoaded('units')
+                ? $product->units->firstWhere('id', $unitId)
+                : ProductUnit::where('product_id', $product->id)->find($unitId);
+
+            if ($unit) {
+                return round(Unit::toBaseQty($unit->unit, 1), 3);
+            }
+        }
+
+        if (is_string($unitName) && trim($unitName) !== '') {
+            return round(Unit::toBaseQty(trim($unitName), 1), 3);
+        }
+
+        return 0.0;
+    }
+
+    /**
+     * Base units consumed per basket: [product_id => baseQty].
+     *
+     * @return array<int, float>
+     */
+    public function constituentShares(): array
+    {
+        $shares = [];
+
+        foreach ($this->products()->with('units')->get() as $product) {
+            $share = self::baseShareFor($product, $product->pivot->product_unit_id, $product->pivot->unit);
+
+            if ($share > 0) {
+                $shares[$product->id] = $share;
+            }
+        }
+
+        return $shares;
+    }
+
+    /**
+     * Whole baskets sellable from current constituent stocks.
+     */
+    public function basketsSellable(): int
+    {
+        $min = null;
+
+        foreach ($this->products()->with('units')->get() as $product) {
+            $share = self::baseShareFor($product, $product->pivot->product_unit_id, $product->pivot->unit);
+
+            if ($share <= 0) {
+                continue;
+            }
+
+            $packs = (int) floor((float) $product->current_stock / $share);
+            $min = $min === null ? $packs : min($min, $packs);
+        }
+
+        return max(0, $min ?? 0);
+    }
+
+    /**
+     * Effective constituent units all toggled on (unlinked lines default on).
+     */
+    public function constituentsInStock(): bool
+    {
+        foreach ($this->products()->with('units')->get() as $product) {
+            $unitId = $product->pivot->product_unit_id;
+
+            if ($unitId) {
+                $unit = $product->units->firstWhere('id', $unitId);
+
+                if ($unit && ! $unit->in_stock) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Full sale gate: basket active, constituents toggled on, stock covers.
+     */
+    public function canSell(int $baskets = 1): bool
+    {
+        return $this->is_active && $this->constituentsInStock() && $this->basketsSellable() >= $baskets;
+    }
+
+    /**
      * @return HasMany<OrderItem, $this>
      */
     public function orderItems(): HasMany

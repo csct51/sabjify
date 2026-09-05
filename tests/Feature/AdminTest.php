@@ -17,6 +17,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductUnit;
+use App\Models\Unit;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -120,12 +121,14 @@ test('category slug is auto-generated when editing the name', function () {
 test('admin can create a product', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
 
     Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class)
         ->set('categoryId', $category->id)
         ->set('name', 'Fresh Mango')
         ->set('slug', 'fresh-mango')
+        ->set('baseUnit', 'g')
         ->set('unitRows', [
             ['unit' => '1 kg', 'price' => '120', 'mrp' => '150'],
         ])
@@ -147,11 +150,13 @@ test('admin can create a product', function () {
 test('product slug is auto-generated from the name', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
 
     Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class)
         ->set('categoryId', $category->id)
         ->set('name', 'Fresh Mango')
+        ->set('baseUnit', 'g')
         ->set('unitRows', [
             ['unit' => '1 kg', 'price' => '120', 'mrp' => null],
         ])
@@ -165,9 +170,11 @@ test('admin can update product unit stock', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();
     $product = Product::factory()->create(['category_id' => $category->id]);
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
 
     Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class, ['product' => $product])
+        ->set('baseUnit', 'g')
         ->set('unitRows', [
             ['unit' => '1 kg', 'price' => '50', 'mrp' => null, 'in_stock' => false],
         ])

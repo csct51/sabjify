@@ -66,6 +66,17 @@ class BasketShow extends Component
             return;
         }
 
+        $existing = (int) (auth('web')->user()->cartItems()
+            ->where('basket_id', $this->basket->id)
+            ->value('quantity') ?? 0);
+        $sellable = $this->basket->basketsSellable();
+
+        if (! $this->basket->is_active || ! $this->basket->constituentsInStock() || $existing + 1 > $sellable) {
+            $this->cartError = $sellable > 0 ? "Only {$sellable} baskets left." : 'This basket is out of stock.';
+
+            return;
+        }
+
         $cartItem = auth('web')->user()->cartItems()->firstOrNew(['basket_id' => $this->basket->id]);
         $cartItem->product_id = null;
         $cartItem->quantity = $cartItem->quantity + 1;
@@ -81,6 +92,15 @@ class BasketShow extends Component
         $cartItem = auth('web')->user()->cartItems()
             ->where('basket_id', $this->basket->id)
             ->firstOrFail();
+
+        $sellable = $this->basket->basketsSellable();
+
+        if (! $this->basket->is_active || ! $this->basket->constituentsInStock() || $cartItem->quantity + 1 > $sellable) {
+            $this->cartError = $sellable > 0 ? "Only {$sellable} baskets left." : 'This basket is out of stock.';
+
+            return;
+        }
+
         $cartItem->increment('quantity');
 
         $this->syncCartState();

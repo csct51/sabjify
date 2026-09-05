@@ -20,6 +20,10 @@ class UnitFactory extends Factory
         return [
             'name' => fake()->unique()->randomElement(['1 kg', '500 g', '250 g', '1 pc', 'dozen', 'bunch']),
             'sort_order' => 0,
+            'base_unit' => null,
+            'is_base' => false,
+            'purchase_unit' => null,
+            'integer_only' => false,
         ];
     }
 }

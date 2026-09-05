@@ -1,4 +1,4 @@
-import { createIcons, Apple, ArrowLeft, ArrowRight, BadgeCheck, Banknote, Bell, BookOpen, Carrot,   Check, ChefHat, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, Citrus, CreditCard, Crosshair, Eye, EyeOff, FileText, Filter, Folder, Gift, Headset, Home, IndianRupee, KeyRound, LayoutDashboard, LayoutGrid, Leaf, Link, ListChecks, Locate, Lock, LogOut, MapPin, Menu, Minus, Moon, Navigation, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Scale, Search, Settings, Shield, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Sun, Trash2, Truck, Upload, User, UserCircle, Users, Utensils, X } from 'lucide';
+import { createIcons, Apple, ArrowLeft, ArrowRight, BadgeCheck, Banknote, Bell, BookOpen, Boxes, Carrot,   Check, ChefHat, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, Citrus, ClipboardList, CreditCard, Crosshair, Eye, EyeOff, FileText, Filter, Folder, Gift, Headset, Home, IndianRupee, KeyRound, LayoutDashboard, LayoutGrid, Leaf, Link, ListChecks, Locate, Lock, LogOut, MapPin, Menu, Minus, Moon, Navigation, Package, Pencil, Phone, Plus, RefreshCcw, Salad, Scale, Search, Settings, Shield, ShieldCheck, ShoppingBasket, ShoppingCart, Sprout, Star, Store, Sun, Trash2, TriangleAlert, Truck, Upload, User, UserCircle, Users, Utensils, X } from 'lucide';
 import DataTable from 'datatables.net-dt';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
 import L from 'leaflet';
@@ -12,6 +12,7 @@ const icons = {
     Banknote,
     Bell,
     BookOpen,
+    Boxes,
     Carrot,
     Check,
     ChefHat,
@@ -20,6 +21,7 @@ const icons = {
     ChevronRight,
     CircleCheck,
     Citrus,
+    ClipboardList,
     CreditCard,
     Crosshair,
     Eye,
@@ -62,6 +64,7 @@ const icons = {
     Store,
     Sun,
     Trash2,
+    TriangleAlert,
     Truck,
     Upload,
     User,

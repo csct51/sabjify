@@ -123,7 +123,8 @@ class Checkout extends Component
     public function outOfStockItems(): Collection
     {
         return $this->cartItems()
-            ->filter(fn (CartItem $item) => $item->product && ! $item->productUnit->in_stock)
+            ->filter(fn (CartItem $item) => ($item->product && (! ($item->productUnit?->in_stock ?? $item->product->inStock()) || $item->product->baseNeededFor($item->productUnit, (int) $item->quantity) > (float) $item->product->current_stock + 1e-9))
+                || ($item->basket && (! $item->basket->is_active || ! $item->basket->constituentsInStock() || (int) $item->quantity > $item->basket->basketsSellable())))
             ->values();
     }
 

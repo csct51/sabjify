@@ -23,6 +23,10 @@ class Cart extends Component
         abort_if($item === null, 404);
 
         if ($item->basket) {
+            if (! $item->basket->is_active || ! $item->basket->constituentsInStock() || $item->quantity + 1 > $item->basket->basketsSellable()) {
+                return;
+            }
+
             $item->increment('quantity');
             $this->dispatch('cart-updated');
 
@@ -30,6 +34,10 @@ class Cart extends Component
         }
 
         if (! $item->product || ! ($item->productUnit?->in_stock ?? $item->product->inStock())) {
+            return;
+        }
+
+        if ($item->quantity + 1 > $item->product->sellablePacksFor($item->productUnit)) {
             return;
         }
 
@@ -146,7 +154,8 @@ class Cart extends Component
     public function outOfStockItems(): Collection
     {
         return $this->cartItems()
-            ->filter(fn (CartItem $item) => $item->product && ! ($item->productUnit?->in_stock ?? $item->product->inStock()))
+            ->filter(fn (CartItem $item) => ($item->product && (! ($item->productUnit?->in_stock ?? $item->product->inStock()) || $item->product->baseNeededFor($item->productUnit, (int) $item->quantity) > (float) $item->product->current_stock + 1e-9))
+                || ($item->basket && (! $item->basket->is_active || ! $item->basket->constituentsInStock() || (int) $item->quantity > $item->basket->basketsSellable())))
             ->values();
     }
 

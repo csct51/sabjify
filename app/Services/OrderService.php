@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Basket;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +31,28 @@ class OrderService
 
         if ($outOfStock->isNotEmpty()) {
             throw new \RuntimeException('Some items are out of stock: '.$outOfStock->implode(', '));
+        }
+
+        $shortOnStock = $cartItems
+            ->filter(fn ($item) => $item->product && ! $item->basket)
+            ->filter(fn ($item) => $item->product->baseNeededFor($item->productUnit, (int) $item->quantity) > (float) $item->product->current_stock + 1e-9)
+            ->map(fn ($item) => $item->product->name)
+            ->unique()
+            ->values();
+
+        if ($shortOnStock->isNotEmpty()) {
+            throw new \RuntimeException('Not enough stock for: '.$shortOnStock->implode(', '));
+        }
+
+        $shortBaskets = $cartItems
+            ->filter(fn ($item) => $item->basket)
+            ->filter(fn ($item) => ! $item->basket->is_active || ! $item->basket->constituentsInStock() || (int) $item->quantity > $item->basket->basketsSellable())
+            ->map(fn ($item) => $item->basket->name)
+            ->unique()
+            ->values();
+
+        if ($shortBaskets->isNotEmpty()) {
+            throw new \RuntimeException('Not enough stock for baskets: '.$shortBaskets->implode(', '));
         }
 
         $subtotal = $cartItems->sum(fn ($item) => $item->total());
@@ -60,6 +84,23 @@ class OrderService
             foreach ($cartItems as $cartItem) {
                 if ($cartItem->basket) {
                     $basket = $cartItem->basket;
+                    $shares = $basket->constituentShares();
+
+                    foreach ($shares as $productId => $sharePerBasket) {
+                        $product = Product::whereKey($productId)->lockForUpdate()->first();
+
+                        if (! $product) {
+                            continue;
+                        }
+
+                        $need = round($sharePerBasket * (int) $cartItem->quantity, 3);
+
+                        if ($need > (float) $product->current_stock + 1e-9) {
+                            throw new \RuntimeException('Not enough stock for basket: '.$basket->name);
+                        }
+
+                        $product->decrement('current_stock', $need);
+                    }
 
                     OrderItem::create([
                         'order_id' => $order->id,
@@ -75,10 +116,17 @@ class OrderService
                     continue;
                 }
 
-                $product = $cartItem->product;
+                $product = Product::whereKey($cartItem->product_id)->lockForUpdate()->first() ?? $cartItem->product;
                 $unit = $cartItem->productUnit;
                 $price = $unit?->price ?? $product->price;
                 $unitName = $unit?->unit ?? $product->unit;
+                $baseQty = $product->baseNeededFor($unit, (int) $cartItem->quantity);
+
+                if ($baseQty > (float) $product->current_stock + 1e-9) {
+                    throw new \RuntimeException('Not enough stock for: '.$product->name);
+                }
+
+                $product->decrement('current_stock', $baseQty);
 
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -88,6 +136,7 @@ class OrderService
                     'price' => $price,
                     'quantity' => $cartItem->quantity,
                     'total' => $price * $cartItem->quantity,
+                    'base_qty' => $baseQty,
                 ]);
             }
 
@@ -103,12 +152,40 @@ class OrderService
             return false;
         }
 
-        $order->update([
-            'status' => Order::STATUS_CANCELLED,
-            'cancelled_at' => now(),
-            'cancelled_reason' => $reason,
-            'cancelled_by' => $cancelledBy,
-        ]);
+        DB::transaction(function () use ($order, $reason, $cancelledBy) {
+            $order->update([
+                'status' => Order::STATUS_CANCELLED,
+                'cancelled_at' => now(),
+                'cancelled_reason' => $reason,
+                'cancelled_by' => $cancelledBy,
+            ]);
+
+            $order->loadMissing('items');
+
+            foreach ($order->items as $item) {
+                if ($item->basket_id && ! $item->product_id) {
+                    $basket = $item->basket ?? Basket::find($item->basket_id);
+
+                    if ($basket) {
+                        foreach ($basket->constituentShares() as $productId => $sharePerBasket) {
+                            $product = Product::whereKey($productId)->lockForUpdate()->first();
+
+                            $product?->increment('current_stock', round($sharePerBasket * (int) $item->quantity, 3));
+                        }
+                    }
+
+                    continue;
+                }
+
+                if (! $item->product_id) {
+                    continue;
+                }
+
+                $product = Product::whereKey($item->product_id)->lockForUpdate()->first();
+
+                $product?->increment('current_stock', $item->soldBaseQty());
+            }
+        });
 
         return true;
     }

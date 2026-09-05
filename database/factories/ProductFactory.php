@@ -42,13 +42,15 @@ class ProductFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (Product $product) {
+            $inStock = fake()->boolean(80);
             $product->units()->create([
                 'unit' => $product->unit,
                 'price' => $product->price,
                 'mrp' => $product->mrp,
-                'in_stock' => fake()->boolean(80),
+                'in_stock' => $inStock,
                 'sort_order' => 0,
             ]);
+            $product->update(['current_stock' => $inStock ? fake()->numberBetween(10, 100) : 0]);
         });
     }
 
@@ -56,6 +58,7 @@ class ProductFactory extends Factory
     {
         return $this->afterCreating(function (Product $product) {
             $product->units()->update(['in_stock' => true]);
+            $product->update(['current_stock' => fake()->numberBetween(10, 100)]);
         });
     }
 
@@ -63,6 +66,7 @@ class ProductFactory extends Factory
     {
         return $this->afterCreating(function (Product $product) {
             $product->units()->update(['in_stock' => false]);
+            $product->update(['current_stock' => 0]);
         });
     }
 
@@ -90,6 +94,7 @@ class ProductFactory extends Factory
                     'sort_order' => $i,
                 ]);
             }
+            $product->update(['current_stock' => fake()->numberBetween(10, 100)]);
         });
     }
 }

@@ -46,6 +46,19 @@ class ProductCard extends Component
         $this->ensureStock();
 
         $unitId = $this->validatedUnitId($unitId ?? $this->unitId ?? $this->product->defaultUnit()?->id);
+        $unit = $this->product->units->firstWhere('id', $unitId);
+
+        $existing = (int) (auth('web')->user()->cartItems()
+            ->where('product_id', $this->product->id)
+            ->where('product_unit_id', $unitId)
+            ->value('quantity') ?? 0);
+        $packs = $this->product->sellablePacksFor($unit);
+
+        if ($existing + 1 > $packs) {
+            $this->addError('stock', $packs > 0 ? "Only {$packs} left." : 'This product is out of stock.');
+
+            return;
+        }
 
         $cartItem = auth('web')->user()->cartItems()->firstOrNew([
             'product_id' => $this->product->id,
@@ -71,6 +84,16 @@ class ProductCard extends Component
             ->where('product_id', $this->product->id)
             ->where('product_unit_id', $unitId)
             ->firstOrFail();
+
+        $unit = $this->product->units->firstWhere('id', $unitId);
+        $packs = $this->product->sellablePacksFor($unit);
+
+        if ($cartItem->quantity + 1 > $packs) {
+            $this->addError('stock', $packs > 0 ? "Only {$packs} left." : 'This product is out of stock.');
+
+            return;
+        }
+
         $cartItem->increment('quantity');
 
         $this->quantity = $cartItem->quantity;

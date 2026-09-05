@@ -8,6 +8,7 @@ use App\Models\Unit;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -37,6 +38,12 @@ class ProductForm extends Component
 
     public int $sort_order = 0;
 
+    public string $baseUnit = 'g';
+
+    public string $currentStock = '0';
+
+    public string $lowStock = '';
+
     /** @var array<int, array{unit: string, price: string, mrp: string|null, in_stock: bool}> */
     public array $unitRows = [];
 
@@ -60,6 +67,9 @@ class ProductForm extends Component
             $this->is_featured = $product->is_featured;
             $this->sort_order = $product->sort_order;
             $this->imageUrl = $product->image && filter_var($product->image, FILTER_VALIDATE_URL) !== false ? $product->image : '';
+            $this->baseUnit = $product->base_unit ?: ($product->baseUnit() ?? 'g');
+            $this->currentStock = rtrim(rtrim(number_format((float) $product->current_stock, 3, '.', ''), '0'), '.') ?: '0';
+            $this->lowStock = $product->low_stock === null ? '' : (rtrim(rtrim(number_format((float) $product->low_stock, 3, '.', ''), '0'), '.') ?: '0');
 
             foreach ($product->units as $unit) {
                 $this->unitRows[] = [
@@ -123,9 +133,24 @@ class ProductForm extends Component
      * @return Collection<int, Unit>
      */
     #[Computed]
+    public function baseOptions(): Collection
+    {
+        return Unit::isBase()->ordered()->get();
+    }
+
+    /**
+     * @return Collection<int, Unit>
+     */
+    #[Computed]
     public function units(): Collection
     {
-        return Unit::ordered()->get();
+        return Unit::where('base_unit', $this->baseUnit)->ordered()->get();
+    }
+
+    public function updatedBaseUnit(): void
+    {
+        // Keep existing rows but they will be re-validated to ensure they share the same base
+        $this->resetValidation('unitRows.*.unit');
     }
 
     public function save(): void
@@ -143,8 +168,11 @@ class ProductForm extends Component
             'is_active' => ['boolean'],
             'is_featured' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
+            'baseUnit' => ['required', 'string', Rule::in(Unit::isBase()->pluck('name')->toArray())],
+            'currentStock' => ['required', 'numeric', 'min:0', 'max:99999999'],
+            'lowStock' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'unitRows' => ['required', 'array', 'min:1'],
-            'unitRows.*.unit' => ['required', 'string', 'max:20'],
+            'unitRows.*.unit' => ['required', 'string', 'max:20', Rule::in(Unit::where('base_unit', $this->baseUnit)->pluck('name')->toArray())],
             'unitRows.*.price' => ['required', 'integer', 'min:1'],
             'unitRows.*.mrp' => ['nullable', 'integer', 'min:1'],
             'unitRows.*.in_stock' => ['boolean'],
@@ -166,6 +194,9 @@ class ProductForm extends Component
             'is_active' => $this->is_active === '1',
             'is_featured' => $this->is_featured,
             'sort_order' => $this->sort_order,
+            'base_unit' => $this->baseUnit,
+            'current_stock' => round((float) $this->currentStock, 3),
+            'low_stock' => $this->lowStock === '' ? null : round((float) $this->lowStock, 3),
         ];
 
         if ($this->image) {

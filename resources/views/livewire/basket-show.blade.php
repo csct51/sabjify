@@ -26,9 +26,23 @@
                 @endif
                 <p class="text-2xl font-bold text-stone-900 {{ $basket->discountPercent() > 0 ? 'mt-1' : 'mt-5' }}">{{ \Illuminate\Support\Number::currency($basket->price, 'INR') }}</p>
                 <p class="text-xs text-stone-400 mt-1">One-time purchase price for this basket.</p>
+                @php
+                    $basketsLeft = $basket->basketsSellable();
+                    $basketAvailable = $basket->is_active && $basket->constituentsInStock() && $basketsLeft > 0;
+                @endphp
+                @if ($basketAvailable && $basketsLeft <= 5)
+                    <p class="text-xs text-amber-600 font-medium mt-2">Only {{ $basketsLeft }} baskets left</p>
+                @elseif (! $basketAvailable)
+                    <p class="text-sm text-red-500 font-medium mt-2">Out of Stock</p>
+                @endif
 
                 <div class="mt-5 hidden lg:flex items-center gap-3">
-                    @if ($inCart)
+                    @if (! $basketAvailable)
+                        <button type="button" disabled class="inline-flex items-center gap-2 rounded-xl bg-stone-200 text-stone-400 font-semibold px-6 py-3 cursor-not-allowed">
+                            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                            Out of Stock
+                        </button>
+                    @elseif ($inCart)
                         <div class="flex items-center gap-1 bg-brand-600 text-white rounded-xl p-1">
                             <button type="button" wire:click="decrement" wire:loading.attr="disabled" wire:target="decrement" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-4 h-4"></i></button>
                             <span class="w-8 text-center text-lg font-semibold">
@@ -87,10 +101,10 @@
                 <div class="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
                     @foreach ($this->products as $product)
                         @php($pivotUnitId = $product->pivot?->product_unit_id)
-                        @php($displayUnit = $product->pivot?->unit
+                        @php($displayUnit = \App\Models\Unit::displayUnitFor($product->pivot?->unit
                             ?? ($pivotUnitId ? $product->units->firstWhere('id', $pivotUnitId)?->unit : null)
                             ?? $product->units->first()?->unit
-                            ?? $product->unit)
+                            ?? $product->unit))
                         @php($displayPrice = $product->pivot?->price
                             ?? ($pivotUnitId ? $product->units->firstWhere('id', $pivotUnitId)?->price : null)
                             ?? $product->units->first()?->price
@@ -103,13 +117,22 @@
                                 <p class="text-sm font-medium text-stone-800 truncate">{{ $product->name }}</p>
                                 <p class="text-xs text-stone-400">{{ $displayUnit }}</p>
                             </div>
-                            <p class="text-sm font-semibold text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($displayPrice, 'INR') }}</p>
+                            @if ($displayPrice > 0)
+                                <p class="text-sm font-semibold text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($displayPrice, 'INR') }}</p>
+                            @else
+                                <span class="shrink-0 inline-flex items-center rounded-md bg-green-600 text-white text-[10px] font-bold px-2 py-1">FREE</span>
+                            @endif
                         </div>
                     @endforeach
                 </div>
 
                 <div class="mt-8 lg:hidden flex items-center gap-3">
-                    @if ($inCart)
+                    @if (! $basketAvailable)
+                        <button type="button" disabled class="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-stone-200 text-stone-400 font-semibold px-6 py-3 cursor-not-allowed">
+                            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                            Out of Stock
+                        </button>
+                    @elseif ($inCart)
                         <div class="flex items-center gap-1 bg-brand-600 text-white rounded-xl p-1 shrink-0">
                             <button type="button" wire:click="decrement" wire:loading.attr="disabled" wire:target="decrement" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-4 h-4"></i></button>
                             <span class="w-8 text-center text-lg font-semibold">

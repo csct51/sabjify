@@ -4,9 +4,12 @@ namespace App\Livewire\Admin;
 
 use App\Models\Basket;
 use App\Models\Product;
+use App\Models\ProductUnit;
+use App\Models\Unit;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -43,7 +46,7 @@ class BasketForm extends Component
     public array $productUnitIds = [];
 
     /** @var array<int, string|null> */
-    public array $productCustomUnits = [];
+    public array $productCustomQtys = [];
 
     /** @var array<int, int|null> */
     public array $productCustomPrices = [];
@@ -74,20 +77,98 @@ class BasketForm extends Component
             $this->imageUrl = $basket->image && filter_var($basket->image, FILTER_VALIDATE_URL) !== false ? $basket->image : '';
             $this->priceManuallyEdited = true;
 
-            foreach ($basket->products()->withPivot('product_unit_id', 'unit', 'price')->get() as $product) {
+            foreach ($basket->products()->with(['units'])->withPivot('product_unit_id', 'unit', 'price')->get() as $product) {
                 $this->productIds[] = $product->id;
-                $this->productUnitIds[$product->id] = $product->pivot->product_unit_id;
-                $this->productCustomUnits[$product->id] = $product->pivot->unit;
-                $this->productCustomPrices[$product->id] = $product->pivot->price;
+
+                $unitId = $product->pivot->product_unit_id ?? $this->defaultUnitIdFor($product);
+                $unit = $unitId ? $product->units->firstWhere('id', $unitId) : $product->units->first();
+
+                $this->productUnitIds[$product->id] = $unitId;
+                // Only genuine overrides hydrate the custom fields; values matching
+                // the resolved unit/price stay blank so the dropdown keeps working.
+                $this->productCustomQtys[$product->id] = $this->customQtyFromPivot($product, $product->pivot->unit, $unit?->unit);
+                $this->productCustomPrices[$product->id] = $product->pivot->price !== null && (int) $product->pivot->price !== (int) ($unit?->price ?? $product->price)
+                    ? $product->pivot->price
+                    : null;
             }
         }
     }
 
     public function updatedProductIds(): void
     {
+        $selected = $this->selectedProducts()->keyBy('id');
+
+        foreach ($this->productIds as $productId) {
+            if (! array_key_exists($productId, $this->productUnitIds) && isset($selected[$productId])) {
+                $this->productUnitIds[$productId] = $this->defaultUnitIdFor($selected[$productId]);
+            }
+        }
+
         if (! $this->priceManuallyEdited) {
             $this->price = $this->calculatedPrice;
         }
+    }
+
+    private function defaultUnitIdFor(Product $product): ?int
+    {
+        return $this->basketUnitsFor($product, false)->first()?->id ?? $product->units->first()?->id;
+    }
+
+    /**
+     * Units selectable for a basket line: only the product's own base.
+     * The currently selected id is always included so legacy rows keep
+     * rendering (saving remaps them — see save()).
+     *
+     * @return Collection<int, ProductUnit>
+     */
+    public function basketUnitsFor(Product $product, bool $includeSelected = true): Collection
+    {
+        $base = $product->baseUnit();
+        $selectedId = $this->productUnitIds[$product->id] ?? null;
+
+        return $product->units->filter(function ($unit) use ($base, $selectedId, $includeSelected) {
+            if ($includeSelected && $selectedId !== null && (int) $unit->id === (int) $selectedId) {
+                return true;
+            }
+
+            if ($base === null) {
+                return true;
+            }
+
+            return Unit::where('name', $unit->unit)->value('base_unit') === $base;
+        })->values();
+    }
+
+    /**
+     * Extract the custom qty number from a stored pivot unit ("0.5 kg" → "0.5",
+     * "500 g" → "0.5"). Returns null for blank, resolved-default, or legacy
+     * free-text values.
+     */
+    private function customQtyFromPivot(Product $product, ?string $pivotUnit, ?string $resolvedUnit): ?string
+    {
+        if ($pivotUnit === null || trim($pivotUnit) === '' || $pivotUnit === $resolvedUnit) {
+            return null;
+        }
+
+        $purchaseUnit = $product->purchaseUnit();
+        $name = trim($pivotUnit);
+
+        if (preg_match('/^(\d+(?:\.\d+)?)\s+'.preg_quote($purchaseUnit, '/').'$/i', $name, $matches)) {
+            return rtrim(rtrim(number_format((float) $matches[1], 3, '.', ''), '0'), '.') ?: '0';
+        }
+
+        return null;
+    }
+
+    /**
+     * Compose the stored pivot unit for a custom qty ("0.5 kg", "2 kg").
+     */
+    private function composeCustomUnit(Product $product, float $qty): string
+    {
+        $purchaseUnit = $product->purchaseUnit();
+        $display = rtrim(rtrim(number_format($qty, 3, '.', ''), '0'), '.') ?: '0';
+
+        return "{$display} {$purchaseUnit}";
     }
 
     public function updatedProductUnitIds(): void
@@ -176,7 +257,7 @@ class BasketForm extends Component
         ));
 
         unset($this->productUnitIds[$productId]);
-        unset($this->productCustomUnits[$productId]);
+        unset($this->productCustomQtys[$productId]);
         unset($this->productCustomPrices[$productId]);
     }
 
@@ -222,8 +303,8 @@ class BasketForm extends Component
             'productIds' => ['required', 'array', 'min:1'],
             'productIds.*' => ['integer', 'exists:products,id'],
             'productUnitIds.*' => ['nullable', 'integer', 'exists:product_units,id'],
-            'productCustomUnits.*' => ['nullable', 'string', 'max:50'],
-            'productCustomPrices.*' => ['nullable', 'integer', 'min:1'],
+            'productCustomQtys.*' => ['nullable', 'numeric', 'min:0.001', 'max:99999999'],
+            'productCustomPrices.*' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
@@ -256,21 +337,47 @@ class BasketForm extends Component
         foreach ($this->productIds as $productId) {
             $product = $selected[$productId];
 
+            $customQty = $this->productCustomQtys[$productId] ?? null;
+            $customQty = ($customQty !== null && $customQty !== '') ? (float) $customQty : null;
+
+            if ($customQty !== null && Unit::integerOnlyFor($product->purchaseUnit()) && floor($customQty) != $customQty) {
+                throw ValidationException::withMessages([
+                    "productCustomQtys.{$productId}" => 'Custom qty must be a whole number for '.$product->purchaseUnit().'.',
+                ]);
+            }
+
+            $customPrice = $this->productCustomPrices[$productId] ?? null;
+            $customPrice = $customPrice !== null && $customPrice !== '' ? (int) $customPrice : null;
+
+            if ($customQty !== null) {
+                $sync[$productId] = [
+                    'product_unit_id' => null,
+                    'unit' => $this->composeCustomUnit($product, $customQty),
+                    'price' => $customPrice ?? $product->units->first()?->price ?? $product->price,
+                ];
+
+                continue;
+            }
+
             $unitId = $this->productUnitIds[$productId] ?? null;
+
+            if ($unitId !== null) {
+                $allowed = $this->basketUnitsFor($product, false)->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+                if (! in_array((int) $unitId, $allowed, true)) {
+                    throw ValidationException::withMessages([
+                        "productUnitIds.{$productId}" => 'Unit must share the product base unit.',
+                    ]);
+                }
+            }
 
             $unit = $unitId
                 ? $product->units->firstWhere('id', $unitId)
                 : $product->units->first();
 
-            $customUnit = $this->productCustomUnits[$productId] ?? null;
-            $customUnit = $customUnit !== null && $customUnit !== '' ? $customUnit : null;
-
-            $customPrice = $this->productCustomPrices[$productId] ?? null;
-            $customPrice = $customPrice !== null && $customPrice !== '' ? (int) $customPrice : null;
-
             $sync[$productId] = [
                 'product_unit_id' => $unitId,
-                'unit' => $customUnit ?? $unit?->unit ?? $product->unit,
+                'unit' => $unit?->unit ?? $product->unit,
                 'price' => $customPrice ?? $unit?->price ?? $product->price,
             ];
         }

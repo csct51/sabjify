@@ -21,10 +21,11 @@ class ProductUnitPicker extends Component
         $this->productId = $productId;
 
         $product = $this->product();
+        $firstSellable = $product?->units->first(fn ($unit) => $unit->in_stock && ($product?->sellablePacksFor($unit) ?? 0) > 0);
         $firstInStock = $product?->units->firstWhere('in_stock', true);
-        $this->selectedUnitId = $firstInStock === null
+        $this->selectedUnitId = ($firstSellable ?? $firstInStock) === null
             ? $product?->defaultUnit()?->id
-            : $firstInStock->id;
+            : ($firstSellable ?? $firstInStock)->id;
         $this->quantity = 1;
     }
 
@@ -43,7 +44,11 @@ class ProductUnitPicker extends Component
 
     public function incrementQuantity(): void
     {
-        $this->quantity++;
+        $max = max(1, $this->product()?->sellablePacksFor($this->selectedUnit()) ?? 1);
+
+        if ($this->quantity < $max) {
+            $this->quantity++;
+        }
     }
 
     public function decrementQuantity(): void
@@ -88,6 +93,18 @@ class ProductUnitPicker extends Component
 
         if (! $this->selectedUnitId || ! $this->selectedUnit()) {
             $this->addError('unit', 'Please select a size.');
+
+            return;
+        }
+
+        $packs = $product->sellablePacksFor($unit);
+        $existing = (int) (auth('web')->user()->cartItems()
+            ->where('product_id', $product->id)
+            ->where('product_unit_id', $this->selectedUnitId)
+            ->value('quantity') ?? 0);
+
+        if ($existing + $this->quantity > $packs) {
+            $this->addError('stock', $packs > 0 ? "Only {$packs} left." : 'This product is out of stock.');
 
             return;
         }

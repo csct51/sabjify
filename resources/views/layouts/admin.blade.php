@@ -13,17 +13,51 @@
     <body class="bg-stone-100 text-stone-900 antialiased min-h-screen" x-data="{ sidebarOpen: false }">
         <div class="flex min-h-screen">
             @php
-                $items = [
-                    ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => 'layout-dashboard'],
-                    ['route' => 'admin.orders.index', 'label' => 'Orders', 'icon' => 'package'],
-                    ['route' => 'admin.categories.index', 'label' => 'Categories', 'icon' => 'folder'],
-                    ['route' => 'admin.units', 'label' => 'Units', 'icon' => 'scale'],
-                    ['route' => 'admin.prices', 'label' => 'Prices', 'icon' => 'indian-rupee'],
-                    ['route' => 'admin.products.index', 'label' => 'Products', 'icon' => 'shopping-basket'],
-                    ['route' => 'admin.recipes.index', 'label' => 'Recipes', 'icon' => 'book-open'],
-                    ['route' => 'admin.baskets.index', 'label' => 'Baskets', 'icon' => 'gift'],
-                    ['route' => 'admin.customers.index', 'label' => 'Customers', 'icon' => 'users'],
-                    ['route' => 'admin.delivery-locations.index', 'label' => 'Delivery Locations', 'icon' => 'navigation'],
+                $topItems = [
+                    ['route' => 'admin.dashboard', 'match' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => 'layout-dashboard'],
+                    ['route' => 'admin.orders.index', 'match' => 'admin.orders.*', 'label' => 'Orders', 'icon' => 'package'],
+                ];
+                $groups = [
+                    [
+                        'label' => 'Catalog',
+                        'items' => [
+                            ['route' => 'admin.categories.index', 'match' => 'admin.categories.*', 'label' => 'Categories', 'icon' => 'folder'],
+                            ['route' => 'admin.units.index', 'match' => 'admin.units.*', 'label' => 'Units', 'icon' => 'scale'],
+                            ['route' => 'admin.products.index', 'match' => 'admin.products.*', 'label' => 'Products', 'icon' => 'shopping-basket'],
+                            ['route' => 'admin.recipes.index', 'match' => 'admin.recipes.*', 'label' => 'Recipes', 'icon' => 'book-open'],
+                            ['route' => 'admin.baskets.index', 'match' => 'admin.baskets.*', 'label' => 'Baskets', 'icon' => 'gift'],
+                        ],
+                    ],
+                    [
+                        'label' => 'Inventory',
+                        'items' => [
+                            ['route' => 'admin.purchases.index', 'match' => 'admin.purchases.*', 'label' => 'Purchases', 'icon' => 'boxes'],
+                            ['route' => 'admin.wastages.index', 'match' => 'admin.wastages.*', 'label' => 'Wastage', 'icon' => 'trash-2'],
+                            ['route' => 'admin.suppliers.index', 'match' => 'admin.suppliers.*', 'label' => 'Suppliers', 'icon' => 'truck'],
+                        ],
+                    ],
+                    [
+                        'label' => 'Operations',
+                        'items' => [
+                            ['route' => 'admin.prices', 'match' => 'admin.prices*', 'label' => 'Prices', 'icon' => 'indian-rupee'],
+                            ['route' => 'admin.delivery-locations.index', 'match' => 'admin.delivery-locations.*', 'label' => 'Delivery Locations', 'icon' => 'navigation'],
+                        ],
+                    ],
+                    [
+                        'label' => 'Reports',
+                        'items' => [
+                            ['route' => 'admin.reports.stock', 'match' => 'admin.reports.*', 'label' => 'Stock Quantity', 'icon' => 'clipboard-list'],
+                            ['route' => 'admin.reports.selling', 'match' => 'admin.reports.*', 'label' => 'Selling Report', 'icon' => 'banknote'],
+                            ['route' => 'admin.reports.purchases', 'match' => 'admin.reports.*', 'label' => 'Purchase Report', 'icon' => 'boxes'],
+                            ['route' => 'admin.reports.wastage', 'match' => 'admin.reports.*', 'label' => 'Wastage Report', 'icon' => 'trash-2'],
+                        ],
+                    ],
+                    [
+                        'label' => 'Customers',
+                        'items' => [
+                            ['route' => 'admin.customers.index', 'match' => 'admin.customers.*', 'label' => 'Customers', 'icon' => 'users'],
+                        ],
+                    ],
                 ];
             @endphp
 
@@ -36,12 +70,36 @@
                     </div>
                 </a>
 
-                <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 text-sm font-medium">
-                    @foreach ($items as $item)
-                        <a href="{{ route($item['route']) }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs($item['route'].'*') ? 'bg-brand-600 text-white' : 'hover:bg-stone-800 hover:text-white' }}">
-                            <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5"></i>
-                            {{ $item['label'] }}
-                        </a>
+                <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-4 text-sm font-medium">
+                    <div class="space-y-1">
+                        @foreach ($topItems as $item)
+                            @php $itemActive = str_ends_with($item['route'], '.index') ? \Illuminate\Support\Str::beforeLast($item['route'], '.').'.*' : $item['route']; @endphp
+                            <a href="{{ route($item['route']) }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs($itemActive) ? 'bg-brand-600 text-white' : 'hover:bg-stone-800 hover:text-white' }}">
+                                <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5"></i>
+                                {{ $item['label'] }}
+                            </a>
+                        @endforeach
+                    </div>
+                    @foreach ($groups as $group)
+                        @php
+                            $isGroupActive = collect($group['items'])->contains(fn($i) => request()->routeIs($i['match']));
+                            $groupPaths = collect($group['items'])->map(fn($i) => parse_url(route($i['route']), PHP_URL_PATH))->values()->all();
+                        @endphp
+                        <div x-data="{ open: {{ $isGroupActive ? 'true' : 'false' }} }" data-prefixes='@json($groupPaths)' @@livewire:navigated.window="open = JSON.parse($el.dataset.prefixes).some(p => window.location.pathname.startsWith(p)) || open">
+                            <button type="button" @click="open = !open" class="flex w-full items-center justify-between px-3 py-1.5 text-[11px] uppercase tracking-wide text-stone-400 hover:text-stone-300">
+                                <span>{{ $group['label'] }}</span>
+                                <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                            </button>
+                            <div x-show="open" class="mt-1 space-y-1">
+                                @foreach ($group['items'] as $item)
+                                    @php $itemActive = str_ends_with($item['route'], '.index') ? \Illuminate\Support\Str::beforeLast($item['route'], '.').'.*' : $item['route']; @endphp
+                                    <a href="{{ route($item['route']) }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs($itemActive) ? 'bg-brand-600 text-white' : 'hover:bg-stone-800 hover:text-white' }}">
+                                        <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5"></i>
+                                        {{ $item['label'] }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
                     @endforeach
                 </nav>
 
@@ -83,12 +141,36 @@
                             </button>
                         </div>
 
-                        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 text-sm font-medium">
-                            @foreach ($items as $item)
-                                <a href="{{ route($item['route']) }}" wire:navigate @click="sidebarOpen = false" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs($item['route'].'*') ? 'bg-brand-600 text-white' : 'hover:bg-stone-800 hover:text-white' }}">
-                                    <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5"></i>
-                                    {{ $item['label'] }}
-                                </a>
+                        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-4 text-sm font-medium">
+                            <div class="space-y-1">
+                                @foreach ($topItems as $item)
+                                    @php $itemActive = str_ends_with($item['route'], '.index') ? \Illuminate\Support\Str::beforeLast($item['route'], '.').'.*' : $item['route']; @endphp
+                                    <a href="{{ route($item['route']) }}" wire:navigate @click="sidebarOpen = false" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs($itemActive) ? 'bg-brand-600 text-white' : 'hover:bg-stone-800 hover:text-white' }}">
+                                        <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5"></i>
+                                        {{ $item['label'] }}
+                                    </a>
+                                @endforeach
+                            </div>
+                            @foreach ($groups as $group)
+                                @php
+                                    $isGroupActive = collect($group['items'])->contains(fn($i) => request()->routeIs($i['match']));
+                                    $groupPaths = collect($group['items'])->map(fn($i) => parse_url(route($i['route']), PHP_URL_PATH))->values()->all();
+                                @endphp
+                                <div x-data="{ open: {{ $isGroupActive ? 'true' : 'false' }} }" data-prefixes='@json($groupPaths)' @@livewire:navigated.window="open = JSON.parse($el.dataset.prefixes).some(p => window.location.pathname.startsWith(p)) || open">
+                                    <button type="button" @click="open = !open" class="flex w-full items-center justify-between px-3 py-1.5 text-[11px] uppercase tracking-wide text-stone-400 hover:text-stone-300">
+                                        <span>{{ $group['label'] }}</span>
+                                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                                    </button>
+                                    <div x-show="open" class="mt-1 space-y-1">
+                                        @foreach ($group['items'] as $item)
+                                            @php $itemActive = str_ends_with($item['route'], '.index') ? \Illuminate\Support\Str::beforeLast($item['route'], '.').'.*' : $item['route']; @endphp
+                                            <a href="{{ route($item['route']) }}" wire:navigate @click="sidebarOpen = false" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs($itemActive) ? 'bg-brand-600 text-white' : 'hover:bg-stone-800 hover:text-white' }}">
+                                                <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5"></i>
+                                                {{ $item['label'] }}
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </div>
                             @endforeach
                         </nav>
 
@@ -123,6 +205,7 @@
                     </div>
                     <div class="flex items-center gap-2 sm:gap-3">
                         <livewire:admin.notification-bell />
+                        <livewire:admin.low-stock-bell />
                         <div class="flex items-center gap-2">
                             <span class="flex items-center justify-center w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-semibold text-sm">{{ auth('admin')->user()->initials() }}</span>
                             <div class="hidden sm:block">

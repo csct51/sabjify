@@ -64,11 +64,22 @@
                 <p class="text-xs text-stone-400 line-through">{{ \Illuminate\Support\Number::currency($basket->mrp, 'INR') }}</p>
             @endif
             <p class="font-semibold text-stone-900 min-w-0 mb-2">{{ \Illuminate\Support\Number::currency($basket->price, 'INR') }}</p>
+            @php
+                $basketsLeft = $basket->basketsSellable();
+                $basketAvailable = $basket->is_active && $basket->constituentsInStock() && $basketsLeft > 0;
+            @endphp
+            @if ($basketAvailable && $basketsLeft <= 5)
+                <p class="text-[11px] text-amber-600 font-medium mb-2">Only {{ $basketsLeft }} baskets left</p>
+            @elseif (! $basketAvailable)
+                <p class="text-[11px] text-red-500 font-medium mb-2">Out of Stock</p>
+            @endif
 
             <div class="flex items-center justify-between gap-2">
                 <a href="{{ route('baskets.show', $basket) }}" wire:navigate class="text-xs font-medium text-stone-500 hover:text-brand-700 shrink-0">View</a>
 
-                @if ($inCart)
+                @if (! $basketAvailable)
+                    <span class="shrink-0 inline-flex items-center px-2.5 py-1.5 bg-stone-100 text-stone-400 text-xs font-semibold rounded-lg">Out of Stock</span>
+                @elseif ($inCart)
                     <div class="flex items-center gap-1 bg-brand-600 text-white rounded-lg p-1 shrink-0">
                         <button type="button" wire:click="decrement" wire:loading.attr="disabled" wire:target="decrement" class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-3 h-3"></i></button>
                         <span class="w-6 text-center text-xs font-semibold">

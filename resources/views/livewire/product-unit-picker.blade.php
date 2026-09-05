@@ -39,14 +39,15 @@
                 <div class="flex-1 overflow-y-auto p-4">
                     <div class="grid grid-cols-3 gap-2">
                         @forelse ($this->product->units as $unit)
+                            @php $optionAvailable = $unit->in_stock && $this->product->sellablePacksFor($unit) > 0; @endphp
                             <label
                                 wire:key="unit-option-{{ $unit->id }}"
-                                class="relative flex flex-col items-center justify-center gap-0.5 aspect-square rounded-lg border cursor-pointer transition {{ $this->selectedUnitId === $unit->id ? 'border-brand-600 bg-brand-50 ring-2 ring-brand-100' : 'border-stone-200 hover:border-brand-300' }} {{ $unit->in_stock ? '' : 'opacity-60 cursor-not-allowed' }}"
+                                class="relative flex flex-col items-center justify-center gap-0.5 aspect-square rounded-lg border cursor-pointer transition {{ $this->selectedUnitId === $unit->id ? 'border-brand-600 bg-brand-50 ring-2 ring-brand-100' : 'border-stone-200 hover:border-brand-300' }} {{ $optionAvailable ? '' : 'opacity-60 cursor-not-allowed' }}"
                             >
-                                <input type="radio" name="unit-option" value="{{ $unit->id }}" wire:model="selectedUnitId" wire:change="selectUnit({{ $unit->id }})" class="sr-only" {{ $this->selectedUnitId === $unit->id ? 'checked' : '' }} {{ $unit->in_stock ? '' : 'disabled' }}>
+                                <input type="radio" name="unit-option" value="{{ $unit->id }}" wire:model="selectedUnitId" wire:change="selectUnit({{ $unit->id }})" class="sr-only" {{ $this->selectedUnitId === $unit->id ? 'checked' : '' }} {{ $optionAvailable ? '' : 'disabled' }}>
                                 <span class="text-xs font-semibold text-stone-900 leading-tight text-center px-1">{{ $unit->unit }}</span>
                                 <span class="text-[11px] font-medium {{ $this->selectedUnitId === $unit->id ? 'text-brand-700' : 'text-stone-500' }}">{{ \Illuminate\Support\Number::currency($unit->price, 'INR') }}</span>
-                                @unless ($unit->in_stock)
+                                @unless ($optionAvailable)
                                     <span class="text-[10px] font-normal leading-tight text-red-500">Out of stock</span>
                                 @endunless
                                 <span class="absolute top-1 right-1 flex items-center justify-center w-4 h-4 rounded-full border {{ $this->selectedUnitId === $unit->id ? 'border-brand-600' : 'border-stone-300' }}">
@@ -72,6 +73,14 @@
                     @unless ($this->selectedUnitId)
                         <p class="text-xs text-red-500 mb-2">Please select a size to continue.</p>
                     @endunless
+
+                    @php
+                        $packsLeft = $this->product?->sellablePacksFor($this->selectedUnit()) ?? 0;
+                        $showLeft = $this->selectedUnit()?->in_stock && $this->product && $packsLeft >= 1 && $packsLeft <= $this->product->lowPacksThreshold($this->selectedUnit());
+                    @endphp
+                    @if ($showLeft)
+                        <p class="text-xs text-amber-600 mb-2">Only {{ $packsLeft }} left</p>
+                    @endif
 
                     <div class="flex items-center justify-between gap-3 mb-3">
                         <div class="flex items-center gap-1 bg-stone-100 rounded-lg p-0.5">

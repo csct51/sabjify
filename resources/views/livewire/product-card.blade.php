@@ -7,7 +7,8 @@
                 <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">{{ $product->discountPercent() }}% OFF</span>
             @endif
 
-            @if (! $product->inStock())
+            @php $cardSellable = $product->units->contains(fn($unit) => $product->sellablePacksFor($unit) > 0); @endphp
+            @if (! $product->inStock() || ! $cardSellable)
                 <span class="absolute inset-0 bg-white/70 flex items-center justify-center">
                     <span class="bg-stone-900 text-white text-[10px] font-semibold px-2 py-1 rounded-md">Out of Stock</span>
                 </span>
@@ -22,6 +23,13 @@
             <p class="text-[11px] text-stone-400 mt-0.5">Multiple sizes available</p>
         @else
             <p class="text-[11px] text-stone-400 mt-0.5">per {{ $product->defaultUnit()?->unit ?? $product->unit }}</p>
+        @endif
+        @php
+            $cardUnit = $product->hasMultipleUnits() ? null : $product->defaultUnit();
+            $cardPacks = $cardUnit ? $product->sellablePacksFor($cardUnit) : null;
+        @endphp
+        @if ($product->inStock() && $cardPacks !== null && $cardPacks >= 1 && $cardPacks <= $product->lowPacksThreshold($cardUnit))
+            <p class="text-[11px] text-amber-600 font-medium mt-0.5">Only {{ $cardPacks }} left</p>
         @endif
 
         <div class="mt-auto pt-2 flex flex-wrap items-end justify-between gap-2">
@@ -41,7 +49,7 @@
                 @endif
             </div>
 
-            @if ($product->inStock())
+            @if ($product->inStock() && $cardSellable)
                 @if ($product->hasMultipleUnits())
                     <button type="button" @click="$dispatch('product-unit-picker:open', { productId: {{ $product->id }} })" class="shrink-0 inline-flex items-center gap-0.5 px-2.5 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 active:scale-95 transition">
                         Choose
