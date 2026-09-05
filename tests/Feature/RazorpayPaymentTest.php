@@ -9,6 +9,30 @@ use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
+test('checkout destroys stale razorpay instances before opening', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    $this->actingAs($user)
+        ->get(route('checkout'))
+        ->assertOk()
+        ->assertSee('destroyRazorpayInstance', false)
+        ->assertSee('ondismiss', false);
+});
+
+test('order page destroys stale razorpay instances before opening', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'pending']);
+
+    $this->actingAs($user)
+        ->get(route('orders.show', $order))
+        ->assertOk()
+        ->assertSee('destroyRazorpayInstance', false)
+        ->assertSee('ondismiss', false);
+});
+
 test('online checkout opens payment without placing the order first', function () {
     Http::fake([
         'api.razorpay.com/*' => Http::response([

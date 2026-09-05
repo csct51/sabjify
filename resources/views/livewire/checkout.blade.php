@@ -342,12 +342,28 @@
             let razorpayInstance = null;
 
             Livewire.on('razorpay-open', (payload) => {
-                if (razorpayInstance) {
+                // A stale instance trips Razorpay's internal "previous checkout
+                // still alive" check ("browser not supported" alert), so always
+                // tear down before opening a fresh one.
+                destroyRazorpayInstance();
+                openRazorpay(payload);
+            });
+
+            function destroyRazorpayInstance() {
+                if (! razorpayInstance) {
                     return;
                 }
 
-                openRazorpay(payload);
-            });
+                try {
+                    if (typeof razorpayInstance.close === 'function') {
+                        razorpayInstance.close();
+                    }
+                } catch (error) {
+                    console.error('Razorpay teardown failed', error);
+                }
+
+                razorpayInstance = null;
+            }
 
             async function openRazorpay(payload) {
                 if (typeof window.Razorpay !== 'function') {
@@ -364,6 +380,12 @@
                     return;
                 }
 
+                if (! payload.key_id || ! payload.order_id) {
+                    console.error('Razorpay misconfigured: missing key_id or order_id.');
+                    alert('Online payment is not configured correctly. Please try cash on delivery or contact support.');
+                    return;
+                }
+
                 const options = {
                     key: payload.key_id,
                     amount: payload.amount,
@@ -376,6 +398,11 @@
                         contact: '{{ $this->receiverPhone }}',
                     },
                     theme: { color: payload.theme_color },
+                    modal: {
+                        ondismiss: () => {
+                            razorpayInstance = null;
+                        },
+                    },
                     handler: (response) => {
                         fetch('{{ route('checkout.payment.verify') }}', {
                             method: 'POST',

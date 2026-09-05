@@ -201,9 +201,31 @@
 
     @script
         <script>
+            let razorpayInstance = null;
+
             Livewire.on('razorpay-open', (payload) => {
+                // A stale instance trips Razorpay's internal "previous checkout
+                // still alive" check ("browser not supported" alert), so always
+                // tear down before opening a fresh one.
+                destroyRazorpayInstance();
                 openRazorpay(payload);
             });
+
+            function destroyRazorpayInstance() {
+                if (! razorpayInstance) {
+                    return;
+                }
+
+                try {
+                    if (typeof razorpayInstance.close === 'function') {
+                        razorpayInstance.close();
+                    }
+                } catch (error) {
+                    console.error('Razorpay teardown failed', error);
+                }
+
+                razorpayInstance = null;
+            }
 
             async function openRazorpay(payload) {
                 if (typeof window.Razorpay !== 'function') {
@@ -212,6 +234,12 @@
 
                 if (typeof window.Razorpay !== 'function') {
                     alert('Razorpay failed to load. Please refresh and try again.');
+                    return;
+                }
+
+                if (! payload.key_id || ! payload.order_id) {
+                    console.error('Razorpay misconfigured: missing key_id or order_id.');
+                    alert('Online payment is not configured correctly. Please contact support.');
                     return;
                 }
 
@@ -230,6 +258,11 @@
                         order_id: '{{ $order->id }}',
                     },
                     theme: { color: payload.theme_color },
+                    modal: {
+                        ondismiss: () => {
+                            razorpayInstance = null;
+                        },
+                    },
                     handler: (response) => {
                         fetch('{{ route('orders.payment.verify', $order) }}', {
                             method: 'POST',
@@ -258,8 +291,10 @@
 
                 try {
                     const razorpay = new window.Razorpay(options);
+                    razorpayInstance = razorpay;
                     razorpay.open();
                 } catch (error) {
+                    razorpayInstance = null;
                     console.error('Razorpay checkout failed', error);
                     alert('The payment window could not be opened. Make sure you are using HTTPS and try again.');
                 }
