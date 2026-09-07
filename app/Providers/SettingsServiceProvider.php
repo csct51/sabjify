@@ -17,7 +17,9 @@ class SettingsServiceProvider extends ServiceProvider
             return;
         }
 
-        $settings = Setting::pluck('value', 'key')->filter()->all();
+        $settings = Setting::pluck('value', 'key')
+            ->reject(fn ($value) => $value === null || $value === '')
+            ->all();
 
         if (isset($settings['store_name'])) {
             config(['app.name' => $settings['store_name']]);

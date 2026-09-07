@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Unit;
+use App\Providers\SettingsServiceProvider;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -112,6 +113,25 @@ test('last remaining payment method checkbox is disabled', function () {
         ->call('save')
         ->assertSee('disabled')
         ->assertSee('At least one payment method is required');
+});
+
+test('zero delivery fee and threshold mean completely free delivery', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Settings::class)
+        ->set('deliveryFee', 0)
+        ->set('freeDeliveryThreshold', 0)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::get('delivery_fee'))->toBe('0')
+        ->and(Setting::get('free_delivery_threshold'))->toBe('0');
+
+    (new SettingsServiceProvider(app()))->boot();
+
+    expect(config('mart.delivery_fee'))->toBe(0)
+        ->and(config('mart.free_delivery_threshold'))->toBe(0);
 });
 
 test('settings validate delivery fee as a positive integer', function () {
