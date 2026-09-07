@@ -279,6 +279,41 @@ test('add all to cart skips out-of-stock products and reports them', function ()
     $this->assertDatabaseMissing('cart_items', ['product_id' => $mint->id]);
 });
 
+test('add all to cart skips short-stock products and reports them', function () {
+    $user = User::factory()->create();
+    $mango = Product::factory()->available()->create(['name' => 'Mango']);
+    $mango->update(['current_stock' => 5000]);
+    $mint = Product::factory()->available()->create(['name' => 'Mint Short']);
+    $mint->update(['current_stock' => 0]);
+    $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);
+    $recipe->products()->attach([$mango->id => ['product_unit_id' => $mango->defaultUnit()->id], $mint->id => ['product_unit_id' => $mint->defaultUnit()->id]]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeShow::class, ['recipe' => $recipe])
+        ->call('addAllToCart')
+        ->assertOk()
+        ->assertSet('cartMessage', 'Added 1 item from this recipe to your cart.')
+        ->assertSet('cartError', 'Out of stock: Mint Short.');
+
+    $this->assertDatabaseHas('cart_items', ['user_id' => $user->id, 'product_id' => $mango->id, 'quantity' => 1]);
+    $this->assertDatabaseMissing('cart_items', ['product_id' => $mint->id]);
+});
+
+test('recipe product add and increment respect stock like individual products', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['unit' => '1 kg']);
+    $product->update(['current_stock' => 0]);
+    $recipe = Recipe::factory()->create(['title' => 'Stock Salad']);
+    $recipe->products()->attach([$product->id => ['product_unit_id' => $product->defaultUnit()->id]]);
+
+    Livewire::actingAs($user)
+        ->test(RecipeProduct::class, ['recipe' => $recipe, 'product' => $product])
+        ->call('addToCart')
+        ->assertHasErrors('stock');
+
+    expect($user->cartItems()->count())->toBe(0);
+});
+
 test('guest is redirected to login when adding recipe to cart', function () {
     $mango = Product::factory()->available()->create(['name' => 'Mango']);
     $recipe = Recipe::factory()->create(['title' => 'Mango Salad']);

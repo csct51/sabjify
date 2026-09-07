@@ -12,6 +12,7 @@ use App\Livewire\Admin\Units\Create as UnitsCreate;
 use App\Livewire\Admin\Units\Edit as UnitsEdit;
 use App\Livewire\Admin\Units\Index as UnitsIndex;
 use App\Livewire\Admin\Wastages\Create as WastagesCreate;
+use App\Livewire\Admin\Wastages\Edit as WastagesEdit;
 use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Product;
@@ -252,7 +253,7 @@ test('product form sets opening stock on create', function () {
     expect((float) Product::where('slug', 'stocked-mango')->first()?->current_stock)->toBe(2500.5);
 });
 
-test('product form corrects stock on edit and rejects negative', function () {
+test('product form never touches stock on edit', function () {
     $admin = Admin::factory()->create();
     $category = Category::factory()->create();
     Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
@@ -261,26 +262,51 @@ test('product form corrects stock on edit and rejects negative', function () {
 
     Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class, ['product' => $product])
-        ->assertSet('currentStock', '1000')
-        ->set('currentStock', '950.5')
         ->set('unitRows', [
             ['unit' => '1 kg', 'price' => '120', 'mrp' => null, 'in_stock' => true],
         ])
         ->call('save')
         ->assertRedirect(route('admin.products.index'));
 
-    expect((float) $product->fresh()->current_stock)->toBe(950.5);
+    expect((float) $product->fresh()->current_stock)->toBe(1000.0);
+});
+
+test('product form low stock is entered in purchase units', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => '1 kg', 'base_unit' => 'g']);
+    $product->update(['current_stock' => 5000, 'low_stock' => 1000]);
 
     Livewire::actingAs($admin, 'admin')
         ->test(ProductForm::class, ['product' => $product])
-        ->set('currentStock', '-5')
+        ->assertSet('lowStock', '1')
+        ->set('lowStock', '2')
         ->set('unitRows', [
             ['unit' => '1 kg', 'price' => '120', 'mrp' => null, 'in_stock' => true],
         ])
         ->call('save')
-        ->assertHasErrors('currentStock');
+        ->assertRedirect(route('admin.products.index'));
 
-    expect((float) $product->fresh()->current_stock)->toBe(950.5);
+    expect((float) $product->fresh()->current_stock)->toBe(5000.0)
+        ->and((float) $product->fresh()->low_stock)->toBe(2000.0);
+});
+
+test('product form rejects fractional low stock for piece products', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+    Unit::create(['name' => '1 pc', 'base_unit' => 'piece', 'to_base_factor' => 1, 'sort_order' => 0]);
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => '1 pc', 'base_unit' => 'piece']);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(ProductForm::class, ['product' => $product])
+        ->set('baseUnit', 'piece')
+        ->set('lowStock', '1.5')
+        ->set('unitRows', [
+            ['unit' => '1 pc', 'price' => '40', 'mrp' => null, 'in_stock' => true],
+        ])
+        ->call('save')
+        ->assertHasErrors('lowStock');
 });
 
 test('base unit rows are seeded with purchase config', function () {
@@ -410,7 +436,7 @@ test('product form persists low stock threshold', function () {
         ->set('slug', 'alert-mango')
         ->set('baseUnit', 'g')
         ->set('currentStock', '500')
-        ->set('lowStock', '800')
+        ->set('lowStock', '0.8')
         ->set('unitRows', [
             ['unit' => '1 kg', 'price' => '120', 'mrp' => null, 'in_stock' => true],
         ])
@@ -584,6 +610,189 @@ test('wastage report aggregates loss and filters by reason', function () {
         ->assertDontSee('Base Qty')
         ->set('reason', 'Damaged')
         ->assertDontSee('Report Spinach');
+});
+
+test('purchase header-only edit skips stock movement entirely', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => '1 kg', 'base_unit' => 'g']);
+    $product->update(['current_stock' => 100]);
+
+    $purchase = Purchase::create([
+        'purchase_number' => 'PUR-920',
+        'supplier_name' => 'Cash',
+        'purchase_date' => now()->format('Y-m-d'),
+        'total_amount' => 5000,
+    ]);
+    PurchaseItem::create([
+        'purchase_id' => $purchase->id,
+        'product_id' => $product->id,
+        'unit' => 'kg',
+        'rate' => 100,
+        'qty' => 10,
+        'line_total' => 1000,
+        'base_qty' => 10000,
+    ]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(PurchasesEdit::class, ['purchase' => $purchase->id])
+        ->set('remark', 'Typo fix only')
+        ->call('save')
+        ->assertRedirect(route('admin.purchases.index'));
+
+    expect((float) $product->fresh()->current_stock)->toBe(100.0)
+        ->and($purchase->fresh()->remark)->toBe('Typo fix only');
+});
+
+test('purchase partial edit moves only the difference', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => '1 kg', 'base_unit' => 'g']);
+    $product->update(['current_stock' => 1000]);
+
+    $purchase = Purchase::create([
+        'purchase_number' => 'PUR-921',
+        'supplier_name' => 'Cash',
+        'purchase_date' => now()->format('Y-m-d'),
+        'total_amount' => 50,
+    ]);
+    PurchaseItem::create([
+        'purchase_id' => $purchase->id,
+        'product_id' => $product->id,
+        'unit' => 'kg',
+        'rate' => 100,
+        'qty' => 0.5,
+        'line_total' => 50,
+        'base_qty' => 500,
+    ]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(PurchasesEdit::class, ['purchase' => $purchase->id])
+        ->set('rows.0.qty', '0.3')
+        ->call('save')
+        ->assertRedirect(route('admin.purchases.index'));
+
+    expect((float) $product->fresh()->current_stock)->toBe(800.0);
+});
+
+test('purchase edit with corrupt stored base is blocked', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => '1 kg', 'base_unit' => 'g']);
+    $product->update(['current_stock' => 6000]);
+
+    $purchase = Purchase::create([
+        'purchase_number' => 'PUR-922',
+        'supplier_name' => 'Cash',
+        'purchase_date' => now()->format('Y-m-d'),
+        'total_amount' => 550,
+    ]);
+    PurchaseItem::create([
+        'purchase_id' => $purchase->id,
+        'product_id' => $product->id,
+        'unit' => 'kg',
+        'rate' => 100,
+        'qty' => 5.5,
+        'line_total' => 550,
+        'base_qty' => 5.5,
+    ]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(PurchasesEdit::class, ['purchase' => $purchase->id])
+        ->set('remark', 'Any change')
+        ->call('save')
+        ->assertHasErrors('rows');
+
+    expect((float) $product->fresh()->current_stock)->toBe(6000.0);
+});
+
+test('purchase delete of corrupt rows heals instead of under-reverting', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => '1 kg', 'base_unit' => 'g']);
+    $product->update(['current_stock' => 6000]);
+
+    $purchase = Purchase::create([
+        'purchase_number' => 'PUR-923',
+        'supplier_name' => 'Cash',
+        'purchase_date' => now()->format('Y-m-d'),
+        'total_amount' => 550,
+    ]);
+    PurchaseItem::create([
+        'purchase_id' => $purchase->id,
+        'product_id' => $product->id,
+        'unit' => 'kg',
+        'rate' => 100,
+        'qty' => 5.5,
+        'line_total' => 550,
+        'base_qty' => 5.5,
+    ]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(PurchasesIndex::class)
+        ->call('delete', $purchase);
+
+    expect(Purchase::find($purchase->id))->toBeNull()
+        ->and((float) $product->fresh()->current_stock)->toBe(500.0);
+});
+
+test('wastage header-only edit skips stock movement entirely', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => '1 kg', 'base_unit' => 'g']);
+    $product->update(['current_stock' => 100]);
+
+    $wastage = Wastage::create([
+        'wastage_number' => 'WST-920',
+        'wastage_date' => now()->format('Y-m-d'),
+        'reason' => 'Expired',
+        'total_qty' => 10,
+    ]);
+    WastageItem::create([
+        'wastage_id' => $wastage->id,
+        'product_id' => $product->id,
+        'unit' => 'kg',
+        'qty' => 10,
+        'base_qty' => 10000,
+    ]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(WastagesEdit::class, ['wastage' => $wastage->id])
+        ->set('remark', 'Typo fix only')
+        ->call('save')
+        ->assertRedirect(route('admin.wastages.index'));
+
+    expect((float) $product->fresh()->current_stock)->toBe(100.0)
+        ->and($wastage->fresh()->remark)->toBe('Typo fix only');
+});
+
+test('wastage edit with corrupt stored base is blocked', function () {
+    $admin = Admin::factory()->create();
+    $category = Category::factory()->create();
+    $product = Product::factory()->create(['category_id' => $category->id, 'unit' => '1 kg', 'base_unit' => 'g']);
+    $product->update(['current_stock' => 1000]);
+
+    $wastage = Wastage::create([
+        'wastage_number' => 'WST-921',
+        'wastage_date' => now()->format('Y-m-d'),
+        'reason' => 'Expired',
+        'total_qty' => 2,
+    ]);
+    WastageItem::create([
+        'wastage_id' => $wastage->id,
+        'product_id' => $product->id,
+        'unit' => 'kg',
+        'qty' => 2,
+        'base_qty' => 2,
+    ]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(WastagesEdit::class, ['wastage' => $wastage->id])
+        ->set('remark', 'Any change')
+        ->call('save')
+        ->assertHasErrors('rows');
+
+    expect((float) $product->fresh()->current_stock)->toBe(1000.0);
 });
 
 test('repair migration fixes unconverted kg rows and rebuilds stock', function () {

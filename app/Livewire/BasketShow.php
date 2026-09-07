@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Basket;
 use App\Models\Product;
+use App\Models\Recipe;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -37,6 +38,15 @@ class BasketShow extends Component
     public function products(): Collection
     {
         return $this->basket->products()->with('category', 'units')->get();
+    }
+
+    /**
+     * @return Collection<int, Recipe>
+     */
+    #[Computed]
+    public function recipes(): Collection
+    {
+        return $this->basket->recipes()->where('is_active', true)->orderBy('title')->get();
     }
 
     private function syncCartState(): void

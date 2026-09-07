@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Purchases;
 
 use App\Models\Product;
 use App\Models\Purchase;
+use App\Models\Unit;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -30,7 +31,7 @@ class Index extends Component
             $purchase->loadMissing('items');
             foreach ($purchase->items as $item) {
                 $product = Product::whereKey($item->product_id)->lockForUpdate()->first();
-                $decrementQty = (float) $item->base_qty > 0 ? (float) $item->base_qty : (float) $item->qty;
+                $decrementQty = Unit::storedBaseQty($item->unit ?? '', (float) $item->qty, (float) $item->base_qty);
                 // Revert the purchase but never below zero.
                 $product?->update(['current_stock' => max(0, round((float) $product->current_stock - $decrementQty, 3))]);
             }

@@ -8,6 +8,7 @@ use App\Models\Basket;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\ProductUnit;
+use App\Models\Recipe;
 use App\Models\Unit;
 use App\Models\User;
 use App\Services\OrderService;
@@ -279,6 +280,52 @@ test('basket show page renders sub-one custom unit in grams', function () {
     Livewire::test(BasketShow::class, ['basket' => $basket])
         ->assertSee('750 g')
         ->assertDontSee('0.75 kg');
+});
+
+test('admin basket form attaches and detaches recipes', function () {
+    $admin = Admin::factory()->create();
+    $product = Product::factory()->create(['unit' => '1 kg', 'price' => 100]);
+    $product->units()->delete();
+    ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '1 kg', 'price' => 100, 'sort_order' => 0]);
+    $first = Recipe::factory()->create(['title' => 'Linked Soup', 'is_active' => true]);
+    $second = Recipe::factory()->create(['title' => 'Second Salad', 'is_active' => true]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(BasketForm::class)
+        ->set('name', 'Recipe Basket')
+        ->set('slug', 'recipe-basket')
+        ->set('type', Basket::TYPE_SABJIFY)
+        ->set('price', 299)
+        ->set('productIds', [$product->id])
+        ->set('recipeIds', [$first->id, $second->id])
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $basket = Basket::where('slug', 'recipe-basket')->first();
+
+    expect($basket->recipes()->pluck('recipes.id')->all())->toEqualCanonicalizing([$first->id, $second->id]);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(BasketForm::class, ['basket' => $basket])
+        ->assertSet('recipeIds', [$first->id, $second->id])
+        ->call('removeRecipe', $second->id)
+        ->set('name', 'Recipe Basket')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($basket->fresh()->recipes()->pluck('recipes.id')->all())->toBe([$first->id]);
+});
+
+test('basket show page lists active recipes and hides inactive ones', function () {
+    $active = Recipe::factory()->create(['title' => 'Active Soup', 'is_active' => true]);
+    $hidden = Recipe::factory()->create(['title' => 'Hidden Stew', 'is_active' => false]);
+    $basket = Basket::factory()->create(['is_active' => true]);
+    $basket->recipes()->attach([$active->id, $hidden->id]);
+
+    Livewire::test(BasketShow::class, ['basket' => $basket])
+        ->assertSee('What you can make')
+        ->assertSee('Active Soup')
+        ->assertDontSee('Hidden Stew');
 });
 
 test('admin basket form persists mrp', function () {

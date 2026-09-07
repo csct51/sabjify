@@ -4,7 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\Basket;
 use App\Models\Product;
-use App\Models\ProductUnit;
+use App\Models\Recipe;
 use App\Models\Unit;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -42,6 +42,9 @@ class BasketForm extends Component
     /** @var array<int, int> */
     public array $productIds = [];
 
+    /** @var array<int, int> */
+    public array $recipeIds = [];
+
     /** @var array<int, int|null> */
     public array $productUnitIds = [];
 
@@ -52,6 +55,8 @@ class BasketForm extends Component
     public array $productCustomPrices = [];
 
     public string $productSearch = '';
+
+    public string $recipeSearch = '';
 
     public ?TemporaryUploadedFile $image = null;
 
@@ -76,6 +81,10 @@ class BasketForm extends Component
             $this->sort_order = $basket->sort_order;
             $this->imageUrl = $basket->image && filter_var($basket->image, FILTER_VALIDATE_URL) !== false ? $basket->image : '';
             $this->priceManuallyEdited = true;
+
+            foreach ($basket->recipes()->get() as $recipe) {
+                $this->recipeIds[] = $recipe->id;
+            }
 
             foreach ($basket->products()->with(['units'])->withPivot('product_unit_id', 'unit', 'price')->get() as $product) {
                 $this->productIds[] = $product->id;
@@ -261,6 +270,41 @@ class BasketForm extends Component
         unset($this->productCustomPrices[$productId]);
     }
 
+    /**
+     * @return Collection<int, Recipe>
+     */
+    #[Computed]
+    public function recipes(): Collection
+    {
+        return Recipe::active()
+            ->when($this->recipeSearch !== '', fn ($query) => $query->where('title', 'like', '%'.$this->recipeSearch.'%'))
+            ->orderBy('title')
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, Recipe>
+     */
+    #[Computed]
+    public function selectedRecipes(): Collection
+    {
+        if ($this->recipeIds === []) {
+            return new Collection;
+        }
+
+        return Recipe::whereIn('id', $this->recipeIds)
+            ->orderBy('title')
+            ->get();
+    }
+
+    public function removeRecipe(int $recipeId): void
+    {
+        $this->recipeIds = array_values(array_filter(
+            $this->recipeIds,
+            fn (int $id) => $id !== $recipeId
+        ));
+    }
+
     #[Computed]
     public function calculatedPrice(): int
     {
@@ -302,6 +346,8 @@ class BasketForm extends Component
             'mrp' => ['nullable', 'integer', 'min:1'],
             'productIds' => ['required', 'array', 'min:1'],
             'productIds.*' => ['integer', 'exists:products,id'],
+            'recipeIds' => ['array'],
+            'recipeIds.*' => ['integer', 'exists:recipes,id'],
             'productUnitIds.*' => ['nullable', 'integer', 'exists:product_units,id'],
             'productCustomQtys.*' => ['nullable', 'numeric', 'min:0.001', 'max:99999999'],
             'productCustomPrices.*' => ['nullable', 'integer', 'min:0'],
@@ -385,10 +431,12 @@ class BasketForm extends Component
         if ($this->basket) {
             $this->basket->update($data);
             $this->basket->products()->sync($sync);
+            $this->basket->recipes()->sync($this->recipeIds);
             session()->flash('success', 'Basket updated.');
         } else {
             $basket = Basket::create($data);
             $basket->products()->sync($sync);
+            $basket->recipes()->sync($this->recipeIds);
             session()->flash('success', 'Basket created.');
         }
 

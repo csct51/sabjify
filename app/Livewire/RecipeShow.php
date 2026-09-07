@@ -57,6 +57,17 @@ class RecipeShow extends Component
 
             $pivotUnitId = $product->pivot?->product_unit_id;
 
+            $existing = (int) auth('web')->user()->cartItems()
+                ->where('product_id', $product->id)
+                ->where('product_unit_id', $pivotUnitId)
+                ->sum('quantity');
+
+            if ($existing + 1 > $product->sellablePacksFor($pivotUnit)) {
+                $skipped[] = $product->name;
+
+                continue;
+            }
+
             $cartItem = auth('web')->user()->cartItems()->firstOrNew([
                 'product_id' => $product->id,
                 'product_unit_id' => $pivotUnitId,

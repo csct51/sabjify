@@ -49,31 +49,34 @@
                     @error('description')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-stone-700 mb-1">Base Unit <span class="text-red-500">*</span></label>
-                    <select wire:model.live="baseUnit" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white mb-3">
-                        @foreach ($this->baseOptions as $option)
-                            <option value="{{ $option->name }}">{{ $option->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('baseUnit')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                    <p class="mt-1 text-[11px] text-stone-400">All units for this product must share this base (e.g. 1 kg, 500 g both g). To add a base unit, create (or tick) a Unit row as Is-base with its purchase unit.</p>
-                </div>
-
+                @php $lowStockUnit = $this->formPurchaseUnit(); @endphp
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-stone-700 mb-1">Stock Quantity ({{ $baseUnit }}) <span class="text-red-500">*</span></label>
-                        <input wire:model="currentStock" type="number" min="0" step="0.001" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                        @error('currentStock')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                        <p class="mt-1 text-[11px] text-stone-400">Current stock in base units — adjust here to fix miscounts or unrecorded movement.</p>
+                        <label class="block text-sm font-medium text-stone-700 mb-1">Base Unit <span class="text-red-500">*</span></label>
+                        <select wire:model.live="baseUnit" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white mb-3">
+                            @foreach ($this->baseOptions as $option)
+                                <option value="{{ $option->name }}">{{ $option->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('baseUnit')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        <p class="mt-1 text-[11px] text-stone-400">All units for this product must share this base (e.g. 1 kg, 500 g both g). To add a base unit, create (or tick) a Unit row as Is-base with its purchase unit.</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-stone-700 mb-1">Low stock alert at ({{ $baseUnit }})</label>
-                        <input wire:model="lowStock" type="number" min="0" step="0.001" placeholder="e.g. 1000" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        <label class="block text-sm font-medium text-stone-700 mb-1">Low stock alert at ({{ $lowStockUnit }})</label>
+                        <input wire:model="lowStock" type="number" min="0" step="0.001" placeholder="{{ \App\Models\Unit::qtyPlaceholderFor($lowStockUnit) }}" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                         @error('lowStock')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         <p class="mt-1 text-[11px] text-stone-400">Notify when stock falls to this level. Blank = no low alert.</p>
                     </div>
                 </div>
+
+                @if (! $product)
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-1">Opening Stock ({{ $baseUnit }}) <span class="text-red-500">*</span></label>
+                        <input wire:model="currentStock" type="number" min="0" step="0.001" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        @error('currentStock')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        <p class="mt-1 text-[11px] text-stone-400">Starting stock in base units. Later movements go through purchases and wastage.</p>
+                    </div>
+                @endif
 
                 <div>
                     <div class="flex items-center justify-between mb-2">

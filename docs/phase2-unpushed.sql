@@ -87,6 +87,18 @@ CREATE TABLE IF NOT EXISTS `wastage_items` (
   CONSTRAINT `wastage_items_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ============ 1b. NEW TABLE — basket ↔ recipe links (121955, pure links) ============
+CREATE TABLE IF NOT EXISTS `basket_recipe` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `basket_id` BIGINT UNSIGNED NOT NULL,
+  `recipe_id` BIGINT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP NULL,
+  `updated_at` TIMESTAMP NULL,
+  UNIQUE KEY `basket_recipe_basket_id_recipe_id_unique` (`basket_id`, `recipe_id`),
+  CONSTRAINT `basket_recipe_basket_id_foreign` FOREIGN KEY (`basket_id`) REFERENCES `baskets` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `basket_recipe_recipe_id_foreign` FOREIGN KEY (`recipe_id`) REFERENCES `recipes` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============ 2. EXISTING TABLES — new columns (final form) ============
 ALTER TABLE `units`
   ADD COLUMN `base_unit` VARCHAR(255) NULL,
@@ -175,11 +187,13 @@ SELECT `m`.`name`, (SELECT COALESCE(MAX(`batch`), 0) + 1 FROM `migrations`) FROM
   SELECT '2026_09_03_121042_seed_base_unit_rows' UNION ALL
   SELECT '2026_09_05_053808_add_low_stock_to_products_table' UNION ALL
   SELECT '2026_09_05_053809_backfill_products_low_stock' UNION ALL
-  SELECT '2026_09_05_060819_add_base_qty_to_order_items_table'
+  SELECT '2026_09_05_060819_add_base_qty_to_order_items_table' UNION ALL
+  SELECT '2026_09_05_121955_create_basket_recipe_table'
 ) AS `m`
 WHERE NOT EXISTS (SELECT 1 FROM `migrations` WHERE `migrations`.`migration` = `m`.`name`);
 
 -- ============ 9. VERIFY (read-only) ============
+SHOW TABLES LIKE 'basket_recipe';
 SELECT COUNT(*) AS suppliers, (SELECT COUNT(*) FROM purchases) AS purchases, (SELECT COUNT(*) FROM wastages) AS wastages FROM suppliers;
 SELECT `name`, `base_unit`, `to_base_factor`, `is_base`, `purchase_unit`, `integer_only` FROM `units` ORDER BY `sort_order`;
 SELECT COUNT(*) AS null_base FROM `products` WHERE `base_unit` IS NULL;

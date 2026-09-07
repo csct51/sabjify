@@ -167,7 +167,7 @@ class Edit extends Component
             $wastage->loadMissing('items');
             foreach ($wastage->items as $oldItem) {
                 $product = Product::find($oldItem->product_id);
-                $baseQty = (float) $oldItem->base_qty > 0 ? (float) $oldItem->base_qty : (float) $oldItem->qty;
+                $baseQty = Unit::storedBaseQty($oldItem->unit ?? '', (float) $oldItem->qty, (float) $oldItem->base_qty);
                 $product?->increment('current_stock', $baseQty);
             }
             $wastage->delete();
@@ -205,23 +205,57 @@ class Edit extends Component
             $wastage = $this->wastage;
             $totalQty = round(collect($this->rows)->sum(fn ($r) => (float) $r['qty']), 3);
 
-            // Revert old stock
+            // Old base per product (plausibility-guarded).
             $wastage->loadMissing('items');
-            foreach ($wastage->items as $oldItem) {
-                $product = Product::find($oldItem->product_id);
-                $baseQty = (float) $oldItem->base_qty > 0 ? (float) $oldItem->base_qty : (float) $oldItem->qty;
-                $product?->increment('current_stock', $baseQty);
-            }
-            $wastage->items()->delete();
+            $oldBase = [];
 
-            // Check new stock availability before decrementing
+            foreach ($wastage->items as $oldItem) {
+                $oldQty = (float) $oldItem->base_qty > 0 ? (float) $oldItem->base_qty : (float) $oldItem->qty;
+
+                if (! Unit::baseQtyPlausible($oldItem->unit ?? '', (float) $oldItem->qty, $oldQty)) {
+                    throw ValidationException::withMessages([
+                        'rows' => "Stored base quantity looks wrong for {$oldItem->product?->name} ({$oldItem->qty} {$oldItem->unit} recorded as {$oldQty}). Delete and re-create this entry instead of editing.",
+                    ]);
+                }
+
+                $oldBase[$oldItem->product_id] = round(($oldBase[$oldItem->product_id] ?? 0) + $oldQty, 3);
+            }
+
+            // New base per product.
+            $newBase = [];
+
             foreach ($this->rows as $row) {
-                $product = Product::whereKey($row['product_id'])->lockForUpdate()->first();
-                $baseQty = Unit::toBaseQty($row['unit'], (float) $row['qty']);
-                if ($product && (float) $product->current_stock < $baseQty - 1e-9) {
-                    throw ValidationException::withMessages(['rows' => 'Insufficient stock for '.$product->name.'. Only '.$product->current_stock.' left.']);
+                $qtyFloat = (float) $row['qty'];
+                $baseQty = Unit::toBaseQty($row['unit'], $qtyFloat);
+                $newBase[$row['product_id']] = round(($newBase[$row['product_id']] ?? 0) + $baseQty, 3);
+            }
+
+            // Check net-new wastage availability before moving anything.
+            foreach (array_unique([...array_keys($oldBase), ...array_keys($newBase)]) as $productId) {
+                $diff = round(($newBase[$productId] ?? 0) - ($oldBase[$productId] ?? 0), 3);
+
+                if ($diff > 0) {
+                    $product = Product::whereKey($productId)->lockForUpdate()->first();
+
+                    if ($product && (float) $product->current_stock < $diff - 1e-9) {
+                        throw ValidationException::withMessages(['rows' => 'Insufficient stock for '.$product->name.'. Only '.$product->current_stock.' left.']);
+                    }
                 }
             }
+
+            // Net movement only: untouched products (and header-only edits)
+            // move no stock at all.
+            foreach (array_unique([...array_keys($oldBase), ...array_keys($newBase)]) as $productId) {
+                $diff = round(($newBase[$productId] ?? 0) - ($oldBase[$productId] ?? 0), 3);
+
+                if ($diff > 0) {
+                    Product::find($productId)?->decrement('current_stock', $diff);
+                } elseif ($diff < 0) {
+                    Product::find($productId)?->increment('current_stock', -$diff);
+                }
+            }
+
+            $wastage->items()->delete();
 
             $wastage->update([
                 'wastage_date' => $this->wastageDate,
@@ -231,7 +265,6 @@ class Edit extends Component
             ]);
 
             foreach ($this->rows as $row) {
-                $product = Product::find($row['product_id']);
                 $qtyFloat = (float) $row['qty'];
                 $baseQty = Unit::toBaseQty($row['unit'], $qtyFloat);
 
@@ -242,8 +275,6 @@ class Edit extends Component
                     'qty' => $qtyFloat,
                     'base_qty' => $baseQty,
                 ]);
-
-                $product?->decrement('current_stock', $baseQty);
             }
         });
 

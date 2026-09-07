@@ -160,5 +160,29 @@
                 </div>
             </div>
         @endif
+
+        @if ($this->recipes->isNotEmpty())
+            <div class="mt-10 border-t border-stone-200 pt-8">
+                <h2 class="text-lg font-semibold text-stone-900 mb-1">What you can make</h2>
+                <p class="text-sm text-stone-500 mb-5">Recipe ideas using this basket.</p>
+
+                <div class="grid sm:grid-cols-2 gap-4">
+                    @foreach ($this->recipes as $recipe)
+                        <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group flex gap-4 bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-lg transition p-4">
+                            <span class="flex items-center justify-center w-20 h-20 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
+                                <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                            </span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block font-semibold text-stone-900 group-hover:text-brand-700 truncate">{{ $recipe->title }}</span>
+                                @if ($recipe->description)
+                                    <span class="block text-xs text-stone-500 mt-1 line-clamp-2">{{ \Illuminate\Support\Str::limit($recipe->description, 90) }}</span>
+                                @endif
+                                <span class="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-brand-600">View recipe <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                            </span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
 </div>

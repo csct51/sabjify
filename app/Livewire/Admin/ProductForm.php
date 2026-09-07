@@ -68,8 +68,11 @@ class ProductForm extends Component
             $this->sort_order = $product->sort_order;
             $this->imageUrl = $product->image && filter_var($product->image, FILTER_VALIDATE_URL) !== false ? $product->image : '';
             $this->baseUnit = $product->base_unit ?: ($product->baseUnit() ?? 'g');
-            $this->currentStock = rtrim(rtrim(number_format((float) $product->current_stock, 3, '.', ''), '0'), '.') ?: '0';
-            $this->lowStock = $product->low_stock === null ? '' : (rtrim(rtrim(number_format((float) $product->low_stock, 3, '.', ''), '0'), '.') ?: '0');
+
+            if ($product->low_stock !== null) {
+                $factor = Unit::factorFor($product->purchaseUnit()) ?? 1.0;
+                $this->lowStock = $this->trimNum((float) $product->low_stock / ($factor > 0 ? $factor : 1.0));
+            }
 
             foreach ($product->units as $unit) {
                 $this->unitRows[] = [
@@ -153,6 +156,16 @@ class ProductForm extends Component
         $this->resetValidation('unitRows.*.unit');
     }
 
+    private function trimNum(float $value): string
+    {
+        return rtrim(rtrim(number_format($value, 3, '.', ''), '0'), '.') ?: '0';
+    }
+
+    public function formPurchaseUnit(): string
+    {
+        return Unit::baseRow($this->baseUnit)?->purchase_unit ?? $this->baseUnit;
+    }
+
     public function save(): void
     {
         if ($this->slug === '') {
@@ -169,8 +182,10 @@ class ProductForm extends Component
             'is_featured' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'baseUnit' => ['required', 'string', Rule::in(Unit::isBase()->pluck('name')->toArray())],
-            'currentStock' => ['required', 'numeric', 'min:0', 'max:99999999'],
-            'lowStock' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
+            'currentStock' => [Rule::requiredIf(fn () => $this->product === null), 'numeric', 'min:0', 'max:99999999'],
+            'lowStock' => Unit::integerOnlyFor($this->formPurchaseUnit())
+                ? ['nullable', 'integer', 'min:0', 'max:99999999']
+                : ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'unitRows' => ['required', 'array', 'min:1'],
             'unitRows.*.unit' => ['required', 'string', 'max:20', Rule::in(Unit::where('base_unit', $this->baseUnit)->pluck('name')->toArray())],
             'unitRows.*.price' => ['required', 'integer', 'min:1'],
@@ -195,8 +210,7 @@ class ProductForm extends Component
             'is_featured' => $this->is_featured,
             'sort_order' => $this->sort_order,
             'base_unit' => $this->baseUnit,
-            'current_stock' => round((float) $this->currentStock, 3),
-            'low_stock' => $this->lowStock === '' ? null : round((float) $this->lowStock, 3),
+            'low_stock' => $this->lowStock === '' ? null : Unit::toBaseQty($this->formPurchaseUnit(), (float) $this->lowStock),
         ];
 
         if ($this->image) {
@@ -212,7 +226,10 @@ class ProductForm extends Component
             $product = $this->product;
             session()->flash('success', 'Product updated.');
         } else {
-            $product = Product::create($data);
+            $product = Product::create([
+                ...$data,
+                'current_stock' => round((float) $this->currentStock, 3),
+            ]);
             session()->flash('success', 'Product created.');
         }
 

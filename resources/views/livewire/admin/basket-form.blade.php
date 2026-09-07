@@ -163,6 +163,74 @@
                     @error('productIds')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-stone-700 mb-1">Recipes <span class="text-stone-400">(optional — what shoppers can make with this basket)</span></label>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div>
+                            <div class="rounded-xl border border-stone-300 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100 overflow-hidden">
+                                <div class="relative border-b border-stone-100">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">
+                                        <i data-lucide="search" class="w-4 h-4"></i>
+                                    </span>
+                                    <input
+                                        wire:model.live.debounce.200ms="recipeSearch"
+                                        type="text"
+                                        placeholder="Search recipes..."
+                                        class="w-full pl-9 pr-3 py-2.5 text-sm outline-none"
+                                    >
+                                </div>
+                                <div class="max-h-64 overflow-y-auto divide-y divide-stone-100">
+                                    @forelse ($this->recipes as $recipe)
+                                        <label wire:key="recipe-checkbox-{{ $recipe->id }}" class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-stone-50">
+                                            <input type="checkbox" wire:model.live="recipeIds" value="{{ $recipe->id }}" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
+                                            <span class="flex items-center gap-2 min-w-0 flex-1">
+                                                <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-linear-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
+                                                    <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" class="w-full h-full object-cover">
+                                                </span>
+                                                <span class="min-w-0">
+                                                    <span class="block text-sm font-medium text-stone-800 truncate">{{ $recipe->title }}</span>
+                                                </span>
+                                            </span>
+                                        </label>
+                                    @empty
+                                        <p class="px-3 py-4 text-sm text-stone-400">@if ($recipeSearch !== '')No recipes found for "{{ $recipeSearch }}".@else No active recipes found.@endif</p>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-xl border border-brand-200 bg-brand-50/40 flex flex-col overflow-hidden">
+                            <div class="flex items-center justify-between px-3 py-2.5 border-b border-brand-100 bg-white/60">
+                                <p class="text-sm font-semibold text-stone-800">Linked Recipes</p>
+                                <span class="inline-flex items-center rounded-full bg-brand-100 text-brand-700 text-xs font-semibold px-2.5 py-0.5">{{ count($recipeIds) }} linked</span>
+                            </div>
+                            <div class="max-h-72 overflow-y-auto divide-y divide-stone-100">
+                                @forelse ($this->selectedRecipes as $recipe)
+                                    <div wire:key="selected-recipe-{{ $recipe->id }}" class="px-3 py-2.5">
+                                        <div class="flex items-center gap-3">
+                                            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-stone-200 shrink-0 overflow-hidden">
+                                                <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" class="w-full h-full object-cover">
+                                            </span>
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block text-sm font-medium text-stone-800 truncate">{{ $recipe->title }}</span>
+                                                @unless ($recipe->is_active)
+                                                    <span class="block text-xs text-amber-600">Hidden in store</span>
+                                                @endunless
+                                            </span>
+                                            <button type="button" wire:click="removeRecipe({{ $recipe->id }})" class="flex items-center justify-center w-7 h-7 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition" aria-label="Remove {{ $recipe->title }}">
+                                                <i data-lucide="x" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <p class="px-3 py-4 text-sm text-stone-400">No recipes linked yet.</p>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                    @error('recipeIds')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-stone-700 mb-1">Status</label>

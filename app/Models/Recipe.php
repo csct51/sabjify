@@ -50,6 +50,14 @@ class Recipe extends Model
         return $this->belongsToMany(Product::class, 'recipe_product')->withPivot('product_unit_id');
     }
 
+    /**
+     * @return BelongsToMany<Basket, $this>
+     */
+    public function baskets(): BelongsToMany
+    {
+        return $this->belongsToMany(Basket::class, 'basket_recipe')->withTimestamps();
+    }
+
     public function imageUrl(): ?string
     {
         if (! $this->image) {

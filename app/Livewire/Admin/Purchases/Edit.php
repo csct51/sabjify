@@ -164,7 +164,7 @@ class Edit extends Component
             $purchase->loadMissing('items');
             foreach ($purchase->items as $oldItem) {
                 $product = Product::whereKey($oldItem->product_id)->lockForUpdate()->first();
-                $revertQty = (float) $oldItem->base_qty > 0 ? (float) $oldItem->base_qty : (float) $oldItem->qty;
+                $revertQty = Unit::storedBaseQty($oldItem->unit ?? '', (float) $oldItem->qty, (float) $oldItem->base_qty);
                 // Revert the purchase but never below zero.
                 $product?->update(['current_stock' => max(0, round((float) $product->current_stock - $revertQty, 3))]);
             }
@@ -220,19 +220,52 @@ class Edit extends Component
             $supplierModel = Supplier::where('name', $this->supplier)->first();
             $total = collect($this->rows)->sum(fn ($r) => (int) round((float) $r['rate'] * (float) $r['qty']));
 
-            // Revert old stock
+            // Old base per product (plausibility-guarded).
             $purchase->loadMissing('items');
+            $oldBase = [];
+
             foreach ($purchase->items as $oldItem) {
-                $product = Product::find($oldItem->product_id);
-                $decrementQty = (float) $oldItem->base_qty > 0 ? (float) $oldItem->base_qty : (float) $oldItem->qty;
-                if ($product && (float) $product->current_stock < $decrementQty - 1e-9) {
-                    throw new ValidationException(
-                        validator: Validator::make([], []),
-                        response: response()->json(['message' => 'Insufficient stock to revert purchase for '.$product->name], 422)
-                    );
+                $oldQty = (float) $oldItem->base_qty > 0 ? (float) $oldItem->base_qty : (float) $oldItem->qty;
+
+                if (! Unit::baseQtyPlausible($oldItem->unit ?? '', (float) $oldItem->qty, $oldQty)) {
+                    throw ValidationException::withMessages([
+                        'rows' => "Stored base quantity looks wrong for {$oldItem->product?->name} ({$oldItem->qty} {$oldItem->unit} recorded as {$oldQty}). Delete and re-create this entry instead of editing.",
+                    ]);
                 }
-                $product?->decrement('current_stock', $decrementQty);
+
+                $oldBase[$oldItem->product_id] = round(($oldBase[$oldItem->product_id] ?? 0) + $oldQty, 3);
             }
+
+            // New base per product.
+            $newBase = [];
+
+            foreach ($this->rows as $row) {
+                $qtyFloat = (float) $row['qty'];
+                $baseQty = Unit::toBaseQty($row['unit'], $qtyFloat);
+                $newBase[$row['product_id']] = round(($newBase[$row['product_id']] ?? 0) + $baseQty, 3);
+            }
+
+            // Net movement only: untouched products (and header-only edits)
+            // move no stock at all.
+            foreach (array_unique([...array_keys($oldBase), ...array_keys($newBase)]) as $productId) {
+                $diff = round(($newBase[$productId] ?? 0) - ($oldBase[$productId] ?? 0), 3);
+
+                if ($diff > 0) {
+                    Product::find($productId)?->increment('current_stock', $diff);
+                } elseif ($diff < 0) {
+                    $product = Product::whereKey($productId)->lockForUpdate()->first();
+
+                    if ($product && (float) $product->current_stock < -$diff - 1e-9) {
+                        throw new ValidationException(
+                            validator: Validator::make([], []),
+                            response: response()->json(['message' => 'Insufficient stock to revert purchase for '.$product->name], 422)
+                        );
+                    }
+
+                    $product?->decrement('current_stock', -$diff);
+                }
+            }
+
             $purchase->items()->delete();
 
             $purchase->update([
@@ -244,7 +277,6 @@ class Edit extends Component
             ]);
 
             foreach ($this->rows as $row) {
-                $product = Product::find($row['product_id']);
                 $qtyFloat = (float) $row['qty'];
                 $lineTotal = (int) round((float) $row['rate'] * $qtyFloat);
                 $baseQty = Unit::toBaseQty($row['unit'], $qtyFloat);
@@ -258,8 +290,6 @@ class Edit extends Component
                     'line_total' => $lineTotal,
                     'base_qty' => $baseQty,
                 ]);
-
-                $product?->increment('current_stock', $baseQty);
             }
         });
 

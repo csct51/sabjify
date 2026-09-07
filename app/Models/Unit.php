@@ -186,6 +186,42 @@ class Unit extends Model
     }
 
     /**
+     * Whether a stored base quantity is plausible for the given unit and qty.
+     * Catches pre-seed corruption (kg rows stored unconverted) without false
+     * positives: correct rows match to rounding, corrupt ones differ ~1000x.
+     */
+    public static function baseQtyPlausible(string $unit, float $qty, float $baseQty): bool
+    {
+        $factor = static::factorFor($unit);
+
+        if ($factor === null) {
+            return true;
+        }
+
+        $expected = round($qty * $factor, 3);
+
+        return abs($baseQty - $expected) <= max(0.05, abs($expected) * 0.01);
+    }
+
+    /**
+     * Trusted base quantity for a stored item row: the stored value when
+     * plausible, otherwise a fresh recomputation (self-healing for
+     * pre-seed corruption). Keeps deletes always succeeding.
+     */
+    public static function storedBaseQty(string $unit, float $qty, float $stored): float
+    {
+        if ($stored > 0 && static::baseQtyPlausible($unit, $qty, $stored)) {
+            return $stored;
+        }
+
+        if ($stored > 0) {
+            return round(static::toBaseQty($unit, $qty), 3);
+        }
+
+        return $qty;
+    }
+
+    /**
      * Convert a purchase-unit quantity to base units, seed-proof via factorFor().
      */
     public static function toBaseQty(string $unitName, float $quantity): float

@@ -179,6 +179,14 @@ class Basket extends Model
     }
 
     /**
+     * @return BelongsToMany<Recipe, $this>
+     */
+    public function recipes(): BelongsToMany
+    {
+        return $this->belongsToMany(Recipe::class, 'basket_recipe')->withTimestamps();
+    }
+
+    /**
      * @return HasMany<OrderItem, $this>
      */
     public function orderItems(): HasMany

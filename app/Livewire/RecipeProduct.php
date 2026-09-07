@@ -76,6 +76,18 @@ class RecipeProduct extends Component
             return;
         }
 
+        $existing = (int) (auth('web')->user()->cartItems()
+            ->where('product_id', $this->product->id)
+            ->where('product_unit_id', $unitId)
+            ->sum('quantity') ?? 0);
+        $packs = $this->product->sellablePacksFor($unit);
+
+        if ($existing + 1 > $packs) {
+            $this->addError('stock', $packs > 0 ? "Only {$packs} left." : 'This product is out of stock.');
+
+            return;
+        }
+
         $cartItem = auth('web')->user()->cartItems()->firstOrNew([
             'product_id' => $this->product->id,
             'recipe_id' => $this->recipe->id,
@@ -110,6 +122,21 @@ class RecipeProduct extends Component
             ->where('product_id', $this->product->id)
             ->where('recipe_id', $this->recipe->id)
             ->firstOrFail();
+
+        $unit = $this->product->units->firstWhere('id', $cartItem->product_unit_id);
+        $packs = $this->product->sellablePacksFor($unit);
+
+        $existing = (int) (auth('web')->user()->cartItems()
+            ->where('product_id', $this->product->id)
+            ->where('product_unit_id', $cartItem->product_unit_id)
+            ->sum('quantity') ?? 0);
+
+        if ($existing + 1 > $packs) {
+            $this->addError('stock', $packs > 0 ? "Only {$packs} left." : 'This product is out of stock.');
+
+            return;
+        }
+
         $cartItem->increment('quantity');
 
         $this->quantity = $cartItem->quantity;

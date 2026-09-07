@@ -30,7 +30,7 @@ class Index extends Component
             $wastage->loadMissing('items');
             foreach ($wastage->items as $item) {
                 $product = Product::find($item->product_id);
-                $restoreQty = (float) $item->base_qty > 0 ? (float) $item->base_qty : (float) $item->qty;
+                $restoreQty = Unit::storedBaseQty($item->unit ?? '', (float) $item->qty, (float) $item->base_qty);
                 $product?->increment('current_stock', $restoreQty);
             }
             $wastage->delete();

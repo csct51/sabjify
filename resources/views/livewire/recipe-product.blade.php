@@ -1,4 +1,4 @@
-<div class="flex items-center gap-4 p-4" wire:key="recipe-product-{{ $product->id }}">
+<div class="flex flex-wrap items-center gap-4 p-4" wire:key="recipe-product-{{ $product->id }}">
     @php($pivotUnit = $product->units->firstWhere('id', $unitId))
     @php($displayUnit = $pivotUnit?->unit ?? $product->units->first()?->unit ?? $product->unit)
     @php($displayPrice = $pivotUnit?->price ?? $product->units->first()?->price ?? $product->price)
@@ -19,7 +19,8 @@
 
     <p class="text-sm font-semibold text-stone-900 shrink-0">{{ \Illuminate\Support\Number::currency($displayPrice, 'INR') }}</p>
 
-    @if ($pivotUnit?->in_stock ?? $product->inStock())
+    @php($rowPacks = $product->sellablePacksFor($product->units->firstWhere('id', $unitId)))
+    @if (($pivotUnit?->in_stock ?? $product->inStock()) && $rowPacks > 0)
         @if ($inCart)
             <div class="flex items-center gap-1 bg-brand-600 text-white rounded-lg p-1 shrink-0">
                 <button type="button" wire:click="decrement" wire:loading.attr="disabled" wire:target="decrement" class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-brand-700" aria-label="Decrease quantity"><i data-lucide="minus" class="w-3 h-3"></i></button>
@@ -38,5 +39,10 @@
                 <x-loading-spinner wire:loading wire:target="addToCart" class="w-3.5 h-3.5 mx-auto" />
             </button>
         @endif
+    @else
+        <span class="shrink-0 inline-flex items-center px-2.5 py-1.5 bg-stone-100 text-stone-400 text-xs font-semibold rounded-lg">Out of Stock</span>
     @endif
+    @error('stock')
+        <p class="basis-full text-xs text-red-600">{{ $message }}</p>
+    @enderror
 </div>
