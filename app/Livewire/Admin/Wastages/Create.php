@@ -7,7 +7,6 @@ use App\Models\Unit;
 use App\Models\Wastage;
 use App\Models\WastageItem;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -56,15 +55,6 @@ class Create extends Component
             ->max() ?? 0;
 
         return $prefix.str_pad((string) ($max + 1), 3, '0', STR_PAD_LEFT);
-    }
-
-    #[Computed]
-    public function products(): Collection
-    {
-        return Product::query()
-            ->with('category')
-            ->orderBy('name')
-            ->get();
     }
 
     #[Computed]
@@ -136,6 +126,7 @@ class Create extends Component
         $this->formQty = '';
         $this->formError = '';
         $this->resetValidation();
+        $this->dispatch('product-added');
     }
 
     public function removeRow(int $index): void

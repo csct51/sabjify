@@ -22,6 +22,24 @@ class Supplier extends Model
     ];
 
     /**
+     * Options for the admin searchable supplier picker (Cash pinned first).
+     *
+     * @return array<int, array{value: string, text: string, search: string}>
+     */
+    public static function pickerOptions(): array
+    {
+        $names = array_values(array_unique(array_merge(
+            ['Cash'],
+            static::orderBy('name')->pluck('name')->all()
+        )));
+
+        return array_map(
+            fn (string $name) => ['value' => $name, 'text' => $name, 'search' => 'supplier'],
+            $names
+        );
+    }
+
+    /**
      * @return HasMany<Purchase, $this>
      */
     public function purchases(): HasMany

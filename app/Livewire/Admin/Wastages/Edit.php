@@ -7,7 +7,6 @@ use App\Models\Unit;
 use App\Models\Wastage;
 use App\Models\WastageItem;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -69,15 +68,6 @@ class Edit extends Component
         if (empty($this->rows)) {
             $this->rows[] = ['product_id' => null, 'unit' => 'kg', 'qty' => ''];
         }
-    }
-
-    #[Computed]
-    public function products(): Collection
-    {
-        return Product::query()
-            ->with('category')
-            ->orderBy('name')
-            ->get();
     }
 
     #[Computed]
@@ -148,6 +138,7 @@ class Edit extends Component
         $this->formQty = '';
         $this->formError = '';
         $this->resetValidation();
+        $this->dispatch('product-added');
     }
 
     public function removeRow(int $index): void

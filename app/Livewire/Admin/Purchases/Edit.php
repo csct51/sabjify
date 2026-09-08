@@ -8,7 +8,6 @@ use App\Models\PurchaseItem;
 use App\Models\Supplier;
 use App\Models\Unit;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -34,8 +33,6 @@ class Edit extends Component
     public string $remark = '';
 
     public string $purchaseNumber = '';
-
-    public string $productSearch = '';
 
     public ?int $formProductId = null;
 
@@ -78,12 +75,6 @@ class Edit extends Component
     }
 
     #[Computed]
-    public function suppliers(): Collection
-    {
-        return Supplier::orderBy('name')->get();
-    }
-
-    #[Computed]
     public function selectedProduct(): ?Product
     {
         return $this->formProductId ? Product::find($this->formProductId) : null;
@@ -97,6 +88,17 @@ class Edit extends Component
         return Unit::integerOnlyFor($unit)
             ? ['required', 'integer', 'min:1']
             : ['required', 'numeric', 'min:0.001', 'max:999999'];
+    }
+
+    public function updatedFormProductId(?int $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $product = Product::find($value);
+
+        $this->formRate = (string) ($product?->defaultUnit()?->price ?? $product?->price ?? '');
     }
 
     public function addProduct(): void
@@ -144,6 +146,7 @@ class Edit extends Component
         $this->formQty = '';
         $this->formError = '';
         $this->resetValidation();
+        $this->dispatch('product-added');
     }
 
     public function removeRow(int $index): void
@@ -174,22 +177,6 @@ class Edit extends Component
         session()->flash('success', 'Purchase deleted.');
 
         $this->redirect(route('admin.purchases.index'), navigate: true);
-    }
-
-    /**
-     * @return Collection<int, Product>
-     */
-    #[Computed]
-    public function products(): Collection
-    {
-        return Product::query()
-            ->with('category')
-            ->when($this->productSearch !== '', function ($query) {
-                $query->where('name', 'like', '%'.$this->productSearch.'%')
-                    ->orWhereHas('category', fn ($q) => $q->where('name', 'like', '%'.$this->productSearch.'%'));
-            })
-            ->orderBy('name')
-            ->get();
     }
 
     public function save(): void
@@ -296,24 +283,6 @@ class Edit extends Component
         session()->flash('success', 'Purchase '.$this->purchaseNumber.' updated.');
 
         $this->redirect(route('admin.purchases.index'), navigate: true);
-    }
-
-    private function calculateBaseQty(int $qty, string $fromUnit, ?string $toUnit): int
-    {
-        if ($toUnit === null || $fromUnit === $toUnit) {
-            return $qty;
-        }
-
-        $from = Unit::where('name', $fromUnit)->first();
-        $to = Unit::where('name', $toUnit)->first();
-
-        if (! $from || ! $to || $from->base_unit !== $to->base_unit) {
-            return $qty;
-        }
-
-        $baseQty = $from->toBase((float) $qty);
-
-        return (int) ceil($to->fromBase($baseQty));
     }
 
     public function render(): View

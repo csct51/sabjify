@@ -50,10 +50,13 @@
                     <div class="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
                         <div>
                             <label class="block text-[11px] font-medium text-stone-500 mb-1">Product <span class="text-red-500">*</span></label>
-                            <x-admin.purchases.product-search
+                            <x-admin.searchable-select
                                 target="formProductId"
-                                search="formProductSearch"
-                                :productId="$formProductId"
+                                :options="\App\Models\Product::pickerOptions()"
+                                :selected="$formProductId"
+                                placeholder="Search product..."
+                                search-placeholder="Search name, category or Hindi..."
+                                clear-event="product-added"
                             />
                             @error('formProductId') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>

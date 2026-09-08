@@ -82,6 +82,26 @@ class Product extends Model
         return $this->hasMany(ProductUnit::class)->orderBy('sort_order')->orderBy('price');
     }
 
+    /**
+     * Options for the admin searchable pickers (id + name, with category
+     * and alternate names as extra search text).
+     *
+     * @return array<int, array{value: int, text: string, search: string}>
+     */
+    public static function pickerOptions(): array
+    {
+        return static::query()
+            ->with('category')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Product $product) => [
+                'value' => $product->id,
+                'text' => $product->name,
+                'search' => trim($product->category?->name.' '.implode(' ', (array) $product->alternate_names)),
+            ])
+            ->all();
+    }
+
     public function defaultUnit(): ?ProductUnit
     {
         return $this->units()->first();

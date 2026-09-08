@@ -8,7 +8,6 @@ use App\Models\PurchaseItem;
 use App\Models\Supplier;
 use App\Models\Unit;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -31,8 +30,6 @@ class Create extends Component
     public string $remark = '';
 
     public string $purchaseNumber = '';
-
-    public string $productSearch = '';
 
     public ?int $formProductId = null;
 
@@ -62,12 +59,6 @@ class Create extends Component
     }
 
     #[Computed]
-    public function suppliers(): Collection
-    {
-        return Supplier::orderBy('name')->get();
-    }
-
-    #[Computed]
     public function formUnit(): string
     {
         return $this->selectedProduct?->purchaseUnit() ?? 'kg';
@@ -87,6 +78,17 @@ class Create extends Component
         return Unit::integerOnlyFor($unit)
             ? ['required', 'integer', 'min:1']
             : ['required', 'numeric', 'min:0.001', 'max:999999'];
+    }
+
+    public function updatedFormProductId(?int $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $product = Product::find($value);
+
+        $this->formRate = (string) ($product?->defaultUnit()?->price ?? $product?->price ?? '');
     }
 
     public function addProduct(): void
@@ -132,28 +134,13 @@ class Create extends Component
         $this->formQty = '';
         $this->formError = '';
         $this->resetValidation();
+        $this->dispatch('product-added');
     }
 
     public function removeRow(int $index): void
     {
         unset($this->rows[$index]);
         $this->rows = array_values($this->rows);
-    }
-
-    /**
-     * @return Collection<int, Product>
-     */
-    #[Computed]
-    public function products(): Collection
-    {
-        return Product::query()
-            ->with('category')
-            ->when($this->productSearch !== '', function ($query) {
-                $query->where('name', 'like', '%'.$this->productSearch.'%')
-                    ->orWhereHas('category', fn ($q) => $q->where('name', 'like', '%'.$this->productSearch.'%'));
-            })
-            ->orderBy('name')
-            ->get();
     }
 
     public function save(): void
@@ -217,24 +204,6 @@ class Create extends Component
         session()->flash('success', 'Purchase '.$this->purchaseNumber.' created.');
 
         $this->redirect(route('admin.purchases.index'), navigate: true);
-    }
-
-    private function calculateBaseQty(int $qty, string $fromUnit, ?string $toUnit): int
-    {
-        if ($toUnit === null || $fromUnit === $toUnit) {
-            return $qty;
-        }
-
-        $from = Unit::where('name', $fromUnit)->first();
-        $to = Unit::where('name', $toUnit)->first();
-
-        if (! $from || ! $to || $from->base_unit !== $to->base_unit) {
-            return $qty;
-        }
-
-        $baseQty = $from->toBase((float) $qty);
-
-        return (int) ceil($to->fromBase($baseQty));
     }
 
     public function render(): View

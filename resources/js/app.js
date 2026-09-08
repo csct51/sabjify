@@ -3,6 +3,10 @@ import DataTable from 'datatables.net-dt';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import SlimSelect from 'slim-select';
+import 'slim-select/styles';
+
+window.SlimSelect = SlimSelect;
 
 const icons = {
     Apple,
@@ -563,6 +567,26 @@ function destroyMaps() {
     document.querySelectorAll('[data-leaflet-map]').forEach(destroyMap);
 }
 
+function destroyPickers(root = document) {
+    const nodes = [];
+
+    if (root.matches?.('select[data-ss-picker]')) {
+        nodes.push(root);
+    }
+
+    root.querySelectorAll?.('select[data-ss-picker]').forEach((node) => nodes.push(node));
+
+    nodes.forEach((node) => {
+        try {
+            node._ssPicker?.destroy();
+        } catch (error) {
+            // Never let picker teardown break Livewire's morph pipeline.
+        }
+
+        delete node._ssPicker;
+    });
+}
+
 function observeMaps() {
     const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
@@ -618,6 +642,10 @@ document.addEventListener('livewire:init', () => {
     observeMaps();
     animatePageEnter();
 
+    Livewire.hook('morph.removed', ({ el }) => {
+        destroyPickers(el);
+    });
+
     Livewire.hook('morph', () => {
         destroyDataTables();
     });
@@ -656,6 +684,7 @@ document.addEventListener('livewire:init', () => {
 document.addEventListener('livewire:navigate', () => {
     destroyDataTables();
     destroyMaps();
+    destroyPickers();
 });
 
 document.addEventListener('livewire:navigating', () => {

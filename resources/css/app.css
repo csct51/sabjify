@@ -5,6 +5,27 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/livewire/src';
 
+/* Slim Select brand theme (admin inventory pickers only) */
+:root {
+    --ss-primary-color: #16a34a;
+    --ss-bg-color: #ffffff;
+    --ss-font-color: #44403c;
+    --ss-placeholder-color: #a8a29e;
+    --ss-border-color: #d6d3d1;
+    --ss-highlight-color: #dcfce7;
+    --ss-focus-color: #16a34a;
+    --ss-border-radius: 8px;
+    --ss-main-height: 42px;
+}
+
+.ss-brand .ss-main {
+    font-size: 0.875rem;
+}
+
+.ss-brand .ss-main:focus {
+    box-shadow: 0 0 0 2px #bbf7d0;
+}
+
 @layer base {
     body {
         font-feature-settings: 'ss01', 'cv05', 'cv08', 'tnum';

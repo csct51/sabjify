@@ -18,14 +18,13 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-stone-700 mb-1">Supplier <span class="text-red-500">*</span></label>
-                    <select wire:model="supplier" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm bg-white outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                        <option value="Cash">Cash</option>
-                        @foreach ($this->suppliers as $sup)
-                            @if ($sup->name !== 'Cash')
-                                <option value="{{ $sup->name }}">{{ $sup->name }}</option>
-                            @endif
-                        @endforeach
-                    </select>
+                    <x-admin.searchable-select
+                        target="supplier"
+                        :options="\App\Models\Supplier::pickerOptions()"
+                        :selected="$supplier"
+                        placeholder="Select supplier..."
+                        search-placeholder="Search suppliers..."
+                    />
                     @error('supplier') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
@@ -47,10 +46,13 @@
                     <div class="grid grid-cols-1 lg:grid-cols-[2fr_110px_110px_120px_auto] gap-3 items-end">
                         <div>
                             <label class="block text-[11px] font-medium text-stone-500 mb-1">Product <span class="text-red-500">*</span></label>
-                            <x-admin.purchases.product-search
+                            <x-admin.searchable-select
                                 target="formProductId"
-                                search="formProductSearch"
-                                :productId="$formProductId"
+                                :options="\App\Models\Product::pickerOptions()"
+                                :selected="$formProductId"
+                                placeholder="Search product..."
+                                search-placeholder="Search name, category or Hindi..."
+                                clear-event="product-added"
                             />
                             @error('formProductId') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
