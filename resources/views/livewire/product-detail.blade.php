@@ -148,18 +148,32 @@
                 <div class="mt-10 border-t border-stone-200 pt-6 grid grid-cols-3 gap-4 text-center">
                     <div>
                         <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="truck" class="w-5 h-5"></i></span>
-                        <p class="text-xs font-medium text-stone-700 mt-2">Free delivery</p>
-                        <p class="text-[11px] text-stone-400">Above {{ \Illuminate\Support\Number::currency(config('mart.free_delivery_threshold'), 'INR') }}</p>
+                        <p class="text-xs font-medium text-stone-700 mt-2">On-time delivery</p>
+                        <p class="text-[11px] text-stone-400">As per slot</p>
                     </div>
                     <div>
-                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="refresh-ccw" class="w-5 h-5"></i></span>
-                        <p class="text-xs font-medium text-stone-700 mt-2">Easy returns</p>
-                        <p class="text-[11px] text-stone-400">Within 24 hours</p>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="carrot" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Freshly packed</p>
+                        <p class="text-[11px] text-stone-400">Handpicked daily</p>
                     </div>
                     <div>
                         <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shield-check" class="w-5 h-5"></i></span>
-                        <p class="text-xs font-medium text-stone-700 mt-2">Quality check</p>
-                        <p class="text-[11px] text-stone-400">Before dispatch</p>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Secure payment</p>
+                        <p class="text-[11px] text-stone-400">COD & online</p>
+                    </div>
+                    <div>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="package" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Easy order tracking</p>
+                    </div>
+                    <div>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shopping-basket" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Weekly basket</p>
+                        <p class="text-[11px] text-stone-400">To save time and efforts</p>
+                    </div>
+                    <div>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600"><i data-lucide="salad" class="w-5 h-5"></i></span>
+                        <p class="text-xs font-medium text-stone-700 mt-2">Health basket</p>
+                        <p class="text-[11px] text-stone-400">With healthy recipe</p>
                     </div>
                 </div>
             </div>

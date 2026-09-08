@@ -328,6 +328,20 @@ test('basket show page lists active recipes and hides inactive ones', function (
         ->assertDontSee('Hidden Stew');
 });
 
+test('basket show page shows the six info cards', function () {
+    $basket = Basket::factory()->create(['is_active' => true]);
+
+    Livewire::test(BasketShow::class, ['basket' => $basket])
+        ->assertSee('On-time delivery')
+        ->assertSee('Freshly packed')
+        ->assertSee('Secure payment')
+        ->assertSee('Easy order tracking')
+        ->assertSee('Weekly basket')
+        ->assertSee('Health basket')
+        ->assertDontSee('Easy returns')
+        ->assertDontSee('Quality check');
+});
+
 test('admin basket form persists mrp', function () {
     $product = Product::factory()->create();
 

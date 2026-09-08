@@ -11,6 +11,7 @@ use App\Models\DeliveryLocation;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Models\Unit;
 use App\Models\User;
 use App\Services\OrderService;
 use Illuminate\Support\Facades\Storage;
@@ -418,6 +419,100 @@ test('customer cannot cancel a confirmed order', function () {
 
     expect($order->fresh()->status)->toBe('confirmed')
         ->and($order->fresh()->cancelled_reason)->toBeNull();
+});
+
+test('customer cancel shows confirmation and closes the form', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->available()->create(['price' => 100]);
+
+    CartItem::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'quantity' => 1]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class)
+        ->set('addressMode', 'new')
+        ->set('receiverName', 'Rahul')
+        ->set('receiverPhone', '9876501234')
+        ->set('addressLine', '12 Main Street')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect();
+
+    $order = Order::first();
+
+    Livewire::actingAs($user)
+        ->test(Show::class, ['order' => $order])
+        ->set('showCancelForm', true)
+        ->set('cancelReason', 'Changed my mind')
+        ->call('cancelOrder')
+        ->assertDispatched('toast')
+        ->assertSet('showCancelForm', false);
+
+    expect($order->fresh()->status)->toBe('cancelled');
+});
+
+test('customer cancel mentions refund for paid orders', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'pending', 'payment_method' => 'online', 'payment_status' => 'paid']);
+
+    Livewire::actingAs($user)
+        ->test(Show::class, ['order' => $order])
+        ->set('cancelReason', 'Changed my mind')
+        ->call('cancelOrder')
+        ->assertDispatched('toast', function ($event, $params) {
+            return str_contains($params['message'] ?? '', 'refund');
+        });
+});
+
+test('admin dropdown cancel restores stock and needs a reason', function () {
+    $user = User::factory()->create();
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
+    $product = Product::factory()->available()->create(['unit' => '1 kg', 'price' => 100]);
+    $product->update(['current_stock' => 5000]);
+    $unit = $product->units()->where('unit', '1 kg')->first() ?? $product->defaultUnit();
+
+    CartItem::factory()->create([
+        'user_id' => $user->id,
+        'product_id' => $product->id,
+        'product_unit_id' => $unit?->id,
+        'quantity' => 1,
+    ]);
+
+    $order = app(OrderService::class)->createFromCart($user, [
+        'payment_method' => 'cod',
+        'receiver_name' => 'Rahul',
+        'receiver_phone' => '9876501234',
+        'address_line' => '12 Main Street',
+        'city' => 'City',
+        'state' => 'State',
+        'pincode' => '123456',
+    ]);
+
+    expect((float) $product->fresh()->current_stock)->toBe(4000.0);
+
+    $component = Livewire::actingAs(Admin::factory()->create(), 'admin')
+        ->test(OrderShow::class, ['order' => $order])
+        ->set('status', 'cancelled')
+        ->call('updateStatus')
+        ->assertHasErrors('cancelReason');
+
+    expect($order->fresh()->status)->toBe('pending');
+
+    $component
+        ->set('cancelReason', 'Customer asked')
+        ->call('updateStatus')
+        ->assertDispatched('toast');
+
+    expect($order->fresh()->status)->toBe('cancelled')
+        ->and($order->fresh()->cancelled_at)->not->toBeNull()
+        ->and((float) $product->fresh()->current_stock)->toBe(5000.0);
+});
+
+test('cancel refuses delivered orders at the service level', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'delivered']);
+
+    expect(app(OrderService::class)->cancel($order, 'Too late', 'customer'))->toBeFalse()
+        ->and($order->fresh()->status)->toBe('delivered');
 });
 
 test('admin can cancel order on behalf of the platform', function () {

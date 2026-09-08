@@ -33,9 +33,25 @@ class Show extends Component
 
         $this->validate(['cancelReason' => ['required', 'string', 'max:200']]);
 
-        app(OrderService::class)->cancel($this->order, $this->cancelReason, 'customer');
+        $cancelled = app(OrderService::class)->cancel($this->order, $this->cancelReason, 'customer');
 
+        if (! $cancelled) {
+            $this->dispatch('toast', message: 'This order can no longer be cancelled.', type: 'error');
+
+            return;
+        }
+
+        $this->showCancelForm = false;
+        $this->cancelReason = '';
         $this->order->refresh();
+
+        $message = 'Order '.$this->order->order_number.' cancelled.';
+
+        if ($this->order->payment_status === 'paid') {
+            $message .= ' Our team will contact you about your refund.';
+        }
+
+        $this->dispatch('toast', message: $message, type: 'success');
     }
 
     public function payOnline(): void

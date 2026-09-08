@@ -6,6 +6,20 @@ use App\Models\Product;
 use App\Models\User;
 use Livewire\Livewire;
 
+test('product detail shows the six info cards', function () {
+    $product = Product::factory()->available()->create();
+
+    Livewire::test(ProductDetail::class, ['product' => $product])
+        ->assertSee('On-time delivery')
+        ->assertSee('Freshly packed')
+        ->assertSee('Secure payment')
+        ->assertSee('Easy order tracking')
+        ->assertSee('Weekly basket')
+        ->assertSee('Health basket')
+        ->assertDontSee('Easy returns')
+        ->assertDontSee('Quality check');
+});
+
 test('product detail shows add to cart when the selected unit is not in the cart', function () {
     $user = User::factory()->create();
     $product = Product::factory()->available()->withUnits(3)->create();

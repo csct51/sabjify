@@ -46,6 +46,18 @@ class OrderShow extends Component
             return;
         }
 
+        if ($this->status === Order::STATUS_CANCELLED) {
+            $this->validate(['cancelReason' => ['required', 'string', 'max:200']]);
+
+            $cancelled = app(OrderService::class)->cancel($this->order, $this->cancelReason, 'platform');
+            $this->status = $this->order->status;
+            $this->order->refresh();
+
+            $this->dispatch('toast', message: $cancelled ? 'Order cancelled.' : 'This order can no longer be cancelled.');
+
+            return;
+        }
+
         $data = ['status' => $this->status];
 
         if ($this->status === Order::STATUS_DELIVERED) {

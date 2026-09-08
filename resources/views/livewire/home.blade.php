@@ -56,7 +56,9 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
                 <div class="mb-6 text-center">
                     <h2 class="text-2xl font-extrabold text-stone-900 font-heading">Sabjify Baskets</h2>
-                    <p class="mt-1 text-sm text-stone-500">Ready-to-cook daily vegetable baskets, delivered straight to your door.</p>
+                    <p class="mt-1 text-sm text-stone-500">Sabjify baskets
+
+A pre-designed vegetables and fruits baskets to make sure you don’t miss on your kitchens essential ingredients and also ensure you have your daily nutritions.</p>
                 </div>
                 <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
                     @foreach ($this->sabjifyBaskets as $basket)
@@ -167,33 +169,32 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="truck" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Fast Delivery</p>
-                <p class="text-xs text-stone-400">Same-day slots</p>
+                <p class="mt-2 text-sm font-semibold text-stone-800">On-time delivery</p>
+                <p class="text-xs text-stone-400">As per slot</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="badge-check" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Quality Checked</p>
+                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="carrot" class="w-5 h-5"></i></span>
+                <p class="mt-2 text-sm font-semibold text-stone-800">Freshly packed</p>
                 <p class="text-xs text-stone-400">Handpicked daily</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="indian-rupee" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Best Prices</p>
-                <p class="text-xs text-stone-400">Direct from farms</p>
+                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shield-check" class="w-5 h-5"></i></span>
+                <p class="mt-2 text-sm font-semibold text-stone-800">Secure payment</p>
+                <p class="text-xs text-stone-400">COD & online</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="refresh-ccw" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Easy Returns</p>
-                <p class="text-xs text-stone-400">No questions asked</p>
+                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="package" class="w-5 h-5"></i></span>
+                <p class="mt-2 text-sm font-semibold text-stone-800">Easy order tracking</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="lock" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Secure Payments</p>
-                <p class="text-xs text-stone-400">COD & Online</p>
+                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shopping-basket" class="w-5 h-5"></i></span>
+                <p class="mt-2 text-sm font-semibold text-stone-800">Weekly basket</p>
+                <p class="text-xs text-stone-400">To save time and efforts</p>
             </div>
             <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="headset" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">24x7 Support</p>
-                <p class="text-xs text-stone-400">We're here to help</p>
+                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="salad" class="w-5 h-5"></i></span>
+                <p class="mt-2 text-sm font-semibold text-stone-800">Health basket</p>
+                <p class="text-xs text-stone-400">With healthy recipe</p>
             </div>
             </div>
         </div>
