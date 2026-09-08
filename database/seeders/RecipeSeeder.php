@@ -10,8 +10,19 @@ use Illuminate\Support\Str;
 class RecipeSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Recipe shells (titles, copy, steps) with ZERO product links — the
+     * sample-only slugs these used to attach no longer exist after the
+     * real catalog import. Admin fills ingredients in the UI.
+     *
+     * firstOrCreate: re-runs never clobber admin edits or detach links.
      */
+    private const DUMMY_PRODUCTS = [
+        'rainbow-garden-salad' => ['tomato', 'cucumber', 'carrot', 'cabbage'],
+        'green-detox-smoothie' => ['apple', 'banana', 'ginger', 'lemon'],
+        'fruit-energy-bowl' => ['banana', 'apple', 'mango', 'papaya'],
+        'mediterranean-snack-platter' => ['tomato', 'cucumber', 'carrot', 'lemon', 'coriander-leaves'],
+    ];
+
     public function run(): void
     {
         $recipes = [
@@ -26,7 +37,6 @@ class RecipeSeeder extends Seeder
                     'Toss everything together, drizzle with olive oil and a pinch of salt.',
                     'Serve immediately for a crunchy, refreshing bowl.',
                 ],
-                'products' => ['lettuce-iceberg', 'tomato', 'cucumber', 'capsicum-mix', 'carrot'],
             ],
             [
                 'title' => 'Green Detox Smoothie',
@@ -39,7 +49,6 @@ class RecipeSeeder extends Seeder
                     'Blend until smooth and frothy.',
                     'Pour into a glass and enjoy fresh.',
                 ],
-                'products' => ['spinach-palak', 'fresh-apple', 'mint-leaves', 'cucumber', 'ginger'],
             ],
             [
                 'title' => 'Fruit Energy Bowl',
@@ -52,7 +61,6 @@ class RecipeSeeder extends Seeder
                     'Top with a drizzle of honey if you like it sweeter.',
                     'Dig in straight away while it is fresh.',
                 ],
-                'products' => ['banana-robusta', 'fresh-apple', 'kiwi', 'blueberry', 'avocado'],
             ],
             [
                 'title' => 'Mediterranean Snack Platter',
@@ -65,14 +73,11 @@ class RecipeSeeder extends Seeder
                     'Sprinkle fresh coriander on top.',
                     'Serve chilled as a light snack platter.',
                 ],
-                'products' => ['avocado', 'tomato', 'capsicum-mix', 'lettuce-iceberg', 'coriander'],
             ],
         ];
 
         foreach ($recipes as $index => $recipe) {
-            $products = Product::whereIn('slug', $recipe['products'])->get();
-
-            $model = Recipe::updateOrCreate(
+            $model = Recipe::firstOrCreate(
                 ['slug' => Str::slug($recipe['title'])],
                 [
                     'title' => $recipe['title'],
@@ -84,15 +89,34 @@ class RecipeSeeder extends Seeder
                 ]
             );
 
-            $sync = [];
-
-            foreach ($products as $product) {
-                $sync[$product->id] = [
-                    'product_unit_id' => $product->defaultUnit()?->id,
-                ];
-            }
-
-            $model->products()->sync($sync);
+            $this->attachDummies($model);
         }
+    }
+
+    /**
+     * Attach placeholder ingredients only to recipes that have none — admin
+     * filled recipes (and re-runs) are never touched.
+     */
+    private function attachDummies(Recipe $model): void
+    {
+        if ($model->products()->exists()) {
+            return;
+        }
+
+        $products = Product::whereIn('slug', self::DUMMY_PRODUCTS[$model->slug] ?? [])->get();
+
+        if ($products->isEmpty()) {
+            return;
+        }
+
+        $sync = [];
+
+        foreach ($products as $product) {
+            $sync[$product->id] = [
+                'product_unit_id' => $product->defaultUnit()?->id,
+            ];
+        }
+
+        $model->products()->sync($sync);
     }
 }

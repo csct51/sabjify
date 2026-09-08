@@ -5,25 +5,25 @@ use App\Models\Recipe;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\ProductSeeder;
 use Database\Seeders\RecipeSeeder;
-use Illuminate\Database\Eloquent\Collection;
 
 beforeEach(function () {
     $this->seed(CategorySeeder::class);
     $this->seed(ProductSeeder::class);
 });
 
-it('seeds recipes with their products', function () {
+it('seeds recipes with dummy ingredients for admin to refine', function () {
     $this->seed(RecipeSeeder::class);
 
-    expect(Recipe::count())->toBeGreaterThan(0);
+    expect(Recipe::count())->toBe(4);
 
     $recipe = Recipe::where('slug', 'green-detox-smoothie')->first();
 
     expect($recipe)->not->toBeNull()
         ->and($recipe->description)->not->toBeNull()->not->toBe('')
-        ->and($recipe->products)->toHaveCount(5)
+        ->and($recipe->products)->toHaveCount(4)
         ->and($recipe->products->pluck('slug'))
-        ->toContain('fresh-apple', 'spinach-palak', 'mint-leaves');
+        ->toContain('apple', 'banana', 'ginger', 'lemon')
+        ->and($recipe->is_active)->toBeTrue();
 });
 
 it('is idempotent when run twice', function () {
@@ -33,11 +33,18 @@ it('is idempotent when run twice', function () {
     expect(Recipe::count())->toBe(4);
 });
 
-it('links recipes only to products that exist', function () {
+it('re-seed preserves admin-added links', function () {
     $this->seed(RecipeSeeder::class);
 
-    Recipe::with('products')->get()->each(function (Recipe $recipe) {
-        expect($recipe->products)->toBeInstanceOf(Collection::class);
-        $recipe->products->each(fn (Product $product) => expect($product)->toBeInstanceOf(Product::class));
-    });
+    $recipe = Recipe::where('slug', 'fruit-energy-bowl')->first();
+    $mango = Product::where('slug', 'mango')->first();
+    $recipe->products()->detach($mango->id);
+    $cabbage = Product::where('slug', 'cabbage')->first();
+    $recipe->products()->attach($cabbage->id);
+
+    $this->seed(RecipeSeeder::class);
+
+    expect($recipe->fresh()->products->pluck('slug'))
+        ->toContain('cabbage')
+        ->not->toContain('mango');
 });

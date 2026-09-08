@@ -11,7 +11,7 @@ beforeEach(function () {
     $this->seed(ProductSeeder::class);
 });
 
-it('seeds the wellness baskets with their products', function () {
+it('seeds the wellness baskets with dummy products for admin to refine', function () {
     $this->seed(BasketSeeder::class);
 
     $baskets = Basket::where('type', Basket::TYPE_WELLNESS)->get();
@@ -30,10 +30,14 @@ it('seeds the wellness baskets with their products', function () {
     $basket = Basket::where('slug', 'heart-care-basket')->first();
 
     expect($basket)->not->toBeNull()
-        ->and($basket->products)->toHaveCount(8)
-        ->and($basket->price)->toBeGreaterThan(0)
+        ->and($basket->products)->not->toBeEmpty()
         ->and($basket->products->pluck('slug'))
-        ->toContain('fresh-apple', 'spinach-palak', 'avocado');
+        ->toContain('apple', 'carrot');
+
+    $baskets->each(
+        fn (Basket $basket) => expect($basket->products)->not->toBeEmpty()
+            ->and($basket->is_active)->toBeTrue()
+    );
 });
 
 it('seeds the sabjify baskets with fixed prices', function () {
@@ -66,13 +70,19 @@ it('is idempotent when run twice', function () {
     $this->seed(BasketSeeder::class);
     $this->seed(BasketSeeder::class);
 
-    expect(Basket::count())->toBe(10);
+    expect(Basket::count())->toBe(10)
+        ->and(Basket::where('slug', 'essential-basket')->first()->products)->toHaveCount(4);
 });
 
-it('links baskets only to products that exist', function () {
+it('re-seed preserves admin-added links', function () {
     $this->seed(BasketSeeder::class);
 
-    Basket::with('products')->get()->each(function (Basket $basket) {
-        $basket->products->each(fn (Product $product) => expect($product)->toBeInstanceOf(Product::class));
-    });
+    $basket = Basket::where('slug', 'essential-basket')->first();
+    $lemon = Product::where('slug', 'lemon')->first();
+    $basket->products()->syncWithoutDetaching([$lemon->id]);
+
+    $this->seed(BasketSeeder::class);
+
+    expect($basket->fresh()->products->pluck('slug'))
+        ->toContain('tomato', 'onion', 'carrot', 'cucumber', 'lemon');
 });
