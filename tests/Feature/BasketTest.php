@@ -287,6 +287,7 @@ test('admin basket form attaches and detaches recipes', function () {
     $product = Product::factory()->create(['unit' => '1 kg', 'price' => 100]);
     $product->units()->delete();
     ProductUnit::factory()->create(['product_id' => $product->id, 'unit' => '1 kg', 'price' => 100, 'sort_order' => 0]);
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
     $first = Recipe::factory()->create(['title' => 'Linked Soup', 'is_active' => true]);
     $second = Recipe::factory()->create(['title' => 'Second Salad', 'is_active' => true]);
 
@@ -343,7 +344,8 @@ test('basket show page shows the six info cards', function () {
 });
 
 test('admin basket form persists mrp', function () {
-    $product = Product::factory()->create();
+    $product = Product::factory()->create(['unit' => '1 kg']);
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
 
     Livewire::test(BasketForm::class)
         ->set('name', 'MRP Test Basket')
@@ -363,7 +365,8 @@ test('admin basket form persists mrp', function () {
 });
 
 test('empty mrp is stored as null through the admin form', function () {
-    $product = Product::factory()->create();
+    $product = Product::factory()->create(['unit' => '1 kg']);
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
 
     Livewire::test(BasketForm::class)
         ->set('name', 'No Mrp Basket')

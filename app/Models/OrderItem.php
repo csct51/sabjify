@@ -19,12 +19,11 @@ use Illuminate\Support\Carbon;
  * @property int $price
  * @property int $quantity
  * @property int $total
- * @property int|null $product_unit_id
  * @property numeric|null $base_qty
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['order_id', 'product_id', 'basket_id', 'product_name', 'unit', 'price', 'quantity', 'total', 'product_unit_id', 'base_qty'])]
+#[Fillable(['order_id', 'product_id', 'basket_id', 'product_name', 'unit', 'price', 'quantity', 'total', 'base_qty'])]
 class OrderItem extends Model
 {
     /** @use HasFactory<OrderItemFactory> */

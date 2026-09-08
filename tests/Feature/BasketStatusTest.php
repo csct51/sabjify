@@ -4,6 +4,7 @@ use App\Livewire\Admin\BasketForm;
 use App\Models\Admin;
 use App\Models\Basket;
 use App\Models\Product;
+use App\Models\Unit;
 use Livewire\Livewire;
 
 it('edit form reflects an inactive basket status', function () {
@@ -17,7 +18,8 @@ it('edit form reflects an inactive basket status', function () {
 
 it('edit form can hide a basket via save', function () {
     $admin = Admin::factory()->create();
-    $product = Product::factory()->create();
+    $product = Product::factory()->create(['unit' => '1 kg']);
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
     $basket = Basket::factory()->create(['is_active' => true]);
     $basket->products()->attach($product);
 
@@ -32,7 +34,8 @@ it('edit form can hide a basket via save', function () {
 
 it('edit form can re-activate a hidden basket via save', function () {
     $admin = Admin::factory()->create();
-    $product = Product::factory()->create();
+    $product = Product::factory()->create(['unit' => '1 kg']);
+    Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 0]);
     $basket = Basket::factory()->create(['is_active' => false]);
     $basket->products()->attach($product);
 

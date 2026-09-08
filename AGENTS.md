@@ -181,10 +181,16 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 </laravel-boost-guidelines>
 
-=== phase 2 — live database rules ===
+=== phase 2 — pre-live database rules ===
 
-# Phase 2 — Live Database Rules
+# Phase 2 — Pre-Live Database Rules
 
-- App is LIVE (Phase 1) and receiving orders. NEVER run `php artisan migrate:fresh`, `migrate:refresh`, `migrate:reset`, `db:wipe`, or any destructive schema command — migrating fresh is NOT an option.
-- All schema changes from this point onward are Phase 2 and must be additive `Schema::table` migrations only: `php artisan make:migration ...` + `php artisan migrate --force` on production.
-- New columns must be `nullable` or have safe defaults so existing live orders remain valid; no history rewrite.
+- App is NOT live for public; zero real orders anywhere. Schema squashes and `migrate:fresh --seed` are allowed on LOCAL dev only to keep history clean.
+- The freeze takes effect automatically from the FIRST real order onward: from that moment, NEVER run `php artisan migrate:fresh`, `migrate:refresh`, `migrate:reset`, `db:wipe`, or any destructive schema command — migrating fresh is NOT an option.
+- After the freeze, all schema changes must be additive `Schema::table` migrations only: `php artisan make:migration ...` + `php artisan migrate --force` on production. New columns must be `nullable` or have safe defaults; no history rewrite.
+- No `migrate:fresh` anywhere near production, ever. Prod path stays `migrate --force`. Raw SQL is NOT a deploy path (`migrate --force` only).
+- Deploy checklist (persists): backup → upload code + rebuilt `public/build` → `migrate --force` → `optimize:clear` → `migrate:status` clean → test order.
+
+## Component format
+
+- New SMALL presentational components: single-file (`php artisan livewire:make --sfc`). Still multi-file: anything with forms, validation, uploads, multi-action logic, or `::class`-based tests. Never convert existing components.

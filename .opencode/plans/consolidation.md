@@ -1,6 +1,6 @@
 # Plan: pre-live consolidation (squash + seeds + rules)
 
-Status: **Planned — NOT executed.** Do not execute until user says so.
+Status: **EXECUTED 2026-09-08 (uncommitted working tree).** `migrate:fresh --seed` clean on local MySQL; full suite 436/436 green; pint clean. See §10 for deviations found during execution.
 
 ## 1. Premise (verified, do NOT forget)
 
@@ -15,6 +15,7 @@ Status: **Planned — NOT executed.** Do not execute until user says so.
 - Local `migrate:fresh --seed` is explicitly allowed by this plan (dev DB only; `DatabaseSeeder` restores admin `admin`/`password` + catalog).
 - No `migrate:fresh` anywhere near production, ever. Prod path stays `migrate --force`.
 - Related plans: all `.opencode/plans/*` (implemented) — behavior unchanged by this plan; it only reorganizes schema delivery + seeds.
+- Sequencing with `product-import.md`: consolidation FIRST (this plan), import SECOND. The import's only hard dependency is §4's `seed_inventory_reference_units`. CSV upload itself can happen anytime.
 
 ## 3. Delete outright (unpushed, purpose evaporates without live rows)
 
@@ -38,7 +39,7 @@ Status: **Planned — NOT executed.** Do not execute until user says so.
 ## 5. Seeders/factories (replacing deleted backfills/seeds)
 
 - `UnitSeeder`: full explicit config for EVERY row (display units' base+factor — fixes the fresh-install ordering bug where UPDATEs ran before rows existed; base rows; `kg` row).
-- `ProductSeeder`: add `base_unit` + `low_stock` + sample `current_stock` per product (`g→5000`, `piece→50`, `ml→5000` defaults — confirm or supply numbers), else a fresh seed yields an unsellable shop (stock defaults 0).
+- `ProductSeeder`: SUPERSEDED by `product-import.md` — do NOT write sample products. The import seeder (`ProductImportSeeder`, owner CSV, replace-all scope) takes this slot in `DatabaseSeeder` instead. Only constraint from this plan: it runs after §4's `seed_inventory_reference_units`.
 - `ProductFactory`: set `base_unit` (from unit), decimal `current_stock`, sensible `low_stock` (makes tests invariant-honest).
 
 ## 6. AGENTS.md + rules rewrite
@@ -55,7 +56,17 @@ Status: **Planned — NOT executed.** Do not execute until user says so.
 
 - Rewrite the 2 tests that `require` deleted migration files (backfill + repair) into seeder-based assertions.
 - Update the stale seed comment in `DecimalInventoryTest`.
-- New: seed migration covers all reference rows; `ProductSeeder` rows carry base/low/stock. Full suite + pint.
+- New: seed migration covers all reference rows; product-seed assertions live in `product-import.md`'s `ProductImportTest` (fixture CSV), not here. Full suite + pint.
+
+## 10. Execution deviations (2026-09-08 — do NOT forget why)
+
+- "5 create-tables final form" was wrong for 3: `purchase_items` / `wastage_items` / `wastages` creates still carried integer qty columns. Baked decimals directly into those (unpushed) creates instead of keeping them as-is. Final schema identical.
+- `053655` (order_items.product_unit_id) deleted ENTIRELY, not edited — verified zero writes anywhere (only Fillable + PHPDoc referenced it; both stripped from `OrderItem`).
+- Replaced-file deletions the plan implied but didn't list: `072146`, `053808`, `060819`, `121041` (superseded by the 4 new files). First fresh-run failed on this; deleted, re-ran clean.
+- Seed migration covers ONLY purchase + base rows (`kg/piece/g/ml`). Seeding display rows collided with 36 tests' `Unit::create` setup (UNIQUE units.name) — display rows stay owned by UnitSeeder + tests, exactly like prod (admin-managed).
+- `ProductFactory` derives `base_unit`/`low_stock` in `configure()->afterCreating` via `array_key_exists` (distinguishes "not passed" from "explicit null" so the legacy-fallback test keeps working). Definition-time derivation was tried first and broke 18 tests (random pick vs caller `unit` override mismatch).
+- 5 basket tests needed honest setup: pinned `unit => '1 kg'` + matching `units` lookup row (base-share validation now fires for real instead of passing vacuously on null base). No validation behavior changed.
+- AGENTS.md also gained the SFC convention line (single-file for new small components only) in the same edit.
 
 ## 9. Out of scope
 

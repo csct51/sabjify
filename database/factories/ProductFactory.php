@@ -22,6 +22,7 @@ class ProductFactory extends Factory
         $price = fake()->numberBetween(10, 600);
         $name = fake()->unique()->words(2, true);
         $name = is_array($name) ? implode(' ', $name) : $name;
+        $unit = fake()->randomElement(['1 kg', '500 g', '1 pc', 'dozen', 'bunch', '250 g']);
 
         return [
             'category_id' => Category::factory(),
@@ -29,7 +30,7 @@ class ProductFactory extends Factory
             'slug' => Str::slug($name),
             'description' => fake()->sentence(),
             'alternate_names' => null,
-            'unit' => fake()->randomElement(['1 kg', '500 g', '1 pc', 'dozen', 'bunch', '250 g']),
+            'unit' => $unit,
             'price' => $price,
             'mrp' => fake()->boolean(70) ? (int) ($price * 1.25) : null,
             'image' => null,
@@ -41,7 +42,28 @@ class ProductFactory extends Factory
 
     public function configure(): static
     {
+        // Fill inventory defaults from the FINAL unit string (after caller
+        // overrides). array_key_exists distinguishes "not passed" from
+        // "explicitly passed as null" (legacy-fallback tests need null kept).
         return $this->afterCreating(function (Product $product) {
+            $attrs = $product->getAttributes();
+            $dirty = false;
+
+            if (! array_key_exists('base_unit', $attrs)) {
+                $product->base_unit = in_array($product->unit, ['1 pc', 'dozen', 'bunch'], true) ? 'piece' : 'g';
+                $dirty = true;
+            }
+
+            if (! array_key_exists('low_stock', $attrs)) {
+                $base = $product->base_unit ?? (in_array($product->unit, ['1 pc', 'dozen', 'bunch'], true) ? 'piece' : 'g');
+                $product->low_stock = $base === 'piece' ? 10 : 1000;
+                $dirty = true;
+            }
+
+            if ($dirty) {
+                $product->saveQuietly();
+            }
+        })->afterCreating(function (Product $product) {
             $inStock = fake()->boolean(80);
             $product->units()->create([
                 'unit' => $product->unit,

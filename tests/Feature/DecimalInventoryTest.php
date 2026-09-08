@@ -12,8 +12,8 @@ use Livewire\Livewire;
 
 beforeEach(function () {
     // Product display units only. Purchase units ('kg'/'piece') must come from
-    // the seed_purchase_units migration — do NOT create them here, or the
-    // regression test below cannot catch a missing seed.
+    // the consolidated seed_inventory_reference_units migration — do NOT
+    // create them here, or the regression test below cannot catch a missing seed.
     Unit::create(['name' => '1 kg', 'base_unit' => 'g', 'to_base_factor' => 1000, 'sort_order' => 1]);
     Unit::create(['name' => '1 pc', 'base_unit' => 'piece', 'to_base_factor' => 1, 'sort_order' => 3]);
 });

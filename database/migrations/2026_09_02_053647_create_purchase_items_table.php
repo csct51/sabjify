@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->string('unit');
             $table->unsignedInteger('rate');
-            $table->unsignedInteger('qty');
+            $table->decimal('qty', 10, 3)->default(0);
             $table->unsignedInteger('line_total');
-            $table->unsignedInteger('base_qty')->default(0);
+            $table->decimal('base_qty', 12, 3)->default(0);
             $table->timestamps();
             $table->index(['product_id', 'purchase_id']);
         });

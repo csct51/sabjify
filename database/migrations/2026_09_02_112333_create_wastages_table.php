@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('wastage_date');
             $table->string('reason');
             $table->text('remark')->nullable();
-            $table->unsignedInteger('total_qty')->default(0);
+            $table->decimal('total_qty', 12, 3)->default(0);
             $table->foreignId('created_by')->nullable()->constrained('admins')->nullOnDelete();
             $table->timestamps();
             $table->index('wastage_date');

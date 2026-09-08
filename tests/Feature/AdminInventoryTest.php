@@ -21,7 +21,6 @@ use App\Models\PurchaseItem;
 use App\Models\Unit;
 use App\Models\Wastage;
 use App\Models\WastageItem;
-use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 test('product form persists base unit', function () {
@@ -464,26 +463,14 @@ test('null low stock means never low, boundary counts as low', function () {
         ->and($over->fresh()->isLowStock())->toBeFalse();
 });
 
-test('backfill sets per-base low stock defaults', function () {
-    $id = DB::table('products')->insertGetId([
-        'category_id' => Category::factory()->create()->id,
-        'name' => 'Backfill Beans',
-        'slug' => 'backfill-beans',
-        'unit' => '1 kg',
-        'price' => 100,
-        'is_active' => true,
-        'sort_order' => 0,
-        'current_stock' => 200,
-        'base_unit' => 'g',
-        'low_stock' => null,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+test('factory assigns per-base low stock defaults', function () {
+    $gram = Product::factory()->create(['unit' => '1 kg']);
+    $piece = Product::factory()->create(['unit' => '1 pc']);
 
-    $migration = require database_path('migrations/2026_09_05_053809_backfill_products_low_stock.php');
-    $migration->up();
-
-    expect((float) DB::table('products')->where('id', $id)->value('low_stock'))->toBe(1000.0);
+    expect($gram->base_unit)->toBe('g')
+        ->and((float) $gram->low_stock)->toBe(1000.0)
+        ->and($piece->base_unit)->toBe('piece')
+        ->and((float) $piece->low_stock)->toBe(10.0);
 });
 
 test('stock report low filter uses per-product thresholds', function () {
@@ -795,30 +782,18 @@ test('wastage edit with corrupt stored base is blocked', function () {
     expect((float) $product->fresh()->current_stock)->toBe(1000.0);
 });
 
-test('repair migration fixes unconverted kg rows and rebuilds stock', function () {
-    $category = Category::factory()->create();
-    $product = Product::factory()->create(['category_id' => $category->id, 'base_unit' => 'g']);
-    $product->update(['current_stock' => 5.5]);
+test('consolidated unit seed covers purchase and base rows', function () {
+    $kg = Unit::where('name', 'kg')->first();
+    $piece = Unit::where('name', 'piece')->first();
+    $g = Unit::where('name', 'g')->first();
+    $ml = Unit::where('name', 'ml')->first();
 
-    $purchase = Purchase::create([
-        'purchase_number' => 'PUR-902',
-        'supplier_name' => 'Cash',
-        'purchase_date' => now()->format('Y-m-d'),
-        'total_amount' => 550,
-    ]);
-    $item = PurchaseItem::create([
-        'purchase_id' => $purchase->id,
-        'product_id' => $product->id,
-        'unit' => 'kg',
-        'rate' => 100,
-        'qty' => 5.5,
-        'line_total' => 550,
-        'base_qty' => 5.5,
-    ]);
-
-    $migration = require database_path('migrations/2026_09_03_072148_repair_pre_seed_kg_stock.php');
-    $migration->up();
-
-    expect((float) $item->fresh()->base_qty)->toBe(5500.0)
-        ->and((float) $product->fresh()->current_stock)->toBe(5500.0);
+    expect($kg->base_unit)->toBe('g')
+        ->and((float) $kg->to_base_factor)->toBe(1000.0)
+        ->and($piece->is_base)->toBeTrue()
+        ->and($piece->integer_only)->toBeTrue()
+        ->and($g->is_base)->toBeTrue()
+        ->and($g->purchase_unit)->toBe('kg')
+        ->and($ml->is_base)->toBeTrue()
+        ->and($ml->purchase_unit)->toBe('litre');
 });
