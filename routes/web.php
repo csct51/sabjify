@@ -12,6 +12,8 @@ use App\Livewire\Admin\CustomerShow as AdminCustomerShow;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\DeliveryLocationForm as AdminDeliveryLocationForm;
 use App\Livewire\Admin\DeliveryLocations as AdminDeliveryLocations;
+use App\Livewire\Admin\InfoCards\Edit as AdminInfoCardsEdit;
+use App\Livewire\Admin\InfoCards\Index as AdminInfoCardsIndex;
 use App\Livewire\Admin\Orders as AdminOrders;
 use App\Livewire\Admin\OrderShow as AdminOrderShow;
 use App\Livewire\Admin\Password as AdminPassword;
@@ -60,12 +62,14 @@ use App\Livewire\Search;
 use App\Livewire\Shop;
 use Illuminate\Support\Facades\Route;
 
+// ---- STOREFRONT: public (no login needed) ----
 Route::livewire('/login', PhoneLogin::class)->name('login')->middleware('guest');
 Route::livewire('/privacy-policy', 'privacy-policy')->name('privacy-policy');
 Route::livewire('/terms-conditions', 'terms-conditions')->name('terms-conditions');
 
 Route::redirect('/admin', '/admin/login')->name('admin.index');
 
+// ---- ADMIN: entry (login / logout) ----
 Route::livewire('/admin/login', AdminLogin::class)->name('admin.login')->middleware('guest:admin');
 
 Route::post('/admin/logout', function () {
@@ -88,6 +92,7 @@ Route::livewire('/baskets', BasketsIndex::class)->name('baskets.index');
 Route::livewire('/baskets/{basket:slug}', BasketShow::class)->name('baskets.show');
 
 Route::middleware(['auth', 'user.active'])->group(function () {
+    // STOREFRONT: customer account (cart, checkout, profile, orders).
     Route::livewire('/cart', Cart::class)->name('cart');
     Route::livewire('/checkout', Checkout::class)->name('checkout');
     Route::post('/checkout/payment/verify', [PaymentController::class, 'verifyCheckout'])->name('checkout.payment.verify');
@@ -102,6 +107,8 @@ Route::middleware(['auth', 'user.active'])->group(function () {
 
 Route::middleware(['auth:admin', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::livewire('/dashboard', AdminDashboard::class)->name('dashboard');
+
+    // ADMIN: catalog (categories, products, recipes, baskets).
     Route::livewire('/categories', AdminCategories::class)->name('categories.index');
     Route::livewire('/categories/create', AdminCategoryForm::class)->name('categories.create');
     Route::livewire('/categories/{category}/edit', AdminCategoryForm::class)->name('categories.edit');
@@ -114,35 +121,57 @@ Route::middleware(['auth:admin', 'admin'])->prefix('admin')->name('admin.')->gro
     Route::livewire('/baskets', AdminBaskets::class)->name('baskets.index');
     Route::livewire('/baskets/create', AdminBasketForm::class)->name('baskets.create');
     Route::livewire('/baskets/{basket}/edit', AdminBasketForm::class)->name('baskets.edit');
+
+    // ADMIN: orders.
     Route::livewire('/orders', AdminOrders::class)->name('orders.index');
     Route::livewire('/orders/{order}', AdminOrderShow::class)->name('orders.show');
     Route::get('/orders/{order}/invoice', [InvoiceController::class, 'download'])->name('orders.invoice');
+
+    // ADMIN: customers.
     Route::livewire('/customers', AdminCustomers::class)->name('customers.index');
     Route::livewire('/customers/{user}', AdminCustomerShow::class)->name('customers.show');
+
+    // ADMIN: catalog — units.
     Route::livewire('/units', AdminUnitsIndex::class)->name('units.index');
     Route::livewire('/units/create', AdminUnitsCreate::class)->name('units.create');
     Route::livewire('/units/{unit}/edit', AdminUnitsEdit::class)->name('units.edit');
     Route::livewire('/units/{unit}', AdminUnitsShow::class)->name('units.show');
+
+    // ADMIN: operations — prices.
     Route::livewire('/prices', AdminPrices::class)->name('prices');
+
+    // ADMIN: inventory — purchases.
     Route::livewire('/purchases', AdminPurchasesIndex::class)->name('purchases.index');
     Route::livewire('/purchases/create', AdminPurchasesCreate::class)->name('purchases.create');
     Route::livewire('/purchases/{purchase}/edit', AdminPurchasesEdit::class)->name('purchases.edit');
     Route::livewire('/purchases/{purchase}', AdminPurchasesShow::class)->name('purchases.show');
+
+    // ADMIN: inventory — wastage.
     Route::livewire('/wastages', AdminWastagesIndex::class)->name('wastages.index');
     Route::livewire('/wastages/create', AdminWastagesCreate::class)->name('wastages.create');
     Route::livewire('/wastages/{wastage}/edit', AdminWastagesEdit::class)->name('wastages.edit');
     Route::livewire('/wastages/{wastage}', AdminWastagesShow::class)->name('wastages.show');
+
+    // ADMIN: reports.
     Route::livewire('/reports/stock', AdminReportsStock::class)->name('reports.stock');
     Route::livewire('/reports/selling', AdminReportsSelling::class)->name('reports.selling');
     Route::livewire('/reports/purchases', AdminReportsPurchases::class)->name('reports.purchases');
     Route::livewire('/reports/wastage', AdminReportsWastage::class)->name('reports.wastage');
+
+    // ADMIN: inventory — suppliers.
     Route::livewire('/suppliers', AdminSuppliersIndex::class)->name('suppliers.index');
     Route::livewire('/suppliers/create', AdminSuppliersCreate::class)->name('suppliers.create');
     Route::livewire('/suppliers/{supplier}/edit', AdminSuppliersEdit::class)->name('suppliers.edit');
     Route::livewire('/suppliers/{supplier}', AdminSuppliersShow::class)->name('suppliers.show');
+
+    // ADMIN: operations — delivery locations.
     Route::livewire('/delivery-locations', AdminDeliveryLocations::class)->name('delivery-locations.index');
     Route::livewire('/delivery-locations/create', AdminDeliveryLocationForm::class)->name('delivery-locations.create');
     Route::livewire('/delivery-locations/{deliveryLocation}/edit', AdminDeliveryLocationForm::class)->name('delivery-locations.edit');
+
+    // ADMIN: system (password, settings, info cards).
     Route::livewire('/password', AdminPassword::class)->name('password');
     Route::livewire('/settings', AdminSettings::class)->name('settings');
+    Route::livewire('/info-cards', AdminInfoCardsIndex::class)->name('info-cards.index');
+    Route::livewire('/info-cards/{position}/edit', AdminInfoCardsEdit::class)->name('info-cards.edit');
 });

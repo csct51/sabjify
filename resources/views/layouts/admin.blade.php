@@ -26,6 +26,7 @@
                             ['route' => 'admin.products.index', 'match' => 'admin.products.*', 'label' => 'Products', 'icon' => 'shopping-basket'],
                             ['route' => 'admin.recipes.index', 'match' => 'admin.recipes.*', 'label' => 'Recipes', 'icon' => 'book-open'],
                             ['route' => 'admin.baskets.index', 'match' => 'admin.baskets.*', 'label' => 'Baskets', 'icon' => 'gift'],
+                            ['route' => 'admin.info-cards.index', 'match' => 'admin.info-cards*', 'label' => 'Info Cards', 'icon' => 'layout-grid'],
                         ],
                     ],
                     [

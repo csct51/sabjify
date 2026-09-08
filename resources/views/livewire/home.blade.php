@@ -166,37 +166,7 @@ A pre-designed vegetables and fruits baskets to make sure you don’t miss on yo
 
     <section class="bg-brand-50/40 py-6 sm:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="truck" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">On-time delivery</p>
-                <p class="text-xs text-stone-400">As per slot</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="carrot" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Freshly packed</p>
-                <p class="text-xs text-stone-400">Handpicked daily</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shield-check" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Secure payment</p>
-                <p class="text-xs text-stone-400">COD & online</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="package" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Easy order tracking</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="shopping-basket" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Weekly basket</p>
-                <p class="text-xs text-stone-400">To save time and efforts</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <span class="inline-flex items-center justify-center w-11 h-11 mx-auto rounded-xl bg-brand-50 text-brand-600"><i data-lucide="salad" class="w-5 h-5"></i></span>
-                <p class="mt-2 text-sm font-semibold text-stone-800">Health basket</p>
-                <p class="text-xs text-stone-400">With healthy recipe</p>
-            </div>
-            </div>
+            <x-info-cards />
         </div>
     </section>
 </div>
