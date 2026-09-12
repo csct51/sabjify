@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\WhatsappSendException;
 use App\Models\OtpCode;
 use App\Notifications\SendOtpNotification;
 use Illuminate\Notifications\AnonymousNotifiable;
@@ -11,6 +12,11 @@ class OtpService
 {
     public const OTP_LIFETIME_MINUTES = 5;
 
+    public function __construct(private WhatsappService $whatsapp) {}
+
+    /**
+     * @throws WhatsappSendException when the WhatsApp gateway is configured but fails.
+     */
     public function send(string $phone): void
     {
         $this->invalidatePreviousCodes($phone);
@@ -27,6 +33,8 @@ class OtpService
             (new AnonymousNotifiable)->route('log', $phone),
             new SendOtpNotification($code),
         );
+
+        $this->whatsapp->sendOtp($phone, $code);
     }
 
     public function verify(string $phone, string $code): bool

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Exceptions\WhatsappSendException;
 use App\Models\OtpCode;
 use App\Models\User;
 use App\Services\OtpService;
@@ -42,7 +43,13 @@ class PhoneLogin extends Component
             return;
         }
 
-        app(OtpService::class)->send($this->phone);
+        try {
+            app(OtpService::class)->send($this->phone);
+        } catch (WhatsappSendException $e) {
+            $this->addError('phone', 'Could not send the OTP on WhatsApp. Please try again.');
+
+            return;
+        }
 
         RateLimiter::hit($sendKey, 60);
 
@@ -55,7 +62,9 @@ class PhoneLogin extends Component
             return;
         }
 
-        $this->devOtp = app()->environment('local')
+        // Dev hint only when WhatsApp is not sending for real: with a key
+        // configured the code travels by message and must never render.
+        $this->devOtp = $this->showsDevOtp()
             ? OtpCode::where('phone', $this->phone)->latest()->value('code')
             : null;
 
@@ -116,6 +125,11 @@ class PhoneLogin extends Component
     public function resendOtp(): void
     {
         $this->sendOtp();
+    }
+
+    public function showsDevOtp(): bool
+    {
+        return app()->environment('local') && empty(config('services.aoc.whatsapp.key'));
     }
 
     public function goBack(): void
