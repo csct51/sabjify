@@ -113,7 +113,7 @@
                             >
                                 <span class="w-12 h-12 lg:w-16 lg:h-16 rounded bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
                                     @if ($cat->image)
-                                        <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
+                                        <img src="{{ str_replace('/storage/', '/public/storage/', $cat->imageUrl()) }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
                                     @endif
                                 </span>
                                 <span class="text-xs font-medium leading-tight line-clamp-1">{{ $cat->name }}</span>

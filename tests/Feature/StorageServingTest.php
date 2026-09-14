@@ -9,7 +9,10 @@ test('files on the public disk are served without a storage symlink', function (
     $file = UploadedFile::fake()->image('products/demo.png');
     Storage::disk('public')->putFileAs('products', $file, 'demo.png');
 
-    $this->get('/storage/products/demo.png')
+    // Serve route follows the real disk URL config (fake keeps its own URL).
+    $path = parse_url((string) config('filesystems.disks.public.url'), PHP_URL_PATH).'/products/demo.png';
+
+    $this->get($path)
         ->assertOk()
         ->assertHeader('Content-Type', 'image/png');
 });
@@ -17,5 +20,7 @@ test('files on the public disk are served without a storage symlink', function (
 test('missing files on the public disk return a 404', function () {
     Storage::fake('public');
 
-    $this->get('/storage/products/missing.png')->assertNotFound();
+    $path = parse_url((string) config('filesystems.disks.public.url'), PHP_URL_PATH).'/products/missing.png';
+
+    $this->get($path)->assertNotFound();
 });

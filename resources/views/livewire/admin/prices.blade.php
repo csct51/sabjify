@@ -59,7 +59,7 @@
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-3">
                                         <span class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
-                                            <img src="{{ $unit->product?->displayImageUrl() }}" alt="" class="w-full h-full object-cover">
+                                            <img src="{{ str_replace('/storage/', '/public/storage/', $unit->product?->displayImageUrl()) }}" alt="" class="w-full h-full object-cover">
                                         </span>
                                         <span class="font-medium text-stone-900">{{ $unit->product?->name }}</span>
                                     </div>

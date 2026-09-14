@@ -1,7 +1,7 @@
 <div class="flex gap-4 p-4" wire:key="cart-{{ $item->id }}">
     @if ($item->product)
         <a href="{{ route('product.show', $item->product->slug) }}" wire:navigate class="w-20 h-20 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center shrink-0 overflow-hidden">
-            <img src="{{ $item->product->displayImageUrl() }}" alt="{{ $item->product->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
+            <img src="{{ str_replace('/storage/', '/public/storage/', $item->product->displayImageUrl()) }}" alt="{{ $item->product->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
         </a>
         <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between gap-2">

@@ -4,7 +4,7 @@
     <div class="rounded-xl border border-stone-200 overflow-hidden" x-data="{ open: false }">
         <button type="button" @click="open = !open" class="w-full text-left flex items-center gap-4 px-4 py-3 bg-brand-50/40 hover:bg-brand-50 transition" aria-expanded="false" :aria-expanded="open ? 'true' : 'false'">
             <div class="{{ $imageClass }} rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center shrink-0 overflow-hidden">
-                <img src="{{ $item->basket->displayImageUrl() }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
+                <img src="{{ str_replace('/storage/', '/public/storage/', $item->basket->displayImageUrl()) }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
             </div>
             <div class="flex-1 min-w-0">
                 <p class="font-medium text-stone-900">{{ $item->product_name }}</p>
@@ -20,7 +20,7 @@
                 @php($pivotUnit = $product->units->firstWhere('id', $product->pivot?->product_unit_id))
                 <div class="flex items-center gap-3 px-4 py-2.5">
                     <div class="w-10 h-10 rounded-lg bg-stone-100 overflow-hidden shrink-0">
-                        <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                        <img src="{{ str_replace('/storage/', '/public/storage/', $product->displayImageUrl()) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-stone-800 truncate">{{ $product->name }}</p>

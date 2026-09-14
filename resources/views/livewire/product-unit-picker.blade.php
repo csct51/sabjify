@@ -27,7 +27,7 @@
             @if ($this->product)
                 <div class="flex items-start justify-between gap-3 p-4 pb-3 border-b border-stone-100">
                     <div class="flex items-center gap-3 min-w-0">
-                        <img src="{{ $this->product->displayImageUrl() }}" alt="{{ $this->product->name }}" class="w-10 h-10 rounded-lg border border-stone-200 object-cover shrink-0">
+                        <img src="{{ str_replace('/storage/', '/public/storage/', $this->product->displayImageUrl()) }}" alt="{{ $this->product->name }}" class="w-10 h-10 rounded-lg border border-stone-200 object-cover shrink-0">
                         <div class="min-w-0">
                             <p id="unit-picker-title" class="text-sm font-semibold text-stone-900 truncate">{{ $this->product->name }}</p>
                             <p class="text-xs text-stone-400 mt-0.5">Select a size</p>

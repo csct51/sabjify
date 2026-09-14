@@ -49,7 +49,7 @@
                     <label class="block text-sm font-medium text-stone-700 mb-1">Image Upload</label>
                     <div class="flex items-center gap-4">
                         @if ($existingImage)
-                            <img src="{{ filter_var($existingImage, FILTER_VALIDATE_URL) !== false ? $existingImage : \Illuminate\Support\Facades\Storage::url($existingImage) }}" alt="Current category image" class="w-16 h-16 rounded-xl object-cover border border-stone-200">
+                            <img src="{{ str_replace('/storage/', '/public/storage/', filter_var($existingImage, FILTER_VALIDATE_URL) !== false ? $existingImage : \Illuminate\Support\Facades\Storage::url($existingImage)) }}" alt="Current category image" class="w-16 h-16 rounded-xl object-cover border border-stone-200">
                         @endif
                         <input wire:model="image" type="file" accept="image/*" class="block w-full text-sm text-stone-500 file:mr-4 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100">
                     </div>

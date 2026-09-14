@@ -10,7 +10,7 @@
 
         <div class="grid lg:grid-cols-2 gap-10" data-reveal>
             <div class="relative bg-gradient-to-br from-brand-50 to-lime-100 rounded-3xl border border-stone-200 aspect-[4/3] overflow-hidden">
-                <img src="{{ $basket->displayImageUrl() }}" alt="{{ $basket->name }}" class="absolute inset-0 w-full h-full object-cover">
+                <img src="{{ str_replace('/storage/', '/public/storage/', $basket->displayImageUrl()) }}" alt="{{ $basket->name }}" class="absolute inset-0 w-full h-full object-cover">
             </div>
 
             <div>
@@ -97,7 +97,7 @@
                             ?? $product->price)
                         <div class="flex items-center gap-4 p-4">
                             <span class="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
-                                <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                <img src="{{ str_replace('/storage/', '/public/storage/', $product->displayImageUrl()) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                             </span>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-stone-800 truncate">{{ $product->name }}</p>
@@ -156,7 +156,7 @@
                     @foreach ($this->recipes as $recipe)
                         <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group flex gap-4 bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-lg transition p-4">
                             <span class="flex items-center justify-center w-20 h-20 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
-                                <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                                <img src="{{ str_replace('/storage/', '/public/storage/', $recipe->displayImageUrl()) }}" alt="{{ $recipe->title }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
                             </span>
                             <span class="min-w-0 flex-1">
                                 <span class="block font-semibold text-stone-900 group-hover:text-brand-700 truncate">{{ $recipe->title }}</span>

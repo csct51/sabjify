@@ -45,7 +45,7 @@
                                         @php($pivotUnit = $product->units->firstWhere('id', $product->pivot?->product_unit_id))
                                         <div class="flex items-center gap-3 px-4 py-2.5">
                                             <div class="w-10 h-10 rounded-lg bg-stone-100 overflow-hidden shrink-0">
-                                                <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                                <img src="{{ str_replace('/storage/', '/public/storage/', $product->displayImageUrl()) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium text-stone-800 truncate">{{ $product->name }}</p>

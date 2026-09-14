@@ -60,7 +60,7 @@
                                             <input type="checkbox" wire:model.live="productIds" value="{{ $product->id }}" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500">
                                             <span class="flex items-center gap-2 min-w-0 flex-1">
                                                 <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
-                                                    <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                                    <img src="{{ str_replace('/storage/', '/public/storage/', $product->displayImageUrl()) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                                                 </span>
                                                 <span class="min-w-0">
                                                     <span class="block text-sm font-medium text-stone-800 truncate">{{ $product->name }}</span>
@@ -84,7 +84,7 @@
                                 @forelse ($this->selectedProducts as $product)
                                     <div class="flex items-center gap-3 px-3 py-2.5">
                                         <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-stone-200 shrink-0 overflow-hidden">
-                                            <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                            <img src="{{ str_replace('/storage/', '/public/storage/', $product->displayImageUrl()) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                                         </span>
                                         <div class="min-w-0 flex-1">
                                             <span class="block text-sm font-medium text-stone-800 truncate">{{ $product->name }}</span>
@@ -128,7 +128,7 @@
                     <label class="block text-sm font-medium text-stone-700 mb-1">Recipe Image</label>
                     <div class="flex items-center gap-4">
                         @if ($recipe?->imageUrl())
-                            <img src="{{ $recipe->imageUrl() }}" alt="Current recipe image" class="w-16 h-16 rounded-xl object-cover border border-stone-200">
+                            <img src="{{ str_replace('/storage/', '/public/storage/', $recipe->imageUrl()) }}" alt="Current recipe image" class="w-16 h-16 rounded-xl object-cover border border-stone-200">
                         @endif
                         <input wire:model="image" type="file" accept="image/*" class="block w-full text-sm text-stone-500 file:mr-4 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100">
                     </div>

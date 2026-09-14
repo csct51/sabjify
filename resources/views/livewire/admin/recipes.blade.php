@@ -29,7 +29,7 @@
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <span class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
-                                        <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" class="w-full h-full object-cover">
+                                        <img src="{{ str_replace('/storage/', '/public/storage/', $recipe->displayImageUrl()) }}" alt="{{ $recipe->title }}" class="w-full h-full object-cover">
                                     </span>
                                     <div class="min-w-0">
                                         <a href="{{ route('admin.recipes.edit', $recipe) }}" wire:navigate class="font-medium text-stone-900 hover:text-brand-700">{{ $recipe->title }}</a>

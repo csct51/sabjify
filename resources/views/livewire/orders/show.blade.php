@@ -55,7 +55,7 @@
                                 <div class="flex items-center gap-4 py-3">
                                     <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 flex items-center justify-center shrink-0 overflow-hidden">
                                         @if ($item->product)
-                                            <img src="{{ $item->product->displayImageUrl() }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
+                                            <img src="{{ str_replace('/storage/', '/public/storage/', $item->product->displayImageUrl()) }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
                                         @else
                                             <span class="text-2xl">🥗</span>
                                         @endif
