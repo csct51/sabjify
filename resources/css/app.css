@@ -357,3 +357,63 @@
     color: #a8a29e;
     font-size: 0.875rem;
 }
+
+/* Upload progress pill (all file inputs, driven from app.js). */
+.upload-pill {
+    position: fixed;
+    left: 50%;
+    bottom: 1.25rem;
+    transform: translateX(-50%);
+    z-index: 70;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: min(22rem, calc(100vw - 2rem));
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e7e5e4;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    font-size: 0.875rem;
+    color: #44403c;
+}
+
+.upload-pill[hidden] {
+    display: none;
+}
+
+.upload-pill-track {
+    flex: 1 1 auto;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: #e7e5e4;
+    overflow: hidden;
+}
+
+.upload-pill-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 9999px;
+    background: #16a34a;
+    transition: width 0.2s ease-out;
+}
+
+.upload-pill.is-failed .upload-pill-fill {
+    background: #dc2626;
+}
+
+.upload-pill.is-failed .upload-pill-text {
+    color: #991b1b;
+    font-weight: 600;
+}
+
+body.is-uploading form button[type="submit"] {
+    cursor: wait;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upload-pill-fill {
+        transition: none;
+    }
+}

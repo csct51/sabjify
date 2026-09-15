@@ -756,6 +756,8 @@ document.addEventListener('livewire:init', () => {
     observeMaps();
     initInfiniteScroll();
     observeInfiniteSentinels();
+    initUploadBridge();
+    observeUploadInputs();
     animatePageEnter();
 
     Livewire.hook('morph.removed', ({ el }) => {
@@ -800,10 +802,146 @@ document.addEventListener('livewire:init', () => {
     });
 });
 
+const activeUploads = new Map();
+
+let uploadPill;
+let uploadFailTimer;
+
+function uploadPillElement() {
+    if (! uploadPill) {
+        uploadPill = document.createElement('div');
+        uploadPill.id = 'upload-progress-pill';
+        uploadPill.className = 'upload-pill';
+        uploadPill.setAttribute('role', 'status');
+        uploadPill.innerHTML = '<span class="upload-pill-track"><span class="upload-pill-fill"></span></span><span class="upload-pill-text"></span>';
+        uploadPill.hidden = true;
+        document.body.appendChild(uploadPill);
+    }
+
+    return uploadPill;
+}
+
+function setUploadLocked(locked) {
+    document.body.classList.toggle('is-uploading', locked);
+    document.querySelectorAll('form button[type="submit"]').forEach((button) => {
+        if (locked && ! button.disabled) {
+            button.dataset.uploadLock = 'true';
+            button.disabled = true;
+        } else if (! locked && button.dataset.uploadLock === 'true') {
+            button.disabled = false;
+            delete button.dataset.uploadLock;
+        }
+    });
+}
+
+function syncUploadPill(failedMessage = null) {
+    const pill = uploadPillElement();
+    const values = Array.from(activeUploads.values());
+
+    window.clearTimeout(uploadFailTimer);
+
+    if (values.length === 0 && failedMessage === null) {
+        pill.hidden = true;
+        pill.classList.remove('is-failed');
+        setUploadLocked(false);
+
+        return;
+    }
+
+    if (failedMessage !== null) {
+        pill.hidden = false;
+        pill.classList.add('is-failed');
+        pill.querySelector('.upload-pill-fill').style.width = '100%';
+        pill.querySelector('.upload-pill-text').textContent = failedMessage;
+        setUploadLocked(false);
+
+        uploadFailTimer = window.setTimeout(() => {
+            if (activeUploads.size === 0) {
+                pill.hidden = true;
+                pill.classList.remove('is-failed');
+            }
+        }, 4000);
+
+        return;
+    }
+
+    const progress = Math.max(...values);
+
+    pill.hidden = false;
+    pill.classList.remove('is-failed');
+    pill.querySelector('.upload-pill-fill').style.width = `${progress}%`;
+    pill.querySelector('.upload-pill-text').textContent = `Uploading photo… ${progress}% — please wait`;
+    setUploadLocked(true);
+}
+
+function watchUploadInput(input) {
+    if (input.dataset.uploadWatched) {
+        return;
+    }
+
+    input.dataset.uploadWatched = 'true';
+
+    input.addEventListener('livewire-upload-start', () => {
+        activeUploads.set(input, 0);
+        syncUploadPill();
+    });
+
+    input.addEventListener('livewire-upload-progress', (event) => {
+        const progress = event && event.detail && typeof event.detail.progress === 'number'
+            ? event.detail.progress
+            : 0;
+
+        activeUploads.set(input, progress);
+        syncUploadPill();
+    });
+
+    const done = () => {
+        activeUploads.delete(input);
+        syncUploadPill();
+    };
+
+    input.addEventListener('livewire-upload-finish', done);
+    input.addEventListener('livewire-upload-cancel', done);
+    input.addEventListener('livewire-upload-error', () => {
+        activeUploads.delete(input);
+        syncUploadPill('Upload failed — please try again');
+    });
+}
+
+function initUploadBridge() {
+    document.querySelectorAll('input[type="file"]').forEach(watchUploadInput);
+}
+
+function observeUploadInputs() {
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== 1) {
+                    continue;
+                }
+
+                if (node.matches?.('input[type="file"]')) {
+                    watchUploadInput(node);
+                }
+
+                node.querySelectorAll?.('input[type="file"]').forEach(watchUploadInput);
+            }
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function resetUploadBridge() {
+    activeUploads.clear();
+    syncUploadPill();
+}
+
 document.addEventListener('livewire:navigate', () => {
     destroyDataTables();
     destroyMaps();
     destroyPickers();
+    resetUploadBridge();
 });
 
 document.addEventListener('livewire:navigating', () => {
@@ -818,4 +956,5 @@ document.addEventListener('livewire:navigated', () => {
     initDataTables();
     initMaps();
     initInfiniteScroll();
+    initUploadBridge();
 });
