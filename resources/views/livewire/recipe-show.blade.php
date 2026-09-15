@@ -1,7 +1,7 @@
 <div>
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 text-center" data-reveal>
         <div class="relative mx-auto w-full bg-gradient-to-br from-brand-50 to-lime-100 rounded-3xl border border-stone-200 aspect-[16/9] overflow-hidden">
-            <img src="{{ str_replace('/storage/', '/public/storage/', $recipe->displayImageUrl()) }}" alt="{{ $recipe->title }}" class="absolute inset-0 w-full h-full object-cover">
+            <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" class="absolute inset-0 w-full h-full object-cover">
         </div>
 
         <div class="mt-6 flex justify-center">

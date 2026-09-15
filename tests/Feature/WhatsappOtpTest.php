@@ -22,12 +22,15 @@ test('otp is sent over whatsapp with the template payload', function () {
 
     $code = OtpCode::where('phone', '9876543210')->latest()->first()->code;
 
-    Http::assertSent(function (Request $request) use ($code) {
+    $template = config('services.aoc.whatsapp.template');
+
+    Http::assertSent(function (Request $request) use ($code, $template) {
         return $request->url() === 'https://api.aoc-portal.com/v1/whatsapp'
             && $request->header('apikey') === ['test-key']
             && $request['to'] === '+919876543210'
-            && $request['templateName'] === 'otp'
-            && $request['otp'] === $code
+            && $request['templateName'] === $template
+            && $request['components']['body']['params'] === [$code]
+            && ! isset($request['otp'])
             && $request['type'] === 'template';
     });
 });

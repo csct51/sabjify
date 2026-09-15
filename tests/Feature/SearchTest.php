@@ -77,3 +77,16 @@ test('search shows total result count independent of the loaded page', function 
         ->assertSet('items', fn ($items) => $items->count() === 12)
         ->assertSet('totalResults', 14);
 });
+
+test('search has no load more button and shows an end of list line', function () {
+    $category = Category::factory()->create();
+    Product::factory()->count(14)->create(['name' => 'Mango Y', 'category_id' => $category->id]);
+
+    Livewire::test(Search::class)
+        ->set('search', 'mango')
+        ->assertDontSee('Load more')
+        ->assertSee('data-infinite-sentinel', false)
+        ->call('loadMore')
+        ->assertDontSee('Load more')
+        ->assertSee('Showing all 14 items');
+});

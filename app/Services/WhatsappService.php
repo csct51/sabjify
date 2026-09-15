@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Log;
 class WhatsappService
 {
     /**
-     * Send an OTP over WhatsApp via the AOC template API.
+     * Send an OTP over WhatsApp via the AOC template API, using the
+     * components/body-params template pattern ("your otp for sabjify
+     * is {{1}}", single param = the code).
      *
      * No-op when no API key is configured (local/dev log-only mode).
      *
@@ -35,7 +37,11 @@ class WhatsappService
                     'campaignName' => $config['campaign'],
                     'to' => $to,
                     'templateName' => $config['template'],
-                    'otp' => $code,
+                    'components' => [
+                        'body' => [
+                            'params' => [$code],
+                        ],
+                    ],
                     'type' => 'template',
                     'language' => ['code' => $config['language']],
                 ]);

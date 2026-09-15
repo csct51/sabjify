@@ -4,7 +4,7 @@
     @php($displayPrice = $pivotUnit?->price ?? $product->units->first()?->price ?? $product->price)
 
     <span class="relative flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
-        <img src="{{ str_replace('/storage/', '/public/storage/', $product->displayImageUrl()) }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
+        <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
     </span>
 
     <div class="flex-1 min-w-0">

@@ -567,6 +567,120 @@ function destroyMaps() {
     document.querySelectorAll('[data-leaflet-map]').forEach(destroyMap);
 }
 
+let infiniteObserver;
+
+function sentinelComponentWire(element) {
+    const root = element.closest('[wire\\:id]');
+
+    if (! root || ! window.Livewire) {
+        return null;
+    }
+
+    try {
+        return window.Livewire.find(root.getAttribute('wire:id')) ?? null;
+    } catch (error) {
+        return null;
+    }
+}
+
+function initInfiniteScroll() {
+    if (! infiniteObserver) {
+        infiniteObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                const el = entry.target;
+
+                if (! entry.isIntersecting) {
+                    delete el.dataset.infiniteFired;
+
+                    const root = el.closest('[wire\\:id]');
+
+                    if (root) {
+                        delete root.dataset.infiniteBusy;
+                    }
+
+                    return;
+                }
+
+                if (el.dataset.infiniteFired) {
+                    return;
+                }
+
+                const now = Date.now();
+
+                if (el.dataset.infiniteAt && now - Number(el.dataset.infiniteAt) < 2000) {
+                    return;
+                }
+
+                const wire = sentinelComponentWire(el);
+
+                if (! wire) {
+                    return;
+                }
+
+                const wireRoot = el.closest('[wire\\:id]');
+
+                if (wireRoot && wireRoot.dataset.infiniteBusy) {
+                    return;
+                }
+
+                let hasMore = true;
+                let loadingMore = false;
+
+                try {
+                    hasMore = wire.get('hasMore') !== false;
+                    loadingMore = wire.get('loadingMore') === true;
+                } catch (error) {
+                    return;
+                }
+
+                if (! hasMore || loadingMore) {
+                    return;
+                }
+
+                el.dataset.infiniteFired = 'true';
+                el.dataset.infiniteAt = String(now);
+
+                if (wireRoot) {
+                    wireRoot.dataset.infiniteBusy = 'true';
+                }
+
+                wire.call('loadMore');
+            });
+        }, { rootMargin: '0px 0px 200px 0px' });
+    }
+
+    document.querySelectorAll('[data-infinite-sentinel]:not([data-infinite-armed])').forEach((el) => {
+        el.dataset.infiniteArmed = 'true';
+        infiniteObserver.observe(el);
+    });
+}
+
+function observeInfiniteSentinels() {
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== 1) {
+                    continue;
+                }
+
+                if (node.matches?.('[data-infinite-sentinel]') || node.querySelector?.('[data-infinite-sentinel]')) {
+                    initInfiniteScroll();
+
+                    return;
+                }
+            }
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function releaseInfiniteBusy() {
+    document.querySelectorAll('[wire\\:id][data-infinite-busy]').forEach((node) => {
+        delete node.dataset.infiniteBusy;
+    });
+}
+
 function destroyPickers(root = document) {
     const nodes = [];
 
@@ -640,6 +754,8 @@ document.addEventListener('livewire:init', () => {
     initDataTables();
     initMaps();
     observeMaps();
+    initInfiniteScroll();
+    observeInfiniteSentinels();
     animatePageEnter();
 
     Livewire.hook('morph.removed', ({ el }) => {
@@ -653,6 +769,7 @@ document.addEventListener('livewire:init', () => {
     Livewire.hook('morphed', () => {
         initDataTables();
         initMaps();
+        releaseInfiniteBusy();
     });
 
     Livewire.interceptMessage(({ message, onFinish }) => {
@@ -673,11 +790,13 @@ document.addEventListener('livewire:init', () => {
         renderIcons();
         initReveals();
         initMaps();
+        initInfiniteScroll();
     });
     Livewire.hook('morph.updated', () => {
         renderIcons();
         initReveals();
         initMaps();
+        initInfiniteScroll();
     });
 });
 
@@ -698,4 +817,5 @@ document.addEventListener('livewire:navigated', () => {
     initReveals();
     initDataTables();
     initMaps();
+    initInfiniteScroll();
 });

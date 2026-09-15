@@ -33,7 +33,7 @@
 >
     <div class="p-4 pb-0">
         <a href="{{ route('baskets.show', $basket) }}" wire:navigate class="relative block aspect-[4/3] overflow-hidden rounded-xl">
-            <img src="{{ str_replace('/storage/', '/public/storage/', $basket->displayImageUrl()) }}" alt="{{ $basket->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $basket->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+            <img src="{{ $basket->displayImageUrl() }}" alt="{{ $basket->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $basket->imageFit() }} transition-transform duration-300 group-hover:scale-105">
 
             @if ($basket->discountPercent() > 0)
                 <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">{{ $basket->discountPercent() }}% OFF</span>

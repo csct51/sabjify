@@ -31,7 +31,7 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 grid grid-cols-1 lg:grid-cols-[170px_1fr] gap-8">
-        <aside data-reveal class="block sticky top-20 z-30 -mx-4 px-4 pt-2 pb-2 bg-[#F7F8F5]/70 backdrop-blur-md lg:mx-0 lg:px-0 lg:pt-0 lg:pb-0 lg:bg-transparent lg:static">
+        <aside class="block sticky top-20 z-30 -mx-4 px-4 pt-2 pb-2 bg-[#F7F8F5]/70 backdrop-blur-md lg:mx-0 lg:px-0 lg:pt-0 lg:pb-0 lg:bg-transparent lg:static">
             <div class="lg:sticky lg:top-24">
             <div>
                 <h2 class="text-xs font-semibold text-stone-900 uppercase tracking-wide mb-3">Categories</h2>
@@ -113,7 +113,7 @@
                             >
                                 <span class="w-12 h-12 lg:w-16 lg:h-16 rounded bg-gradient-to-br from-brand-50 to-lime-100 shrink-0 overflow-hidden">
                                     @if ($cat->image)
-                                        <img src="{{ str_replace('/storage/', '/public/storage/', $cat->imageUrl()) }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
+                                        <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover">
                                     @endif
                                 </span>
                                 <span class="text-xs font-medium leading-tight line-clamp-1">{{ $cat->name }}</span>
@@ -156,7 +156,7 @@
             </div>
         </aside>
 
-        <div data-reveal class="relative min-h-[240px]">
+        <div class="relative min-h-[240px]">
             @if ($this->items->isEmpty())
                 <div class="text-center py-20">
                     <span class="inline-flex items-center justify-center w-16 h-16 mx-auto rounded-2xl bg-brand-50 text-brand-600"><i data-lucide="shopping-basket" class="w-8 h-8"></i></span>
@@ -172,19 +172,11 @@
                 </div>
 
                 @if ($this->hasMore)
-                    <div
-                        x-data="{ sent: false }"
-                        x-intersect.full.margin.0px.0px.200px="if (!sent && $wire.hasMore && !$wire.loadingMore) { sent = true; $wire.loadMore(); }"
-                        class="mt-8 flex justify-center"
-                    >
+                    <div data-infinite-sentinel class="mt-8 flex justify-center">
                         <x-loading-spinner wire:loading wire:target="loadMore" class="w-6 h-6 text-brand-600" />
                     </div>
-
-                    <div class="mt-4 flex justify-center" wire:loading.remove wire:target="loadMore">
-                        <button type="button" wire:click="loadMore" class="rounded-xl border border-stone-300 text-stone-600 px-5 py-2.5 text-sm font-medium hover:bg-stone-50 transition">
-                            Load more
-                        </button>
-                    </div>
+                @elseif ($this->items->isNotEmpty())
+                    <p class="mt-8 text-center text-xs text-stone-400">Showing all {{ $this->resultCount() }} items</p>
                 @endif
             @endif
         </div>

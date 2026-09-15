@@ -68,6 +68,11 @@ new #[Layout('layouts.store')]
             </div>
 
             <div>
+                <h2 class="text-base font-semibold text-stone-900 mb-2">5. Account Deletion</h2>
+                <p>To delete your account contact us to this number - +918839827923.</p>
+            </div>
+
+            <div>
                 <h2 class="text-base font-semibold text-stone-900 mb-2">6. Acceptable Use</h2>
                 <p>You agree not to misuse the service, including attempting to interfere with its operation, submitting false orders, or using the service for any unlawful purpose.</p>
             </div>

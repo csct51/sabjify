@@ -1,11 +1,11 @@
 <div>
     <section class="md:hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <img src="{{ asset('public/storage/heroes/2.jpg') }}" alt="Fresh fruits and vegetables" class="w-full h-auto block rounded-3xl">
+        <img src="{{ asset('storage/heroes/2.jpg') }}" alt="Fresh fruits and vegetables" class="w-full h-auto block rounded-3xl">
     </section>
 
     <section class="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div class="relative bg-brand-600 text-white overflow-hidden rounded-3xl">
-            <img src="{{ asset('public/storage/heroes/hero09.jpg') }}" alt="Fresh fruits and vegetables" class="w-full h-auto block">
+            <img src="{{ asset('storage/heroes/hero09.jpg') }}" alt="Fresh fruits and vegetables" class="w-full h-auto block">
             <div class="absolute inset-0 bg-gradient-to-r from-stone-950/55 via-stone-950/25 to-transparent"></div>
             <div class="absolute inset-0 flex items-center px-5 sm:px-10 lg:px-14">
                 <div class="max-w-xl">
@@ -36,7 +36,7 @@
             @foreach ($this->categories as $category)
                 <a href="{{ route('shop', ['category' => $category->slug]) }}" wire:navigate class="group text-center">
                     <div class="relative w-full aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 to-lime-100 group-hover:shadow-md group-hover:-translate-y-0.5 transition-all duration-300">
-                        <img src="{{ str_replace('/storage/', '/public/storage/', $category->imageUrl()) }}" alt="{{ $category->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+                        <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
                     </div>
                     <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 truncate">{{ $category->name }}</p>
                 </a>
@@ -141,7 +141,7 @@ A pre-designed vegetables and fruits baskets to make sure you don’t miss on yo
                     <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                         <div class="p-3 pb-0">
                             <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
-                                <img src="{{ str_replace('/storage/', '/public/storage/', $recipe->displayImageUrl()) }}" alt="{{ $recipe->title }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $recipe->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+                                <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $recipe->imageFit() }} transition-transform duration-300 group-hover:scale-105">
                             </div>
                         </div>
                         <div class="p-4">

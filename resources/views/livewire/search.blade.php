@@ -54,18 +54,11 @@
                 </div>
 
             @if ($this->hasMore)
-                <div
-                    x-intersect.full.margin.0px.0px.200px="$wire.loadMore()"
-                    class="mt-8 flex justify-center"
-                >
+                <div data-infinite-sentinel class="mt-8 flex justify-center">
                     <x-loading-spinner wire:loading wire:target="loadMore" class="w-6 h-6 text-brand-600" />
                 </div>
-
-                <div class="mt-4 flex justify-center" wire:loading.remove wire:target="loadMore">
-                    <button type="button" wire:click="loadMore" class="rounded-xl border border-stone-300 text-stone-600 px-5 py-2.5 text-sm font-medium hover:bg-stone-50 transition">
-                        Load more
-                    </button>
-                </div>
+            @elseif ($this->items->isNotEmpty())
+                <p class="mt-8 text-center text-xs text-stone-400">Showing all {{ $this->totalResults() }} items</p>
             @endif
             </div>
         @endif

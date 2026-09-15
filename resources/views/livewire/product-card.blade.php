@@ -1,7 +1,7 @@
 <div class="group bg-white rounded-2xl border border-stone-200 hover:border-brand-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 overflow-hidden flex flex-col" wire:key="product-{{ $product->id }}">
     <div class="p-3 pb-0">
         <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="relative block aspect-[4/3] overflow-hidden rounded-xl">
-            <img src="{{ str_replace('/storage/', '/public/storage/', $product->displayImageUrl()) }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $product->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+            <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $product->imageFit() }} transition-transform duration-300 group-hover:scale-105">
 
             @if ($product->discountPercent() > 0)
                 <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">{{ $product->discountPercent() }}% OFF</span>

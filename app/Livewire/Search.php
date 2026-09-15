@@ -91,7 +91,16 @@ class Search extends Component
 
         $this->total = $result['total'];
         $this->hasMore = $result['hasMore'];
-        $this->items = Collection::make(array_merge($this->items->all(), $result['items']->all()));
+
+        // Keyed merge: overlapping responses (rapid auto-load) collapse
+        // instead of duplicating or dropping items.
+        $merged = [];
+
+        foreach (array_merge($this->items->all(), $result['items']->all()) as $item) {
+            $merged[$item->getKey()] = $item;
+        }
+
+        $this->items = Collection::make(array_values($merged));
     }
 
     private function resetItems(): void

@@ -15,20 +15,20 @@
                 <div class="relative bg-gradient-to-br from-brand-50 to-lime-100 rounded-3xl border border-stone-200 aspect-square overflow-hidden">
                     <div class="absolute inset-0 flex transition-transform duration-300" :style="`transform: translateX(-${active * 100}%)`">
                         <div class="relative w-full h-full shrink-0">
-                            <img src="{{ str_replace('/storage/', '/public/storage/', $product->displayImageUrl()) }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full {{ $product->imageFit() }}">
+                            <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="absolute inset-0 w-full h-full {{ $product->imageFit() }}">
                         </div>
                         <div class="relative w-full h-full shrink-0">
-                            <img src="{{ asset('public/storage/products/last-image.jpg') }}" alt="Store information" class="absolute inset-0 w-full h-full object-contain p-4">
+                            <img src="{{ asset('storage/products/last-image.jpg') }}" alt="Store information" class="absolute inset-0 w-full h-full object-contain p-4">
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-3 flex items-center justify-center gap-3">
                     <button type="button" @click="active = 0" :class="active === 0 ? 'ring-2 ring-brand-600 opacity-100 shadow-md' : 'ring-2 ring-brand-200'" class="w-16 h-16 rounded-xl overflow-hidden border border-brand-600 bg-brand-50 transition" aria-label="Show product image">
-                        <img src="{{ str_replace('/storage/', '/public/storage/', $product->displayImageUrl()) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                        <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                     </button>
                     <button type="button" @click="active = 1" :class="active === 1 ? 'ring-2 ring-brand-600 opacity-100 shadow-md' : 'ring-2 ring-brand-200'" class="w-16 h-16 rounded-xl overflow-hidden border border-brand-600 bg-brand-50 transition" aria-label="Show store information">
-                        <img src="{{ asset('public/storage/products/last-image.jpg') }}" alt="Store information" class="w-full h-full object-contain">
+                        <img src="{{ asset('storage/products/last-image.jpg') }}" alt="Store information" class="w-full h-full object-contain">
                     </button>
                 </div>
             </div>

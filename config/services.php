@@ -32,9 +32,9 @@ return [
         'whatsapp' => [
             'base_url' => env('AOC_WHATSAPP_URL', 'https://api.aoc-portal.com/v1/whatsapp'),
             'key' => env('AOC_WHATSAPP_KEY'),
-            'from' => env('AOC_WHATSAPP_FROM', '+918103353445'),
+            'from' => env('AOC_WHATSAPP_FROM', '+918839827923'),
             'campaign' => env('AOC_WHATSAPP_CAMPAIGN', 'api-test'),
-            'template' => env('AOC_WHATSAPP_TEMPLATE', 'otp'),
+            'template' => env('AOC_WHATSAPP_TEMPLATE', 'hello_message'),
             'language' => env('AOC_WHATSAPP_LANGUAGE', 'en'),
         ],
     ],

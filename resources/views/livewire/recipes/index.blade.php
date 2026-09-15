@@ -14,7 +14,7 @@
                 <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                     <div class="p-4 pb-0">
                         <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
-                            <img src="{{ str_replace('/storage/', '/public/storage/', $recipe->displayImageUrl()) }}" alt="{{ $recipe->title }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $recipe->imageFit() }} transition-transform duration-300 group-hover:scale-105">
+                            <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $recipe->imageFit() }} transition-transform duration-300 group-hover:scale-105">
                         </div>
                     </div>
                     <div class="p-4">

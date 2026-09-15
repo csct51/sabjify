@@ -101,3 +101,34 @@ test('shop resets pagination when a filter is applied', function () {
         ->assertSet('items', fn ($items) => $items->count() === 1)
         ->assertSet('hasMore', false);
 });
+
+test('shop has no load more button and shows an end of list line', function () {
+    Category::factory()->create();
+    Product::factory()->count(14)->create();
+
+    Livewire::test(Shop::class)
+        ->assertDontSee('Load more')
+        ->assertSee('data-infinite-sentinel', false)
+        ->call('loadMore')
+        ->assertDontSee('Load more')
+        ->assertSee('Showing all 14 items');
+});
+
+test('shop grid never hides behind the reveal system', function () {
+    Category::factory()->create();
+    Product::factory()->count(3)->create();
+
+    Livewire::test(Shop::class)->assertDontSee('data-reveal');
+});
+
+test('shop repeated loads stay unique', function () {
+    Category::factory()->create();
+    Product::factory()->count(30)->create();
+
+    Livewire::test(Shop::class)
+        ->call('loadMore')
+        ->call('loadMore')
+        ->assertSet('items', fn ($items) => $items->count() === 30
+            && $items->pluck('id')->unique()->count() === 30)
+        ->assertSet('hasMore', false);
+});
