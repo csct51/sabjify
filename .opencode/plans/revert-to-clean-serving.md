@@ -86,4 +86,6 @@ from disk by code) answers what static serving cannot reach.
 2. Server `.env` bare as above; delete `bootstrap/cache/config.php` if present.
 3. Hard-refresh; open one product image (unprefixed address, loading).
 
-## Status: SAVED (execute code + htaccess edit on owner "go")
+## Status: EXECUTED (verified 2026-09-15: zero-remnant sweep empty across
+## views/models/configs/tests; suite 460/460 green; prefix revert committed
+## as a196c20; htaccess one-word edit committed; owner deploy steps pending)
