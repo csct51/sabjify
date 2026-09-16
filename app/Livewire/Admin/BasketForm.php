@@ -134,8 +134,9 @@ class BasketForm extends Component
     {
         $base = $product->baseUnit();
         $selectedId = $this->productUnitIds[$product->id] ?? null;
+        $unitsByName = $this->unitsByName;
 
-        return $product->units->filter(function ($unit) use ($base, $selectedId, $includeSelected) {
+        return $product->units->filter(function ($unit) use ($base, $selectedId, $includeSelected, $unitsByName) {
             if ($includeSelected && $selectedId !== null && (int) $unit->id === (int) $selectedId) {
                 return true;
             }
@@ -144,8 +145,70 @@ class BasketForm extends Component
                 return true;
             }
 
-            return Unit::where('name', $unit->unit)->value('base_unit') === $base;
+            return ($unitsByName[$unit->unit] ?? null)?->base_unit === $base;
         })->values();
+    }
+
+    /**
+     * Unit rows keyed by name, loaded once per request so unit math never
+     * hits the database row-by-row.
+     *
+     * @return Collection<string, Unit>
+     */
+    #[Computed]
+    public function unitsByName(): Collection
+    {
+        return Unit::ordered()->get()->keyBy('name');
+    }
+
+    /**
+     * Stable unit facts per selected product (purchase unit, quantity input
+     * placeholder/hint, integer-only flag), resolved once from unitsByName.
+     *
+     * @return array<int, array{purchase_unit: string, qty_placeholder: string, qty_hint: string, integer_only: bool}>
+     */
+    #[Computed]
+    public function basketUnitContext(): array
+    {
+        $unitsByName = $this->unitsByName;
+        $purchaseRows = $unitsByName->filter(fn (Unit $unit) => $unit->is_base && is_string($unit->purchase_unit) && $unit->purchase_unit !== '');
+        $context = [];
+
+        foreach ($this->selectedProducts() as $product) {
+            $base = $product->baseUnit();
+            $baseRow = $base !== null ? ($unitsByName[$base] ?? null) : null;
+
+            if ($baseRow !== null && $baseRow->is_base && is_string($baseRow->purchase_unit) && $baseRow->purchase_unit !== '') {
+                $purchaseUnit = $baseRow->purchase_unit;
+            } elseif ($base !== null) {
+                $purchaseUnit = $base;
+            } else {
+                $name = strtolower($product->units->first()?->unit ?? $product->unit);
+                $purchaseUnit = str_contains($name, 'kg') || str_contains($name, 'g') ? 'kg' : 'piece';
+            }
+
+            $purchaseRow = $purchaseRows->first(fn (Unit $unit) => $unit->purchase_unit === $purchaseUnit);
+            $integerOnly = $purchaseRow !== null ? (bool) $purchaseRow->integer_only : strtolower($purchaseUnit) === 'piece';
+            $plural = Str::plural($purchaseUnit);
+            $hintBase = $purchaseRow?->name;
+
+            $qtyHint = $integerOnly
+                ? "Whole {$plural} only."
+                : "Enter {$purchaseUnit} — decimals allowed.";
+
+            if (! $integerOnly && is_string($hintBase) && $hintBase !== '' && strcasecmp($hintBase, $purchaseUnit) !== 0) {
+                $qtyHint = "Enter {$purchaseUnit} — e.g. 0.5 = 500 {$hintBase}.";
+            }
+
+            $context[$product->id] = [
+                'purchase_unit' => $purchaseUnit,
+                'integer_only' => $integerOnly,
+                'qty_placeholder' => $integerOnly ? 'e.g. 2' : 'e.g. 0.5',
+                'qty_hint' => $qtyHint,
+            ];
+        }
+
+        return $context;
     }
 
     /**
@@ -172,9 +235,8 @@ class BasketForm extends Component
     /**
      * Compose the stored pivot unit for a custom qty ("0.5 kg", "2 kg").
      */
-    private function composeCustomUnit(Product $product, float $qty): string
+    private function composeCustomUnit(string $purchaseUnit, float $qty): string
     {
-        $purchaseUnit = $product->purchaseUnit();
         $display = rtrim(rtrim(number_format($qty, 3, '.', ''), '0'), '.') ?: '0';
 
         return "{$display} {$purchaseUnit}";
@@ -385,10 +447,12 @@ class BasketForm extends Component
 
             $customQty = $this->productCustomQtys[$productId] ?? null;
             $customQty = ($customQty !== null && $customQty !== '') ? (float) $customQty : null;
+            $unitContext = $this->basketUnitContext[$productId] ?? null;
+            $purchaseUnit = $unitContext['purchase_unit'] ?? $product->purchaseUnit();
 
-            if ($customQty !== null && Unit::integerOnlyFor($product->purchaseUnit()) && floor($customQty) != $customQty) {
+            if ($customQty !== null && ($unitContext['integer_only'] ?? Unit::integerOnlyFor($purchaseUnit)) && floor($customQty) != $customQty) {
                 throw ValidationException::withMessages([
-                    "productCustomQtys.{$productId}" => 'Custom qty must be a whole number for '.$product->purchaseUnit().'.',
+                    "productCustomQtys.{$productId}" => 'Custom qty must be a whole number for '.$purchaseUnit.'.',
                 ]);
             }
 
@@ -398,7 +462,7 @@ class BasketForm extends Component
             if ($customQty !== null) {
                 $sync[$productId] = [
                     'product_unit_id' => null,
-                    'unit' => $this->composeCustomUnit($product, $customQty),
+                    'unit' => $this->composeCustomUnit($purchaseUnit, $customQty),
                     'price' => $customPrice ?? $product->units->first()?->price ?? $product->price,
                 ];
 

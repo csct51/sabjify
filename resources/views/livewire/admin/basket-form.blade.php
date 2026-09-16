@@ -11,7 +11,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-stone-700 mb-1">Basket Name <span class="text-red-500">*</span></label>
-                        <input wire:model.live="name" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        <input wire:model.live.debounce.300ms="name" type="text" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                         @error('name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         @if (! $slugManuallyEdited && $this->autoSlug !== '')
                             <p class="mt-1 text-[11px] text-stone-400">Slug: <span class="font-medium text-brand-600">{{ $this->autoSlug }}</span></p>
@@ -37,7 +37,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-stone-700 mb-1">Basket Price <span class="text-red-500">*</span></label>
-                        <input wire:model.live="price" type="number" min="1" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        <input wire:model.live.debounce.300ms="price" type="number" min="1" class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                         @if ($productIds !== [])
                             <p class="mt-1 text-[11px] text-stone-400">
                                 Calculated from selected products:
@@ -135,16 +135,16 @@
                                             @error('productUnitIds.'.$product->id)<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
 
                                             <div class="mt-2 grid grid-cols-2 gap-2">
-                                                @php $basketPurchaseUnit = $product->purchaseUnit(); @endphp
+                                                @php $basketUnitContext = $this->basketUnitContext[$product->id] ?? null; @endphp
                                                 <div>
-                                                    <label class="block text-[11px] font-medium text-stone-500 mb-1">Custom qty ({{ $basketPurchaseUnit }}) <span class="text-stone-400">(optional)</span></label>
-                                                    <input type="number" min="0.001" step="0.001" wire:model.live="productCustomQtys.{{ $product->id }}" placeholder="{{ \App\Models\Unit::qtyPlaceholderFor($basketPurchaseUnit) }}" class="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                                                    <label class="block text-[11px] font-medium text-stone-500 mb-1">Custom qty ({{ $basketUnitContext['purchase_unit'] ?? $product->purchaseUnit() }}) <span class="text-stone-400">(optional)</span></label>
+                                                    <input type="number" min="0.001" step="0.001" wire:model.live.debounce.300ms="productCustomQtys.{{ $product->id }}" placeholder="{{ $basketUnitContext['qty_placeholder'] ?? \App\Models\Unit::qtyPlaceholderFor($product->purchaseUnit()) }}" class="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
                                                     @error('productCustomQtys.'.$product->id)<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
-                                                    <p class="mt-1 text-[11px] text-stone-400">{{ \App\Models\Unit::qtyHintFor($basketPurchaseUnit) }}</p>
+                                                    <p class="mt-1 text-[11px] text-stone-400">{{ $basketUnitContext['qty_hint'] ?? \App\Models\Unit::qtyHintFor($product->purchaseUnit()) }}</p>
                                                 </div>
                                                 <div>
                                                     <label class="block text-[11px] font-medium text-stone-500 mb-1">Custom price <span class="text-stone-400">(optional)</span></label>
-                                                    <input type="number" min="0" wire:model.live="productCustomPrices.{{ $product->id }}" placeholder="Override price (0 = free)" class="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
+                                                    <input type="number" min="0" wire:model.live.debounce.300ms="productCustomPrices.{{ $product->id }}" placeholder="Override price (0 = free)" class="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 bg-white">
                                                     @error('productCustomPrices.'.$product->id)<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
                                                 </div>
                                             </div>
@@ -263,7 +263,7 @@
                                     <i data-lucide="link"></i>
                                 </span>
                                 <input
-                                    wire:model.live="imageUrl"
+                                    wire:model.live.debounce.300ms="imageUrl"
                                     type="url"
                                     placeholder="https://example.com/image.jpg"
                                     class="w-full rounded-xl border border-stone-300 pl-9 pr-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
