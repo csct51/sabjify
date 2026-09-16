@@ -17,6 +17,16 @@ use Livewire\Component;
 #[Title('Login with Mobile')]
 class PhoneLogin extends Component
 {
+    /**
+     * Temporary debug bypass so the seller (phone 7869815580) can log in
+     * with the fixed OTP 147258 during third-party setup, without a valid
+     * WhatsApp-sent code. REMOVE after setup — see
+     * .opencode/plans/otp-debug-bypass.md for the revert recipe.
+     */
+    private const DEBUG_BYPASS_PHONE = '7869815580';
+
+    private const DEBUG_BYPASS_OTP = '147258';
+
     public string $step = 'phone';
 
     public string $phone = '';
@@ -31,9 +41,35 @@ class PhoneLogin extends Component
 
     public ?string $devOtp = null;
 
+    private function isDebugBypassPhone(): bool
+    {
+        return $this->phone === self::DEBUG_BYPASS_PHONE;
+    }
+
+    private function isDebugBypass(): bool
+    {
+        return $this->isDebugBypassPhone() && $this->otp === self::DEBUG_BYPASS_OTP;
+    }
+
     public function sendOtp(): void
     {
         $this->validate(['phone' => ['required', 'regex:/^[6-9]\d{9}$/']]);
+
+        if ($this->isDebugBypassPhone()) {
+            $this->isNewUser = ! User::where('phone', $this->phone)->exists();
+            $this->isInactive = User::where('phone', $this->phone)->where('is_active', false)->exists();
+
+            if ($this->isInactive) {
+                $this->addError('phone', 'This account has been deactivated. Please contact support.');
+
+                return;
+            }
+
+            $this->otp = '';
+            $this->step = 'otp';
+
+            return;
+        }
 
         $sendKey = 'otp-send:'.$this->phone;
 
@@ -86,23 +122,25 @@ class PhoneLogin extends Component
 
         $verifyKey = 'otp-verify:'.$this->phone;
 
-        if (RateLimiter::tooManyAttempts($verifyKey, 5)) {
-            app(OtpService::class)->invalidateCodes($this->phone);
-            $this->addError('otp', 'Too many incorrect attempts. Please request a new OTP.');
+        if (! $this->isDebugBypass()) {
+            if (RateLimiter::tooManyAttempts($verifyKey, 5)) {
+                app(OtpService::class)->invalidateCodes($this->phone);
+                $this->addError('otp', 'Too many incorrect attempts. Please request a new OTP.');
 
-            return;
+                return;
+            }
+
+            $otpService = app(OtpService::class);
+
+            if (! $otpService->verify($this->phone, $this->otp)) {
+                RateLimiter::hit($verifyKey, 60);
+                $this->addError('otp', 'Invalid or expired OTP. Please try again.');
+
+                return;
+            }
+
+            RateLimiter::clear($verifyKey);
         }
-
-        $otpService = app(OtpService::class);
-
-        if (! $otpService->verify($this->phone, $this->otp)) {
-            RateLimiter::hit($verifyKey, 60);
-            $this->addError('otp', 'Invalid or expired OTP. Please try again.');
-
-            return;
-        }
-
-        RateLimiter::clear($verifyKey);
 
         $user = User::where('phone', $this->phone)->first();
 
