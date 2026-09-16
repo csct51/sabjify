@@ -758,6 +758,7 @@ document.addEventListener('livewire:init', () => {
     observeInfiniteSentinels();
     initUploadBridge();
     observeUploadInputs();
+    initAutoCarousels();
     animatePageEnter();
 
     Livewire.hook('morph.removed', ({ el }) => {
@@ -793,12 +794,14 @@ document.addEventListener('livewire:init', () => {
         initReveals();
         initMaps();
         initInfiniteScroll();
+        initAutoCarousels();
     });
     Livewire.hook('morph.updated', () => {
         renderIcons();
         initReveals();
         initMaps();
         initInfiniteScroll();
+        initAutoCarousels();
     });
 });
 
@@ -937,10 +940,252 @@ function resetUploadBridge() {
     syncUploadPill();
 }
 
+const autoCarousels = new Map();
+
+const AUTO_CAROUSEL_INTERVAL = 3000;
+const AUTO_CAROUSEL_HOLD_MS = 6000;
+
+function destroyAutoCarousel(root) {
+    const state = autoCarousels.get(root);
+
+    if (state) {
+        window.clearInterval(state.timer);
+        autoCarousels.delete(root);
+    }
+
+    delete root.dataset.carouselArmed;
+}
+
+function destroyAutoCarousels() {
+    Array.from(autoCarousels.keys()).forEach(destroyAutoCarousel);
+}
+
+function scrollCarouselTo(track, target, smooth) {
+    const left = target.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft;
+
+    track.scrollTo({ left, behavior: smooth ? 'smooth' : 'auto' });
+}
+
+const CAROUSEL_DOT_ACTIVE = 'h-1.5 rounded-full transition-all bg-brand-600 w-5';
+const CAROUSEL_DOT_IDLE = 'h-1.5 rounded-full transition-all bg-stone-300 w-1.5';
+
+function paintCarouselDots(root, index) {
+    root.querySelectorAll('[data-carousel-dot]').forEach((dot) => {
+        dot.className = Number(dot.getAttribute('data-carousel-dot')) === index
+            ? CAROUSEL_DOT_ACTIVE
+            : CAROUSEL_DOT_IDLE;
+    });
+}
+
+function refreshCarouselChrome(root, track) {
+    const hide = track.scrollWidth <= track.clientWidth + 4;
+
+    root.querySelectorAll('[data-carousel-prev], [data-carousel-next], [data-carousel-dots]').forEach((el) => {
+        el.style.display = hide ? 'none' : '';
+    });
+
+    return ! hide;
+}
+
+function carouselTick(root) {
+    const state = autoCarousels.get(root);
+
+    if (! state) {
+        return;
+    }
+
+    if (! document.contains(root)) {
+        destroyAutoCarousel(root);
+
+        return;
+    }
+
+    if (document.hidden) {
+        return;
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+
+    if (Date.now() < state.holdUntil) {
+        return;
+    }
+
+    const track = root.querySelector('[data-carousel-track]');
+
+    if (! track) {
+        return;
+    }
+
+    refreshCarouselChrome(root, track);
+    carouselNext(root);
+}
+
+function initAutoCarousels() {
+    document.querySelectorAll('[data-auto-carousel]').forEach((root) => {
+        const track = root.querySelector('[data-carousel-track]');
+
+        if (! track) {
+            return;
+        }
+
+        let state = autoCarousels.get(root);
+
+        if (! state) {
+            state = { index: 0, holdUntil: 0, timer: null, count: 0, listened: null };
+
+            state.timer = window.setInterval(() => {
+                carouselTick(root);
+            }, AUTO_CAROUSEL_INTERVAL);
+
+            root.addEventListener('click', (event) => {
+                if (! autoCarousels.get(root)) {
+                    return;
+                }
+
+                if (event.target.closest('[data-carousel-prev]')) {
+                    carouselPrev(root);
+                } else if (event.target.closest('[data-carousel-next]')) {
+                    carouselNext(root);
+                } else {
+                    const dot = event.target.closest('[data-carousel-dot]');
+
+                    if (dot) {
+                        carouselGoTo(root, Number(dot.getAttribute('data-carousel-dot')), true);
+                    }
+                }
+            });
+
+            autoCarousels.set(root, state);
+            root.dataset.carouselArmed = 'true';
+        }
+
+        if (state.listened !== track) {
+            const hold = () => {
+                state.holdUntil = Date.now() + AUTO_CAROUSEL_HOLD_MS;
+            };
+
+            // Bounded holds only: a parked cursor resumes on its own instead
+            // of freezing the carousel indefinitely (desktop-only symptom).
+            track.addEventListener('pointerdown', hold, { passive: true });
+            track.addEventListener('touchstart', hold, { passive: true });
+            track.addEventListener('wheel', hold, { passive: true });
+            track.addEventListener('pointermove', hold, { passive: true });
+            track.addEventListener('mouseleave', () => {
+                state.holdUntil = 0;
+            });
+
+            // Active dot follows the leftmost visible card.
+            let visibleRaf = 0;
+
+            track.addEventListener('scroll', () => {
+                if (visibleRaf) {
+                    return;
+                }
+
+                visibleRaf = requestAnimationFrame(() => {
+                    visibleRaf = 0;
+
+                    const current = autoCarousels.get(root);
+
+                    if (! current) {
+                        return;
+                    }
+
+                    const live = root.querySelector('[data-carousel-track]');
+
+                    if (! live) {
+                        return;
+                    }
+
+                    const trackRect = live.getBoundingClientRect();
+                    const kids = live.children;
+
+                    for (let k = 0; k < kids.length; k++) {
+                        const node = kids[k];
+
+                        if (node.nodeType !== 1) {
+                            continue;
+                        }
+
+                        if (node.getBoundingClientRect().right > trackRect.left + 8) {
+                            if (k >= 0 && k < current.count) {
+                                current.index = k;
+                                paintCarouselDots(root, k);
+                            }
+
+                            return;
+                        }
+                    }
+                });
+            }, { passive: true });
+
+            state.listened = track;
+        }
+
+        state.count = Array.from(track.children).filter((node) => node.nodeType === 1).length;
+
+        if (state.count >= 2) {
+            state.index = Math.min(state.index, state.count - 1);
+            paintCarouselDots(root, state.index);
+        }
+
+        refreshCarouselChrome(root, track);
+    });
+}
+
+function carouselGoTo(root, index, smooth) {
+    const state = autoCarousels.get(root);
+    const track = root.querySelector('[data-carousel-track]');
+
+    if (! state || ! track || state.count < 2) {
+        return;
+    }
+
+    state.index = ((index % state.count) + state.count) % state.count;
+    state.holdUntil = Date.now() + AUTO_CAROUSEL_HOLD_MS;
+    scrollCarouselTo(track, track.children[state.index], smooth);
+    paintCarouselDots(root, state.index);
+}
+
+function carouselNext(root) {
+    const state = autoCarousels.get(root);
+    const track = root.querySelector('[data-carousel-track]');
+
+    if (! state || ! track || state.count < 2) {
+        return;
+    }
+
+    if (track.scrollWidth <= track.clientWidth + 4) {
+        return;
+    }
+
+    // Visible restart: past the last card, rewind smoothly to the first.
+    carouselGoTo(root, state.index >= state.count - 1 ? 0 : state.index + 1, true);
+}
+
+function carouselPrev(root) {
+    const state = autoCarousels.get(root);
+    const track = root.querySelector('[data-carousel-track]');
+
+    if (! state || ! track || state.count < 2) {
+        return;
+    }
+
+    if (track.scrollWidth <= track.clientWidth + 4) {
+        return;
+    }
+
+    // Mirror of next: before the first card, rewind smoothly to the last.
+    carouselGoTo(root, state.index <= 0 ? state.count - 1 : state.index - 1, true);
+}
+
 document.addEventListener('livewire:navigate', () => {
     destroyDataTables();
     destroyMaps();
     destroyPickers();
+    destroyAutoCarousels();
     resetUploadBridge();
 });
 
@@ -957,4 +1202,5 @@ document.addEventListener('livewire:navigated', () => {
     initMaps();
     initInfiniteScroll();
     initUploadBridge();
+    initAutoCarousels();
 });
