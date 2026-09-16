@@ -18,7 +18,7 @@ it('renders home with product cards', function () {
         ->toContain('font-extrabold');
 });
 
-it('renders home recipes as a full-width autoscroll carousel on mobile and static grid on desktop', function () {
+it('renders home recipes as a full-width autoscroll carousel on mobile and a 3-up centered carousel on desktop', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
     Recipe::factory()->count(3)->create(['is_active' => true]);
@@ -38,12 +38,20 @@ it('renders home recipes as a full-width autoscroll carousel on mobile and stati
         ->toContain('basis-full')
         ->toContain('lg:hidden');
 
-    // Desktop horizontal scroll rail (hidden lg:block)
+    // Desktop carousel: 3-up centered, exactly three per view, chrome included
     expect($html)
         ->toContain('hidden lg:block')
+        ->toContain('data-carousel-desktop')
+        ->toContain('max-w-[896px]')
+        ->toContain('basis-[calc((100%-2rem)/3)]')
+        ->toContain('snap-center')
         ->toContain('overflow-x-auto')
-        ->toContain('snap-x')
-        ->toContain('w-64 sm:w-72');
+        ->toContain('snap-x');
+
+    // Dots: mobile one per card (4 with 3 recipes + view all) + desktop one
+    // per 3-card group (ceil(4/3) = 2) = 6 total; desktop groups have no
+    // per-card dots (2 <= 3 cards untestable safely, so count instead).
+    expect(substr_count($html, 'data-carousel-dot='))->toBe(4 + 2);
 });
 
 it('renders home with the six info cards', function () {

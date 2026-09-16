@@ -961,7 +961,9 @@ function destroyAutoCarousels() {
 }
 
 function scrollCarouselTo(track, target, smooth) {
-    const left = target.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft;
+    const targetRect = target.getBoundingClientRect();
+    const trackRect = track.getBoundingClientRect();
+    const left = targetRect.left + targetRect.width / 2 - trackRect.left - trackRect.width / 2 + track.scrollLeft;
 
     track.scrollTo({ left, behavior: smooth ? 'smooth' : 'auto' });
 }
@@ -970,11 +972,55 @@ const CAROUSEL_DOT_ACTIVE = 'h-1.5 rounded-full transition-all bg-brand-600 w-5'
 const CAROUSEL_DOT_IDLE = 'h-1.5 rounded-full transition-all bg-stone-300 w-1.5';
 
 function paintCarouselDots(root, index) {
+    // Desktop dots are groups of three: any card in a group lights that dot.
+    const active = root.hasAttribute('data-carousel-desktop') ? Math.floor(index / 3) : index;
+
     root.querySelectorAll('[data-carousel-dot]').forEach((dot) => {
-        dot.className = Number(dot.getAttribute('data-carousel-dot')) === index
+        dot.className = Number(dot.getAttribute('data-carousel-dot')) === active
             ? CAROUSEL_DOT_ACTIVE
             : CAROUSEL_DOT_IDLE;
     });
+}
+
+function syncCarouselActive(root) {
+    const current = autoCarousels.get(root);
+
+    if (! current) {
+        return;
+    }
+
+    const live = root.querySelector('[data-carousel-track]');
+
+    if (! live) {
+        return;
+    }
+
+    const trackRect = live.getBoundingClientRect();
+    const centerX = trackRect.left + trackRect.width / 2;
+    const kids = live.children;
+    let best = -1;
+    let bestDist = Number.POSITIVE_INFINITY;
+
+    for (let k = 0; k < kids.length; k++) {
+        const node = kids[k];
+
+        if (node.nodeType !== 1) {
+            continue;
+        }
+
+        const rect = node.getBoundingClientRect();
+        const dist = Math.abs(((rect.left + rect.right) / 2) - centerX);
+
+        if (dist < bestDist) {
+            bestDist = dist;
+            best = k;
+        }
+    }
+
+    if (best >= 0 && best < current.count) {
+        current.index = best;
+        paintCarouselDots(root, best);
+    }
 }
 
 function refreshCarouselChrome(root, track) {
@@ -1052,7 +1098,11 @@ function initAutoCarousels() {
                     const dot = event.target.closest('[data-carousel-dot]');
 
                     if (dot) {
-                        carouselGoTo(root, Number(dot.getAttribute('data-carousel-dot')), true);
+                        const dotIndex = Number(dot.getAttribute('data-carousel-dot'));
+
+                        // Desktop dots are groups of three: target the group's
+                        // middle card so the trio lands centered.
+                        carouselGoTo(root, root.hasAttribute('data-carousel-desktop') ? dotIndex * 3 + 1 : dotIndex, true);
                     }
                 }
             });
@@ -1076,7 +1126,8 @@ function initAutoCarousels() {
                 state.holdUntil = 0;
             });
 
-            // Active dot follows the leftmost visible card.
+            // Active dot follows the card nearest the viewport center
+            // (center stage on desktop, the visible card on mobile).
             let visibleRaf = 0;
 
             track.addEventListener('scroll', () => {
@@ -1086,38 +1137,7 @@ function initAutoCarousels() {
 
                 visibleRaf = requestAnimationFrame(() => {
                     visibleRaf = 0;
-
-                    const current = autoCarousels.get(root);
-
-                    if (! current) {
-                        return;
-                    }
-
-                    const live = root.querySelector('[data-carousel-track]');
-
-                    if (! live) {
-                        return;
-                    }
-
-                    const trackRect = live.getBoundingClientRect();
-                    const kids = live.children;
-
-                    for (let k = 0; k < kids.length; k++) {
-                        const node = kids[k];
-
-                        if (node.nodeType !== 1) {
-                            continue;
-                        }
-
-                        if (node.getBoundingClientRect().right > trackRect.left + 8) {
-                            if (k >= 0 && k < current.count) {
-                                current.index = k;
-                                paintCarouselDots(root, k);
-                            }
-
-                            return;
-                        }
-                    }
+                    syncCarouselActive(root);
                 });
             }, { passive: true });
 
@@ -1128,7 +1148,7 @@ function initAutoCarousels() {
 
         if (state.count >= 2) {
             state.index = Math.min(state.index, state.count - 1);
-            paintCarouselDots(root, state.index);
+            syncCarouselActive(root);
         }
 
         refreshCarouselChrome(root, track);
@@ -1149,6 +1169,32 @@ function carouselGoTo(root, index, smooth) {
     paintCarouselDots(root, state.index);
 }
 
+function carouselNextGroup(root) {
+    const state = autoCarousels.get(root);
+
+    if (! state) {
+        return;
+    }
+
+    const groups = Math.ceil(state.count / 3);
+    const group = Math.floor(state.index / 3);
+
+    return Math.min((group >= groups - 1 ? 0 : group + 1) * 3 + 1, state.count - 1);
+}
+
+function carouselPrevGroup(root) {
+    const state = autoCarousels.get(root);
+
+    if (! state) {
+        return;
+    }
+
+    const groups = Math.ceil(state.count / 3);
+    const group = Math.floor(state.index / 3);
+
+    return Math.min((group <= 0 ? groups - 1 : group - 1) * 3 + 1, state.count - 1);
+}
+
 function carouselNext(root) {
     const state = autoCarousels.get(root);
     const track = root.querySelector('[data-carousel-track]');
@@ -1161,8 +1207,8 @@ function carouselNext(root) {
         return;
     }
 
-    // Visible restart: past the last card, rewind smoothly to the first.
-    carouselGoTo(root, state.index >= state.count - 1 ? 0 : state.index + 1, true);
+    // Desktop steps whole groups of three (wrapping); mobile steps one card.
+    carouselGoTo(root, root.hasAttribute('data-carousel-desktop') ? carouselNextGroup(root) : (state.index >= state.count - 1 ? 0 : state.index + 1), true);
 }
 
 function carouselPrev(root) {
@@ -1178,7 +1224,7 @@ function carouselPrev(root) {
     }
 
     // Mirror of next: before the first card, rewind smoothly to the last.
-    carouselGoTo(root, state.index <= 0 ? state.count - 1 : state.index - 1, true);
+    carouselGoTo(root, root.hasAttribute('data-carousel-desktop') ? carouselPrevGroup(root) : (state.index <= 0 ? state.count - 1 : state.index - 1), true);
 }
 
 document.addEventListener('livewire:navigate', () => {

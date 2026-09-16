@@ -157,11 +157,11 @@ A pre-designed vegetables and fruits baskets to make sure you don’t miss on yo
                 </div>
             </div>
 
-            {{-- Desktop: horizontal scroll rail like wellness baskets --}}
-            <div class="hidden lg:block">
-                <div class="flex gap-4 overflow-x-auto py-2 snap-x snap-mandatory no-scrollbar">
+            {{-- Desktop: 3-up centered carousel --}}
+            <div data-auto-carousel data-carousel-desktop class="hidden lg:block relative mx-auto max-w-[896px]">
+                <div data-carousel-track class="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar">
                 @foreach ($this->recipes as $recipe)
-                    <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group shrink-0 snap-start w-64 sm:w-72 bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                    <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="group shrink-0 snap-center basis-[calc((100%-2rem)/3)] bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                         <div class="p-3 pb-0">
                             <div class="relative aspect-[4/3] overflow-hidden rounded-xl">
                                 <img src="{{ $recipe->displayImageUrl() }}" alt="{{ $recipe->title }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full {{ $recipe->imageFit() }} transition-transform duration-300 group-hover:scale-105">
@@ -176,12 +176,23 @@ A pre-designed vegetables and fruits baskets to make sure you don’t miss on yo
                         </div>
                     </a>
                 @endforeach
-                <a href="{{ route('recipes.index') }}" wire:navigate class="group shrink-0 snap-start w-64 sm:w-72 bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
+                <a href="{{ route('recipes.index') }}" wire:navigate class="group shrink-0 snap-center basis-[calc((100%-2rem)/3)] bg-white rounded-2xl border border-stone-200 overflow-hidden hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col items-center justify-center p-3">
                     <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-brand-50 to-lime-100 ring-1 ring-stone-100 group-hover:ring-brand-300 transition">
                         <i data-lucide="arrow-right" class="w-8 h-8 text-brand-600"></i>
                     </span>
                     <p class="mt-2 text-sm font-medium text-stone-800 group-hover:text-brand-700 text-center">View all</p>
                 </a>
+                </div>
+                <button type="button" data-carousel-prev aria-label="Previous recipes" class="absolute left-1 top-[36%] -translate-y-1/2 z-10 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/90 shadow-md text-stone-700 hover:text-brand-700 hover:bg-white transition">
+                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                </button>
+                <button type="button" data-carousel-next aria-label="Next recipes" class="absolute right-1 top-[36%] -translate-y-1/2 z-10 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/90 shadow-md text-stone-700 hover:text-brand-700 hover:bg-white transition">
+                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                </button>
+                <div data-carousel-dots class="mt-3 flex justify-center gap-1.5">
+                    @for ($g = 0; $g < (int) ceil(($this->recipes->count() + 1) / 3); $g++)
+                        <button type="button" data-carousel-dot="{{ $g }}" aria-label="Go to slide {{ $g + 1 }}" class="h-1.5 rounded-full bg-stone-300 transition-all"></button>
+                    @endfor
                 </div>
             </div>
         @endif
